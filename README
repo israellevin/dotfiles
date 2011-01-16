@@ -1,1 +1,6 @@
-Just configuration files
+Just configuration files and some handy scripts
+
+.bashrc
+.vimrc
+.vim
+.tmux.conf
