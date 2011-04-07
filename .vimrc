@@ -1,38 +1,3 @@
-if has("autocmd")
-    autocmd!
-    filetype plugin indent on
-    set ofu=syntaxcomplete#Complete
-
-    au FileType python noremap <f5> :w<CR>:! ipython -noconfirm_exit %<CR>
-    au FileType python inoremap <f5> <Esc>:w<CR>:! ipython -noconfirm_exit %<CR>
-    au BufRead,BufNewFile *.js set ft=javascript.jquery
-    au BufRead,BufNewFile ~/work/bildad/* set rightleft | set rightleftcmd | set keymap=hebrew
-
-    " Open other filetypes in RO
-    autocmd BufReadPre *.doc silent set ro
-    autocmd BufReadPost *.doc silent %!antiword "%"
-    autocmd BufReadPre *.odt,*.odp silent set ro
-    autocmd BufReadPost *.odt,*.odp silent %!odt2txt "%"
-    autocmd BufReadPre *.sxw silent set ro
-    autocmd BufReadPost *.sxw silent %!sxw2txt "%"
-    autocmd BufReadPre *.pdf silent set ro
-    autocmd BufReadPost *.pdf silent %!pdftotext -nopgbrk -layout -q -eol unix "%" - | fmt -w78
-    autocmd BufReadPre *.rtf silent set ro
-    autocmd BufReadPost *.rtf silent %!unrtf --text "%"
-
-    " Wrap diffs
-    au FilterWritePre * if &diff | windo set wrap
-
-    " Equal size windows upon resize
-    autocmd VimResized * wincmd =
-
-    " Chmod +x shabanged files on save
-    au BufWritePost * if getline(1) =~ "^#!" | silent !chmod +x <afile>
-
-    " Source vimrc when changed
-    autocmd! bufwritepost .vimrc source ~/.vimrc
-endif
-
 set nocompatible
 set history=99999
 set viminfo='100,%
@@ -48,7 +13,7 @@ set ruler
 set shortmess=aTW
 set scrolloff=3
 set wildmenu
-set wildmode=full
+set wildmode=longest:full,full
 set completeopt=longest,menuone,preview
 set autoindent
 set smartindent
@@ -69,25 +34,6 @@ set undofile
 set undodir=~/.vim/undo
 set t_ti= t_te=
 
-" Pretty
-syntax enable
-set encoding=utf-8
-set t_Co=256
-set background=dark
-colorscheme xoria256
-set cursorline
-set cursorcolumn
-hi Pmenu ctermbg=white ctermfg=black
-hi PMenuSel ctermbg=black ctermfg=green
-hi clear CursorLine
-hi CursorLine guibg=#121212 cterm=BOLD
-hi clear CursorColumn
-hi CursorColumn guibg=#121212 cterm=BOLD
-hi ExtraWhitespace ctermbg=red guibg=red
-hi SpellBad cterm=underline ctermfg=red ctermbg=black
-match ExtraWhitespace /\s\+$/
-match ExtraWhitespace /\s\+$\| \+\ze\t/
-
 "Abrvs and maps
 noremap <F5> :w<CR>:! %<CR>
 noremap <Space> <PageDown>
@@ -96,11 +42,10 @@ noremap <kMinus> :cp<CR>
 noremap Y y$
 noremap <down> gj
 noremap <up> gk
+nnoremap <silent> <leader>g :execute 'vimgrep /'.@/.'/g %'<CR>:copen<CR>
 inoremap <down> <C-o>gj
 inoremap <up> <C-o>gk
 inoremap <expr> <Tab> pumvisible() ? "<Tab>" : "<Tab><Down>"
-inoremap __ ־
-inoremap ___ –
 vnoremap . :normal .<CR>
 vnoremap ` :normal @a<CR>
 vnoremap <Right> >gv
@@ -112,10 +57,6 @@ cnorea clstag source ~/.vim/scripts/closetag.vim
 cnorea mks :wa <cr>:mksession! ~/.vim/.session<cr>
 cnorea lds :source ~/.vim/.session <cr>
 
-" Supertab
-let g:SuperTabDefaultCompletionType="<c-p>"
-let g:SuperTabContextDefaultCompletionType="<c-p>"
-
 " Bufferlist
 map <silent> <F3> :call BufferList()<CR>
 map <silent> <F4> :NERDTreeToggle<CR>
@@ -123,3 +64,63 @@ map <silent> <F4> :NERDTreeToggle<CR>
 " NERDTree
 let g:NERDChristmasTree=0
 let g:NERDTreeAutoCenter=1
+
+" Supertab
+let g:SuperTabDefaultCompletionType="<c-p>"
+let g:SuperTabContextDefaultCompletionType="<c-p>"
+
+if has("autocmd")
+    au!
+    filetype plugin indent on
+    set ofu=syntaxcomplete#Complete
+
+    au FileType python noremap <f5> :w<CR>:! ipython -noconfirm_exit %<CR>
+    au FileType python inoremap <f5> <Esc>:w<CR>:! ipython -noconfirm_exit %<CR>
+    au BufRead,BufNewFile *.js set ft=javascript.jquery
+    au BufRead,BufNewFile ~/work/heb/* set rightleft | set rightleftcmd | set keymap=hebrew | inoremap __ ־ | inoremap ___ –
+
+    " Open other filetypes in RO
+    au BufReadPre *.doc silent set ro
+    au BufReadPost *.doc silent %!antiword "%"
+    au BufReadPre *.odt,*.odp silent set ro
+    au BufReadPost *.odt,*.odp silent %!odt2txt "%"
+    au BufReadPre *.sxw silent set ro
+    au BufReadPost *.sxw silent %!sxw2txt "%"
+    au BufReadPre *.pdf silent set ro
+    au BufReadPost *.pdf silent %!pdftotext -nopgbrk -layout -q -eol unix "%" - | fmt -w78
+    au BufReadPre *.rtf silent set ro
+    au BufReadPost *.rtf silent %!unrtf --text "%"
+
+    " Wrap diffs
+    au FilterWritePre * if &diff | windo set wrap | windo set virtualedit=all
+
+    " Equal size windows upon resize
+    au VimResized * wincmd =
+
+    " Chmod +x shabanged files on save
+    au BufWritePost * if getline(1) =~ "^#!" | silent !chmod +x <afile>
+
+    " Source vimrc and bashrc when changed
+    augroup myvimrc
+        au BufWritePost .vimrc,_vimrc,vimrc,.gvimrc,_gvimrc,gvimrc so $MYVIMRC | if has('gui_running') | so $MYGVIMRC | endif
+    augroup END
+endif
+
+" Pretty
+set encoding=utf-8
+set t_Co=256
+set background=dark
+colorscheme solarized
+syntax enable
+set cursorline
+set cursorcolumn
+hi Pmenu ctermbg=white ctermfg=black
+hi PMenuSel ctermbg=black ctermfg=green
+hi clear CursorLine
+hi CursorLine ctermbg=black guibg=#121212
+hi clear CursorColumn
+hi CursorColumn ctermbg=black guibg=#121212
+hi ExtraWhitespace ctermbg=red guibg=red
+hi SpellBad cterm=underline ctermfg=red ctermbg=black
+match ExtraWhitespace /\s\+$/
+match ExtraWhitespace /\s\+$\| \+\ze\t/

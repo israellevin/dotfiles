@@ -206,7 +206,7 @@ alias mp='DISPLAY=":0.0" mplayer -fs -zoom'
 alias mpl='DISPLAY=":0.0" mplayer -fs -zoom -lavdopts lowres=1:fast:skiploopfilter=all'
 alias mpy='DISPLAY=":0.0" mplayer -fs -zoom -vf yadif'
 alias webcam='mplayer tv:// -tv device=/dev/video0'
-alias ut='/root/scripts/youtube-dl -t'
+alias ut='~/bin/youtube-dl -t'
 mplen() { gc `mplayer -vo dummy -ao dummy -identify "$1" 2>/dev/null | grep ID_LENGTH | cut -c 11-` seconds in minutes; }
 
 # Other aliases
