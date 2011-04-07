@@ -34,6 +34,8 @@ shopt -s dotglob
 shopt -s cmdhist
 shopt -s nocaseglob
 shopt -s histappend
+shopt -s histreedit
+shopt -s histverify
 shopt -s checkwinsize
 shopt -u force_fignore
 shopt -s no_empty_cmd_completion
@@ -52,7 +54,7 @@ export PROMPT_COMMAND='history -a; history -n'
 mkcd() { mkdir -p "$*"; cd "$*"; }
 alias p='pushd'
 alias b='popd'
-alias m='~/bin/dmntnir.sh'
+alias m='~/bin/mntnir.sh'
 r() {
     ~/bin/ranger/ranger.py --fail-if-run $@ &&
         tdir=$(grep "^'" ~/.config/ranger/bookmarks | cut -b3-) &&
@@ -63,15 +65,18 @@ r() {
 export LS_OPTIONS='-lh'
 alias l='ls $LS_OPTIONS'
 alias ll='ls $LS_OPTIONS -A'
-alias ld='ls $LS_OPTIONS -A -d */'
 alias lt='ls $LS_OPTIONS -tr'
+alias ld='ls $LS_OPTIONS -A -d */'
 alias lss='ls $LS_OPTIONS -Sr'
 
 # grep options
+alias xgrep='~/bin/xgrep.sh'
 export GREP_OPTIONS='-i'
-alias pg='ps -A | grep'
-alias lg='ll | grep'
-alias fgg='find | grep'
+alias lg='ll | xgrep'
+alias fgg='find | xgrep'
+alias hgg='history | xgrep'
+alias pg='ps -ef | xgrep'
+skill() { kill $(pg $@ | head -n 1 | cut -d ' ' -f 2); }
 
 # vim helpers
 v() { if [ -z $1 ]; then vim -c "normal '0"; else vim -p *$1*; fi }
@@ -86,6 +91,7 @@ if [ 1 ]; then
     export PS1='\n\e[31;40m\d \t\e[0m\n\e[32;40m\u@\h (\!)\e[0m\n\w\$ '
     export LS_OPTIONS="$LS_OPTIONS --color=auto"
     export GREP_OPTIONS="$GREP_OPTIONS --color=auto"
+    export LESS="-MR"
     export LESS_TERMCAP_us=$'\e[32m'
     export LESS_TERMCAP_ue=$'\e[0m'
     export LESS_TERMCAP_md=$'\e[1;31m'
@@ -100,9 +106,9 @@ gc() {
     q=$(perl -MURI::Escape -e "print uri_escape(\"$*\");")
     a=$(curl -A 'mozilla/4.0' "http://www.google.com/search?q=$q" | grep 'class=r')
     echo; echo "$a" | perl -pe 's/.*class=r.*?<b>(.*?)<\/b>.*/\1/;' ;}
-wg() { w3m -dump "http://google.com/search?q=$*" | les ;}
-ww() { w3m -dump "http://en.wikipedia.org/w/index.php?title=Special:Search&search=$*&go=Go" | les ;}
-wd() { w3m -dump "http://dictionary.reference.com/browse/$*" | les ;}
+wg() { w3m -dump "http://google.com/search?q=$*" | less ;}
+ww() { w3m -dump "http://en.wikipedia.org/w/index.php?title=Special:Search&search=$*&go=Go" | less ;}
+wd() { w3m -dump "http://dictionary.reference.com/browse/$*" | less ;}
 
 define() {
     local ret
@@ -200,9 +206,8 @@ alias mp='DISPLAY=":0.0" mplayer -fs -zoom'
 alias mpl='DISPLAY=":0.0" mplayer -fs -zoom -lavdopts lowres=1:fast:skiploopfilter=all'
 alias mpy='DISPLAY=":0.0" mplayer -fs -zoom -vf yadif'
 alias webcam='mplayer tv:// -tv device=/dev/video0'
+alias ut='/root/scripts/youtube-dl -t'
 mplen() { gc `mplayer -vo dummy -ao dummy -identify "$1" 2>/dev/null | grep ID_LENGTH | cut -c 11-` seconds in minutes; }
-flvit() { ffmpeg -loop_input -i $1 -i $2 -acodec copy -y -t `ffmpeg -i $2 |& grep 'Duration' | awk '{ print $2; }' | sed -e 's/,//g' | cut -b 2- ` $1.flv; }
-mencode() { mencoder $* -aid 128 -info srcform='ripped by mencoder' -oac mp3lame -lameopts abr:br=128 -ovc xvid -xvidencopts pass=1:chroma_opt:vhq=4:bvhq=1:quant_type=mpeg -vf pp=de,crop=0:0:0:0, -ofps 30000/1001 -o '/dev/null' && mencoder $* -aid 128 -info srcform='ripped by mencoder' -oac mp3lame -lameopts abr:br=128 -ovc xvid -xvidencopts pass=2:bitrate=-700000 -ofps 30000/1001 -o output.avi; }
 
 # Other aliases
 alias d='trash'
@@ -231,4 +236,4 @@ echo
 echo
 echo
 echo
-ls $LS_OPTIONS -tr --group-directories-first
+lt --group-directories-first
