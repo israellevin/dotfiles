@@ -12,14 +12,19 @@ if [ -z $TMUX ]; then
     else
         tmux -q new \; linkw -t all
     fi
-    exit
+    if [ ! -e /tmp/dontquit ]; then
+        exit
+    fi
 fi
 
 # Create a new group for this session
 #mkdir -pm 0700 /sys/fs/cgroup/cpu/user/$$
 #echo $$ > /sys/fs/cgroup/cpu/user/$$/tasks
 
-export PS1='\n\d \t\n\u@\h (\!)\n\w\$ '
+function parse_git_branch {
+  git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/(\1)/'
+}
+export PS1='\n\d \t\n\u@\h (\!)\n\w$(parse_git_branch)\$ '
 
 # Completion
 if [ -f /etc/bash_completion ]
@@ -50,16 +55,11 @@ export PROMPT_COMMAND='history -a; history -n'
 
 # Directory traversing
 #export CDPATH='.:~'
+cd() { if [ -z "$1" ]; then pushd ~; else pushd "$1"; fi; }
 ..() { if [ $1 -ge 0 2> /dev/null ]; then x=$1; else x=1; fi; for (( i = 0; i < $x; i++ )); do cd ..; done; }
 mkcd() { mkdir -p "$*"; cd "$*"; }
-alias p='pushd'
 alias b='popd'
 alias m='~/bin/mntnir.sh'
-r() {
-    ~/bin/ranger/ranger.py --fail-if-run $@ &&
-        tdir=$(grep "^'" ~/.config/ranger/bookmarks | cut -b3-) &&
-            cd "$tdir"
-}
 
 # ls options
 export LS_OPTIONS='-lh'
@@ -81,17 +81,21 @@ skill() { kill $(pg $@ | head -n 1 | cut -d ' ' -f 2); }
 # vim helpers
 v() { if [ -z $1 ]; then vim -c "normal '0"; else vim -p *$1*; fi }
 vg() { vim -p $(grep -l "$*" *); }
+alias vf='find && vim -c "FufCoverageFile"'
 alias vs='vim -c "set spell | set buftype=nofile"'
 alias les='/usr/share/vim/vimcurrent/macros/less.sh'
 
 # Colors
 #if [ $COLORTERM ]; then
 if [ 1 ]; then
+    alias cgrep="grep $GREP_OPTIONS --color=always"
+    alias crgrep="rgrep $GREP_OPTIONS --color=always"
+    alias cls="ls $LS_OPTIONS --color=always"
     eval "`dircolors`"
-    export PS1='\n\e[31;40m\d \t\e[0m\n\e[32;40m\u@\h (\!)\e[0m\n\w\$ '
+    export PS1='\n\e[31;40m\d \t\e[0m\n\e[32;40m\u@\h (\!)\e[0m\n\w$(parse_git_branch)\$ '
     export LS_OPTIONS="$LS_OPTIONS --color=auto"
     export GREP_OPTIONS="$GREP_OPTIONS --color=auto"
-    export LESS="-MR"
+    export LESS='-MR'
     export LESS_TERMCAP_us=$'\e[32m'
     export LESS_TERMCAP_ue=$'\e[0m'
     export LESS_TERMCAP_md=$'\e[1;31m'
@@ -105,7 +109,7 @@ wclipfile() { curl -F "sprunge=@$1" http://sprunge.us | xclip -f; }
 gc() {
     q=$(perl -MURI::Escape -e "print uri_escape(\"$*\");")
     a=$(curl -A 'mozilla/4.0' "http://www.google.com/search?q=$q" | grep 'class=r')
-    echo; echo "$a" | perl -pe 's/.*class=r.*?<b>(.*?)<\/b>.*/\1/;' ;}
+    echo; echo "$a" | perl -pe 's/.*<h2 class=r.*?<b>(.*?)<\/b>.*/\1/;' ;}
 wg() { w3m -dump "http://google.com/search?q=$*" | less ;}
 ww() { w3m -dump "http://en.wikipedia.org/w/index.php?title=Special:Search&search=$*&go=Go" | less ;}
 wd() { w3m -dump "http://dictionary.reference.com/browse/$*" | less ;}
@@ -205,8 +209,8 @@ alias d1='DISPLAY="localhost:10.0"'
 alias mp='DISPLAY=":0.0" mplayer -fs -zoom'
 alias mpl='DISPLAY=":0.0" mplayer -fs -zoom -lavdopts lowres=1:fast:skiploopfilter=all'
 alias mpy='DISPLAY=":0.0" mplayer -fs -zoom -vf yadif'
+alias feh='feh -ZF'
 alias webcam='mplayer tv:// -tv device=/dev/video0'
-alias ut='~/bin/youtube-dl -t'
 mplen() { gc `mplayer -vo dummy -ao dummy -identify "$1" 2>/dev/null | grep ID_LENGTH | cut -c 11-` seconds in minutes; }
 
 # Other aliases
@@ -214,6 +218,7 @@ alias d='trash'
 alias dud='du --max-depth=1 -h | sort -h'
 alias sc='screen -RAad'
 alias startx='TMUX="" startx &'
+log() { $@ 2>&1 | tee log.txt; }
 alias tit='xsetroot -name'
 alias canhaz='apt-get install $_'
 

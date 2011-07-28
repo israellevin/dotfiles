@@ -1,4 +1,7 @@
 set completion-ignore-case on
+set show-all-if-ambiguous on
+set match-hidden-files off
+set visible-stats on
 "\eOA": history-search-backward
 "\e[A": history-search-backward
 "\eOB": history-search-forward
