@@ -4,3 +4,4 @@ Just configuration files and some handy scripts
 .vimrc
 .vim
 .tmux.conf
+.Xdefaults

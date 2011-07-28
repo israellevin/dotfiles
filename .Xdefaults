@@ -1,0 +1,26 @@
+URxvt.perl-ext-common: default,matcher
+URxvt.urlLauncher: luakit
+URxvt.colorUL: #86a2be
+
+#URxvt.font: xft:Inconsolata:pixelsize=32
+#URxvt.font: -*-miriam mono-*-r-*-*-32-*-*-*-*-*-*-*
+#URxvt.font: -*-terminus-*-*-*-*-32-*-*-*-*-*-*-*
+URxvt.font: xft:DejaVu Sans Mono:autohint=true:antialias=true:size=20
+URxvt.saveLines: 65535
+URxvt.scrollBar: false
+URxvt.visualBell: false
+URxvt.fading: 70
+URxvt.foreground: grey
+URxvt.background: #101010
+URxvt.colorIT: #ffff00
+#URxvt.depth:32
+#URxvt.background:rgba:0000/0000/0000/0000
+URxvt.cursorColor: green
+URxvt.color12: white
+URxvt.iso14755_52: false
+
+xterm*font: -*-terminus-*-*-*-*-32-*-*-*-*-*-*-*
+xterm*foreground: grey
+xterm*background: black
+xterm*cursorColor: green
+xterm*color12: white
