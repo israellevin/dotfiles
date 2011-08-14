@@ -23,7 +23,7 @@ set tabstop=4
 set wrap
 set linebreak
 set scrolloff=999
-set backspace=indent,eol
+set backspace=indent,eol,start
 
 set ruler
 set showcmd
@@ -45,11 +45,12 @@ set completeopt=longest,menuone,preview
 filetype off
 call pathogen#runtime_append_all_bundles()
 
-let g:SuperTabDefaultCompletionType="<c-p>"
-let g:SuperTabContextDefaultCompletionType="<c-p>"
+let g:SuperTabDefaultCompletionType="context"
+let g:SuperTabContextDefaultCompletionType="<c-x><c-p>"
+let g:SuperTabLongestEnhanced=1
+let g:SuperTabLongestHighlight=1
 
-let g:NERDChristmasTree=0
-let g:NERDTreeAutoCenter=1
+let g:yankring_history_dir = '$VIM'
 
 "Abrvs and maps
 cnorea Q :q<CR>
@@ -62,8 +63,9 @@ cnorea clstag source ~/.vim/scripts/closetag.vim
 
 noremap Y y$
 noremap <Space> <PageDown>
-noremap <Leader>ss :setlocal spell!<CR>
-noremap <expr> <Leader>dd 0 == &scrolloff ? ':setlocal scrolloff=999<CR>' : ':setlocal scrolloff=0<CR>'
+noremap <Leader>s :setlocal spell!<CR>
+noremap <expr> <Leader>d 0 == &scrolloff ? ':setlocal scrolloff=999<CR>' : ':setlocal scrolloff=0<CR>'
+noremap <expr> <Leader>h "hebrew" == &keymap ? ':setlocal norightleft \| setlocal rightleftcmd= \| setlocal keymap=<CR>' : ':setlocal rightleft \| setlocal rightleftcmd \| setlocal keymap=hebrew<CR>'
 
 noremap <Up> gk
 noremap <Down> gj
@@ -83,8 +85,6 @@ inoremap <F4> <Esc>:NERDTreeToggle<CR>
 inoremap <F3> <Esc>:execute 'vimgrep /'.@/.'/g *'<CR>:copen<CR>
 inoremap <F2> <Esc>:FufCoverageFile<CR>
 
-"inoremap <expr> <Tab> pumvisible() ? "<Tab>" : "<Tab><Down>"
-
 vnoremap <Right> >gv
 vnoremap <Left> <gv
 vnoremap . :normal .<CR>
@@ -97,7 +97,6 @@ if has("autocmd")
 
 "    au FileType python noremap <F5> :w<CR>:! ipython -noconfirm_exit %<CR>
 "    au FileType python inoremap <F5> <Esc>:w<CR>:! ipython -noconfirm_exit %<CR>
-    au FileType python set omnifunc=pythoncomplete#Complete
 
     au BufRead,BufNewFile *.js set ft=javascript.jquery
     au BufRead,BufNewFile ~/work/heb/* set rightleft | set rightleftcmd | set keymap=hebrew | inoremap -- ־| inoremap --- –
@@ -129,20 +128,27 @@ endif
 
 " Pretty
 set encoding=utf-8
-set t_Co=256
 set background=dark
-colorscheme solarized
 syntax enable
-set cursorline
-set cursorcolumn
-hi search ctermbg=black
-hi Pmenu ctermbg=white ctermfg=black
-hi PMenuSel ctermbg=black ctermfg=green
-hi clear CursorLine
-hi CursorLine ctermbg=black
-hi clear CursorColumn
-hi CursorColumn ctermbg=black
-hi ExtraWhitespace ctermbg=red guibg=red
-hi SpellBad cterm=underline ctermfg=red ctermbg=black
+
+if '' == $DISPLAY
+    set t_Co=16
+    colorscheme elflord
+    set cursorline
+    set cursorcolumn
+    hi clear CursorLine
+    hi clear CursorColumn
+    hi CursorLine ctermbg=yellow
+    hi CursorColumn ctermbg=yellow
+    hi SpellBad ctermbg=red ctermfg=black
+else
+    set t_Co=256
+    colorscheme molokai
+    set cursorline
+    set cursorcolumn
+    hi SpellBad cterm=underline ctermfg=red ctermbg=black
+endif
+
+hi ExtraWhitespace ctermbg=1
 match ExtraWhitespace /\s\+$/
 match ExtraWhitespace /\s\+$\| \+\ze\t/

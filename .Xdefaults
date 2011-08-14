@@ -11,7 +11,7 @@ URxvt.scrollBar: false
 URxvt.visualBell: false
 URxvt.fading: 70
 URxvt.foreground: grey
-URxvt.background: #101010
+URxvt.background: black
 URxvt.colorIT: #ffff00
 #URxvt.depth:32
 #URxvt.background:rgba:0000/0000/0000/0000

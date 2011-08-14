@@ -3,35 +3,31 @@
 # Don't do shit if not connected to a terminal
 [ -t 0 ] || return
 
-# Multiplex
-if [ -z $TMUX ]; then
-    tmux new -d -s all
-    if [ 0 -eq $? ]; then
-        tmux set -t all status on
-        tmux -q new \; linkw -t all \; kill-window -t all:0
-    else
-        tmux -q new \; linkw -t all
-    fi
-    if [ ! -e /tmp/dontquit ]; then
-        exit
-    fi
-fi
+# Multiplexing
+[ ! "$TMUX" ] && tmux new-session && [ ! -e /tmp/dontquit ] && exit 0
+
+# Steal all tmux windows into current session
+function muxjoin {
+    [ ! "$TMUX" ] && echo 'tmux not running' 1>&2 && exit 1
+    tmux set status on
+    for win in $(tmux list-windows -a | cut -d : -f 1-2); do
+        tmux move-window -d -s "$win"
+    done
+}
+
+# Split current tmux session to multiple X terminals
+function muxsplit {
+    [ ! "$TMUX" ] && echo 'tmux not running' 1>&2 && exit 1
+    tmux rename-session split
+    [ ! "$?" ] && echo 'split session exists' 1>&2 && exit 1
+    for win in $(tmux list-windows -t split | cut -d : -f 1); do
+        TMUX='' urxvtcd -e dash -c "tmux new-session \\; move-window -k -s 'split:$win' -t 0"
+    done
+}
 
 # Create a new group for this session
 #mkdir -pm 0700 /sys/fs/cgroup/cpu/user/$$
 #echo $$ > /sys/fs/cgroup/cpu/user/$$/tasks
-
-function parse_git_branch {
-  git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/(\1)/'
-}
-export PS1='\n\d \t\n\u@\h (\!)\n\w$(parse_git_branch)\$ '
-
-# Completion
-if [ -f /etc/bash_completion ]
-then
-	source /etc/bash_completion
-    set completion-ignore-case on
-fi
 
 # Shell options
 shopt -s cdspell
@@ -44,8 +40,9 @@ shopt -s histverify
 shopt -s checkwinsize
 shopt -u force_fignore
 shopt -s no_empty_cmd_completion
+export IGNOREEOF=1
 
-# History settings
+# History
 export HISTFILESIZE=999999
 export HISTSIZE=999999
 export HISTCONTROL=erasedups,ignoreboth
@@ -61,7 +58,7 @@ mkcd() { mkdir -p "$*"; cd "$*"; }
 alias b='popd'
 alias m='~/bin/mntnir.sh'
 
-# ls options
+# ls
 export LS_OPTIONS='-lh'
 alias l='ls $LS_OPTIONS'
 alias ll='ls $LS_OPTIONS -A'
@@ -69,24 +66,28 @@ alias lt='ls $LS_OPTIONS -tr'
 alias ld='ls $LS_OPTIONS -A -d */'
 alias lss='ls $LS_OPTIONS -Sr'
 
-# grep options
-alias xgrep='~/bin/xgrep.sh'
+# grep
 export GREP_OPTIONS='-i'
+alias xgrep='~/bin/xgrep.sh'
 alias lg='ll | xgrep'
 alias fgg='find | xgrep'
 alias hgg='history | xgrep'
 alias pg='ps -ef | xgrep'
 skill() { kill $(pg $@ | head -n 1 | cut -d ' ' -f 2); }
 
-# vim helpers
-v() { if [ -z $1 ]; then vim -c "normal '0"; else vim -p *$1*; fi }
-vg() { vim -p $(grep -l "$*" *); }
-alias vf='find && vim -c "FufCoverageFile"'
-alias vs='vim -c "set spell | set buftype=nofile"'
-alias les='/usr/share/vim/vimcurrent/macros/less.sh'
+# Prompt
+if [ -z "$debian_chroot" ] && [ -r /etc/debian_chroot ]; then
+    debian_chroot=$(cat /etc/debian_chroot)
+fi
+function parse_git_branch {
+  git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/(\1)/'
+}
+PS1='u@\h:\w\$ '
+export PS1='\n\d \t\n\u@${debian_chroot:+($debian_chroot)} \h (\!)\n\w$(parse_git_branch)\$ '
 
 # Colors
-#if [ $COLORTERM ]; then
+#if [ ':0' == ${DISPLAY:0:2} ]; then
+#if [ "$COLORTERM" ]; then
 if [ 1 ]; then
     alias cgrep="grep $GREP_OPTIONS --color=always"
     alias crgrep="rgrep $GREP_OPTIONS --color=always"
@@ -102,7 +103,38 @@ if [ 1 ]; then
     export LESS_TERMCAP_me=$'\e[0m'
 fi
 
-# Web shortcuts
+# Completion
+if [ -f /etc/bash_completion ]
+then
+	source /etc/bash_completion
+    set completion-ignore-case on
+fi
+
+# Aliases and functions
+alias d='trash'
+alias dud='du --max-depth=1 -h | sort -h'
+alias sc='screen -RAad'
+alias startx='TMUX="" startx &'
+log() { $@ 2>&1 | tee log.txt; }
+
+# vim
+v() { if [ -z $1 ]; then vim -c "normal '0"; else vim -p *$1*; fi }
+vg() { vim -p $(grep -l "$*" *); }
+alias vf='find && vim -c "FufCoverageFile"'
+alias vs='vim -c "set spell | set buftype=nofile"'
+alias les='/usr/share/vim/vimcurrent/macros/less.sh'
+
+# Media
+alias d0='DISPLAY=":0.0"'
+alias d1='DISPLAY="localhost:10.0"'
+alias mp='DISPLAY=":0.0" mplayer -fs -zoom'
+alias mpl='DISPLAY=":0.0" mplayer -fs -zoom -lavdopts lowres=1:fast:skiploopfilter=all'
+alias mpy='DISPLAY=":0.0" mplayer -fs -zoom -vf yadif'
+alias feh='feh -ZF'
+alias webcam='mplayer tv:// -tv device=/dev/video0'
+mplen() { gc `mplayer -vo dummy -ao dummy -identify "$1" 2>/dev/null | grep ID_LENGTH | cut -c 11-` seconds in minutes; }
+
+# Web
 alias webshare='python -c "import SimpleHTTPServer;SimpleHTTPServer.test()"'
 alias wclip='curl -F "sprunge=<-" http://sprunge.us | xclip -f'
 wclipfile() { curl -F "sprunge=@$1" http://sprunge.us | xclip -f; }
@@ -202,25 +234,6 @@ _thesaurus(){
     COMPREPLY=( $( grep -h "^${COMP_WORDS[COMP_CWORD]}" /usr/share/dict/words ) )
     return 0
 } && complete -F _thesaurus thesaurus
-
-# Video handling
-alias d0='DISPLAY=":0.0"'
-alias d1='DISPLAY="localhost:10.0"'
-alias mp='DISPLAY=":0.0" mplayer -fs -zoom'
-alias mpl='DISPLAY=":0.0" mplayer -fs -zoom -lavdopts lowres=1:fast:skiploopfilter=all'
-alias mpy='DISPLAY=":0.0" mplayer -fs -zoom -vf yadif'
-alias feh='feh -ZF'
-alias webcam='mplayer tv:// -tv device=/dev/video0'
-mplen() { gc `mplayer -vo dummy -ao dummy -identify "$1" 2>/dev/null | grep ID_LENGTH | cut -c 11-` seconds in minutes; }
-
-# Other aliases
-alias d='trash'
-alias dud='du --max-depth=1 -h | sort -h'
-alias sc='screen -RAad'
-alias startx='TMUX="" startx &'
-log() { $@ 2>&1 | tee log.txt; }
-alias tit='xsetroot -name'
-alias canhaz='apt-get install $_'
 
 # Autojump
 source /etc/profile.d/autojump.bash
