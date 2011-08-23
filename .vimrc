@@ -19,6 +19,7 @@ set smartindent
 set shiftwidth=4
 set softtabstop=4
 set tabstop=4
+set list listchars=trail:·
 
 set wrap
 set linebreak
@@ -43,14 +44,39 @@ set completeopt=longest,menuone,preview
 
 "Plugins
 filetype off
-call pathogen#runtime_append_all_bundles()
 
+set runtimepath+=/usr/share/vim/addons/
+let g:notmuch_initial_search_words = [ 'folder:INBOX and tag:unread' ]
+let s:notmuch_signature_defaults = [ ]
+let g:notmuch_folders = [
+        \ [ 'new', 'tag:unread and folder:INBOX' ],
+        \ [ 'important', 'tag:flagged and folder:INBOX' ],
+        \ [ 'starred', 'tag:flagged' ],
+        \ [ 'inbox', 'folder:INBOX' ],
+        \ [ 'unread', 'tag:unread and not folder:spam' ],
+        \ ]
+
+
+set runtimepath+=~/.vim/bundle/vundle/
+call vundle#rc()
+Bundle 'gmarik/vundle'
+
+Bundle 'ervandew/supertab'
 let g:SuperTabDefaultCompletionType="context"
 let g:SuperTabContextDefaultCompletionType="<c-x><c-p>"
 let g:SuperTabLongestEnhanced=1
 let g:SuperTabLongestHighlight=1
 
+Bundle 'YankRing.vim'
 let g:yankring_history_dir = '$VIM'
+
+Bundle 'L9'
+Bundle 'FuzzyFinder'
+Bundle 'chrisbra/histwin.vim'
+Bundle 'thinca/vim-visualstar'
+Bundle 'TVO--The-Vim-Outliner'
+Bundle 'tpope/vim-fugitive'
+Bundle 'Lokaltog/vim-easymotion'
 
 "Abrvs and maps
 cnorea Q :q<CR>
