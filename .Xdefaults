@@ -2,10 +2,14 @@ URxvt.perl-ext-common: default,matcher
 URxvt.urlLauncher: luakit
 URxvt.colorUL: #86a2be
 
-#URxvt.font: xft:Inconsolata:pixelsize=32
-#URxvt.font: -*-miriam mono-*-r-*-*-32-*-*-*-*-*-*-*
 #URxvt.font: -*-terminus-*-*-*-*-32-*-*-*-*-*-*-*
+#URxvt.keysym.C-0: command:\033]710;-*-terminus-*-*-*-*-24-*-*-*-*-*-*-*\007
+#URxvt.keysym.C-minus: command:\033]710;-*-terminus-*-*-*-*-32-*-*-*-*-*-*-*\007
+#URxvt.keysym.C-equal: command:\033]710;-*-terminus-*-*-*-*-48-*-*-*-*-*-*-*\007
 URxvt.font: xft:DejaVu Sans Mono:autohint=true:antialias=true:size=20
+URxvt.keysym.C-0: command:\033]710;xft:DejaVu Sans Mono:autohint=true:antialias=true:size=10\007
+URxvt.keysym.C-minus: command:\033]710;xft:DejaVu Sans Mono:autohint=true:antialias=true:size=20\007
+URxvt.keysym.C-equal: command:\033]710;xft:DejaVu Sans Mono:autohint=true:antialias=true:size=32\007
 URxvt.saveLines: 65535
 URxvt.scrollBar: false
 URxvt.visualBell: false
