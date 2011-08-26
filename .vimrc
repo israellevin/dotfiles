@@ -19,7 +19,7 @@ set smartindent
 set shiftwidth=4
 set softtabstop=4
 set tabstop=4
-set list listchars=trail:·
+set list listchars=tab:\ \ ,trail:·
 
 set wrap
 set linebreak
@@ -69,38 +69,40 @@ let g:SuperTabLongestHighlight=1
 
 Bundle 'YankRing.vim'
 let g:yankring_history_dir = '$VIM'
+function! YRRunAfterMaps()
+    nnoremap Y   :<C-U>YRYankCount 'y$'<CR>
+endfunction
+
+Bundle 'xmledit'
+let xml_use_xhtml = 1
 
 Bundle 'L9'
 Bundle 'FuzzyFinder'
-Bundle 'chrisbra/histwin.vim'
+Bundle 'Gundo'
 Bundle 'thinca/vim-visualstar'
 Bundle 'TVO--The-Vim-Outliner'
 Bundle 'tpope/vim-fugitive'
 Bundle 'Lokaltog/vim-easymotion'
 
-"Abrvs and maps
-cnorea Q :q<CR>
-cnorea mks :wa<CR>:mksession! ~/.vim/.session<CR>
-cnorea lds :source ~/.vim/.session<CR>
-cnorea heb setlocal rightleft \| setlocal rightleftcmd \| setlocal keymap=hebrew
-cnorea noheb setlocal norightleft \| setlocal rightleftcmd= \| setlocal keymap=
-cnorea lowtag %s/<\/\?\u\+/\L&/g
-cnorea clstag source ~/.vim/scripts/closetag.vim
+Bundle 'jQuery'
+Bundle 'molokai'
 
-noremap Y y$
-noremap <Space> <PageDown>
-noremap <Leader>s :setlocal spell!<CR>
-noremap <expr> <Leader>d 0 == &scrolloff ? ':setlocal scrolloff=999<CR>' : ':setlocal scrolloff=0<CR>'
-noremap <expr> <Leader>h "hebrew" == &keymap ? ':setlocal norightleft \| setlocal rightleftcmd= \| setlocal keymap=<CR>' : ':setlocal rightleft \| setlocal rightleftcmd \| setlocal keymap=hebrew<CR>'
+"Maps and abrvs
+nnoremap Y y$
+nnoremap <Space> <PageDown>
+nnoremap <S-Space> <PageUp>
+nnoremap <Leader>s :setlocal spell!<CR>
+nnoremap <expr> <Leader>d 0 == &scrolloff ? ':setlocal scrolloff=999<CR>' : ':setlocal scrolloff=0<CR>'
+nnoremap <expr> <Leader>h "hebrew" == &keymap ? ':setlocal norightleft \| setlocal rightleftcmd= \| setlocal keymap=<CR>' : ':setlocal rightleft \| setlocal rightleftcmd \| setlocal keymap=hebrew<CR>'
 
-noremap <Up> gk
-noremap <Down> gj
-noremap <kPlus> :cn<CR>
-noremap <kMinus> :cp<CR>
-noremap <F5> :w<CR>:! ./%<CR>
-noremap <F4> :NERDTreeToggle<CR>
-noremap <F3> :execute 'vimgrep /'.@/.'/g *'<CR>:copen<CR>
-noremap <F2> :FufCoverageFile<CR>
+nnoremap <Up> gk
+nnoremap <Down> gj
+nnoremap <kPlus> :cn<CR>
+nnoremap <kMinus> :cp<CR>
+nnoremap <F5> :w<CR>:! ./%<CR>
+nnoremap <F4> :FufBuffer<CR>
+nnoremap <F3> :execute 'vimgrep /'.@/.'/g *'<CR>:copen<CR>
+nnoremap <F2> :FufCoverageFile<CR>
 
 inoremap <Up> <C-o>gk
 inoremap <Down> <C-o>gj
@@ -116,6 +118,16 @@ vnoremap <Left> <gv
 vnoremap . :normal .<CR>
 vnoremap ` :normal @a<CR>
 
+cnoremap <C-p> <Up>
+cnoremap <C-n> <Down>
+
+cnorea Q :q<CR>
+cnorea mks :wa<CR>:mksession! ~/.vim/.session<CR>
+cnorea lds :source ~/.vim/.session<CR>
+cnorea heb setlocal rightleft \| setlocal rightleftcmd \| setlocal keymap=hebrew
+cnorea noheb setlocal norightleft \| setlocal rightleftcmd= \| setlocal keymap=
+cnorea lowtag %s/<\/\?\u\+/\L&/g
+
 if has("autocmd")
     au!
     filetype plugin indent on
@@ -125,6 +137,7 @@ if has("autocmd")
 "    au FileType python inoremap <F5> <Esc>:w<CR>:! ipython -noconfirm_exit %<CR>
 
     au BufRead,BufNewFile *.js set ft=javascript.jquery
+    au BufRead,BufNewFile *.htm* set ft=xml
     au BufRead,BufNewFile ~/work/heb/* set rightleft | set rightleftcmd | set keymap=hebrew | inoremap -- ־| inoremap --- –
 
     " Open other filetypes in RO
