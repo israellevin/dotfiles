@@ -56,7 +56,6 @@ let g:notmuch_folders = [
         \ [ 'unread', 'tag:unread and not folder:spam' ],
         \ ]
 
-
 set runtimepath+=~/.vim/bundle/vundle/
 call vundle#rc()
 Bundle 'gmarik/vundle'
@@ -69,6 +68,7 @@ let g:SuperTabLongestHighlight=1
 
 Bundle 'YankRing.vim'
 let g:yankring_history_dir = '$VIM'
+let g:yankring_zap_keys = 'f F t T / ?'
 function! YRRunAfterMaps()
     nnoremap Y   :<C-U>YRYankCount 'y$'<CR>
 endfunction
@@ -80,7 +80,7 @@ Bundle 'L9'
 Bundle 'FuzzyFinder'
 Bundle 'Gundo'
 Bundle 'thinca/vim-visualstar'
-Bundle 'TVO--The-Vim-Outliner'
+Bundle 'vim-orgmode'
 Bundle 'tpope/vim-fugitive'
 Bundle 'Lokaltog/vim-easymotion'
 
@@ -91,6 +91,7 @@ Bundle 'molokai'
 nnoremap Y y$
 nnoremap <Space> <PageDown>
 nnoremap <S-Space> <PageUp>
+nnoremap <CR> :nohlsearch<CR>
 nnoremap <Leader>s :setlocal spell!<CR>
 nnoremap <expr> <Leader>d 0 == &scrolloff ? ':setlocal scrolloff=999<CR>' : ':setlocal scrolloff=0<CR>'
 nnoremap <expr> <Leader>h "hebrew" == &keymap ? ':setlocal norightleft \| setlocal rightleftcmd= \| setlocal keymap=<CR>' : ':setlocal rightleft \| setlocal rightleftcmd \| setlocal keymap=hebrew<CR>'
@@ -132,15 +133,14 @@ if has("autocmd")
     au!
     filetype plugin indent on
     set ofu=syntaxcomplete#Complete
-
-"    au FileType python noremap <F5> :w<CR>:! ipython -noconfirm_exit %<CR>
-"    au FileType python inoremap <F5> <Esc>:w<CR>:! ipython -noconfirm_exit %<CR>
+    au BufWrite * mkview
+    au BufRead * loadview
 
     au BufRead,BufNewFile *.js set ft=javascript.jquery
     au BufRead,BufNewFile *.htm* set ft=xml
     au BufRead,BufNewFile ~/work/heb/* set rightleft | set rightleftcmd | set keymap=hebrew | inoremap -- ־| inoremap --- –
 
-    " Open other filetypes in RO
+    " Convert certain filetypes and open in read only
     au BufReadPre *.doc silent set ro
     au BufReadPost *.doc silent %!antiword "%"
     au BufReadPre *.odt,*.odp silent set ro
@@ -173,21 +173,15 @@ syntax enable
 if '' == $DISPLAY
     set t_Co=16
     colorscheme elflord
-    set cursorline
-    set cursorcolumn
-    hi clear CursorLine
-    hi clear CursorColumn
-    hi CursorLine ctermbg=yellow
-    hi CursorColumn ctermbg=yellow
     hi SpellBad ctermbg=red ctermfg=black
 else
     set t_Co=256
     colorscheme molokai
-    set cursorline
-    set cursorcolumn
     hi SpellBad cterm=underline ctermfg=red ctermbg=black
 endif
 
+set cursorline
+set cursorcolumn
 hi ExtraWhitespace ctermbg=1
 match ExtraWhitespace /\s\+$/
 match ExtraWhitespace /\s\+$\| \+\ze\t/
