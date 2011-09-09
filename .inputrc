@@ -2,11 +2,6 @@ set completion-ignore-case on
 set show-all-if-ambiguous on
 set match-hidden-files off
 set visible-stats on
-"\eOA": history-search-backward
-"\e[A": history-search-backward
-"\eOB": history-search-forward
-"\e[B": history-search-forward
-"\eOC": forward-char
-"\e[C": forward-char
-"\eOD": backward-char
-"\e[D": backward-char
+" ": magic-space
+C-p: history-search-backward
+C-n: history-search-forward
