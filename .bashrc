@@ -107,7 +107,6 @@ fi
 if [ -f /etc/bash_completion ]
 then
 	source /etc/bash_completion
-    set completion-ignore-case on
 fi
 
 # Aliases and functions
