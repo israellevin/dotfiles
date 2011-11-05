@@ -3,7 +3,7 @@
 # Don't do shit if not connected to a terminal
 [ -t 0 ] || return
 
-# Multiplexing
+# Multiplex
 [ ! "$TMUX" ] && tmux new-session && [ ! -e /tmp/dontquit ] && exit 0
 
 # Steal all tmux windows into current session
@@ -50,13 +50,17 @@ export HISTTIMEFORMAT='%F %T '
 export HISTIGNORE='&:exit'
 export PROMPT_COMMAND='history -a; history -n'
 
-# Directory traversing
-#export CDPATH='.:~'
+# Directory traversing and file management
+export PATH="~/bin:$PATH"
+export CDPATH='.:~'
 cd() { if [ -z "$1" ]; then pushd ~; else pushd "$1"; fi; }
 ..() { if [ $1 -ge 0 2> /dev/null ]; then x=$1; else x=1; fi; for (( i = 0; i < $x; i++ )); do cd ..; done; }
 mkcd() { mkdir -p "$*"; cd "$*"; }
 alias b='popd'
 alias m='~/bin/mntnir.sh'
+alias d='trash'
+alias dud='du --max-depth=1 -h | sort -h'
+source ~/bin/autojump.bash
 
 # ls
 export LS_OPTIONS='-lh'
@@ -74,47 +78,6 @@ alias fgg='find | xgrep'
 alias hgg='history | xgrep'
 alias pg='ps -ef | xgrep'
 skill() { kill $(pg $@ | head -n 1 | cut -d ' ' -f 2); }
-
-# Prompt
-if [ -z "$debian_chroot" ] && [ -r /etc/debian_chroot ]; then
-    debian_chroot=$(cat /etc/debian_chroot)
-fi
-function parse_git_branch {
-  git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/(\1)/'
-}
-PS1='u@\h:\w\$ '
-export PS1='\n\d \t\n\u@${debian_chroot:+($debian_chroot)} \h (\!)\n\w$(parse_git_branch)\$ '
-
-# Colors
-#if [ ':0' == ${DISPLAY:0:2} ]; then
-#if [ "$COLORTERM" ]; then
-if [ 1 ]; then
-    alias cgrep="grep $GREP_OPTIONS --color=always"
-    alias crgrep="rgrep $GREP_OPTIONS --color=always"
-    alias cls="ls $LS_OPTIONS --color=always"
-    eval "`dircolors`"
-    export PS1='\n\e[31;40m\d \t\e[0m\n\e[32;40m\u@\h (\!)\e[0m\n\w$(parse_git_branch)\$ '
-    export LS_OPTIONS="$LS_OPTIONS --color=auto"
-    export GREP_OPTIONS="$GREP_OPTIONS --color=auto"
-    export LESS='-MR'
-    export LESS_TERMCAP_us=$'\e[32m'
-    export LESS_TERMCAP_ue=$'\e[0m'
-    export LESS_TERMCAP_md=$'\e[1;31m'
-    export LESS_TERMCAP_me=$'\e[0m'
-fi
-
-# Completion
-if [ -f /etc/bash_completion ]
-then
-	source /etc/bash_completion
-fi
-
-# Aliases and functions
-alias d='trash'
-alias dud='du --max-depth=1 -h | sort -h'
-alias sc='screen -RAad'
-alias startx='TMUX="" startx &'
-log() { $@ 2>&1 | tee log.txt; }
 
 # vim
 v() { if [ -z $1 ]; then vim -c "normal '0"; else vim -p *$1*; fi }
@@ -144,6 +107,39 @@ gc() {
 wg() { w3m -dump "http://google.com/search?q=$*" | less ;}
 ww() { w3m -dump "http://en.wikipedia.org/w/index.php?title=Special:Search&search=$*&go=Go" | less ;}
 wd() { w3m -dump "http://dictionary.reference.com/browse/$*" | less ;}
+
+# Prompt
+if [ -z "$debian_chroot" ] && [ -r /etc/debian_chroot ]; then
+    debian_chroot=$(cat /etc/debian_chroot)
+fi
+function parse_git_branch {
+  git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/(\1)/'
+}
+PS1='u@\h:\w\$ '
+export PS1='\n\d \t\n\u@${debian_chroot:+($debian_chroot)} \h (\!)\n\w$(parse_git_branch)\$ '
+
+# Colors
+#if [ ':0' == ${DISPLAY:0:2} ]; then
+#if [ "$COLORTERM" ]; then
+if [ 1 ]; then
+    alias cgrep="grep $GREP_OPTIONS --color=always"
+    alias crgrep="rgrep $GREP_OPTIONS --color=always"
+    alias cls="ls $LS_OPTIONS --color=always"
+    eval "`dircolors`"
+    export PS1='\n\e[31;40m\d \t\e[0m\n\e[32;40m\u@\h (\!)\e[0m\n\w$(parse_git_branch)\$ '
+    export LS_OPTIONS="$LS_OPTIONS --color=auto"
+    export GREP_OPTIONS="$GREP_OPTIONS --color=auto"
+    export LESS='-MR'
+    export LESS_TERMCAP_us=$'\e[32m'
+    export LESS_TERMCAP_ue=$'\e[0m'
+    export LESS_TERMCAP_md=$'\e[1;31m'
+    export LESS_TERMCAP_me=$'\e[0m'
+fi
+
+# General aliases and functions
+alias startx='TMUX="" startx &'
+alias dmenu='dmenu -i -l 20 -nb black -nf green -sb green -sf black -fn -*-terminus-*-*-*-*-24-*-*-*-*-*-*-*'
+log() { $@ 2>&1 | tee log.txt; }
 
 define() {
     local ret
@@ -234,9 +230,6 @@ _thesaurus(){
     return 0
 } && complete -F _thesaurus thesaurus
 
-# Autojump
-source /etc/profile.d/autojump.bash
-
 # Print some lines
 echo
 echo
@@ -254,3 +247,4 @@ echo
 echo
 echo
 lt --group-directories-first
+source /etc/bash_completion

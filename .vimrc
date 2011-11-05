@@ -56,6 +56,7 @@ let g:notmuch_folders = [
         \ [ 'unread', 'tag:unread and not folder:spam' ],
         \ ]
 
+" Remember to git clone http://github.com/gmarik/vundle
 set runtimepath+=~/.vim/bundle/vundle/
 call vundle#rc()
 Bundle 'gmarik/vundle'
@@ -67,23 +68,32 @@ let g:SuperTabLongestEnhanced=1
 let g:SuperTabLongestHighlight=1
 
 Bundle 'YankRing.vim'
+nnoremap <Leader>yd :YRMapsDelete<CR>
+nnoremap <Leader>yc :YRMapsCreatMapsCreate<CR>
 let g:yankring_history_dir = '$VIM'
-let g:yankring_zap_keys = 'f F t T / ?'
+"let g:yankring_zap_keys = 'f F t T / ?'
 function! YRRunAfterMaps()
     nnoremap Y   :<C-U>YRYankCount 'y$'<CR>
 endfunction
 
+Bundle 'vim-orgmode'
+nmap <Leader><CR> <Plug>OrgNewHeadingBelowNormal
+nmap <Leader><BS> <Plug>OrgNewHeadingBelowAfterChildrenNormal
+nmap <Leader><Up> <Plug>OrgNewHeadingAboveNormal
+
 Bundle 'xmledit'
 let xml_use_xhtml = 1
 
-Bundle 'L9'
-Bundle 'FuzzyFinder'
+Bundle 'ctrlp.vim'
+let g:ctrlp_map = '<m-p>'
+
 Bundle 'Gundo'
 Bundle 'thinca/vim-visualstar'
 Bundle 'vim-orgmode'
 Bundle 'tpope/vim-fugitive'
 Bundle 'Lokaltog/vim-easymotion'
 
+Bundle 'rainbow_parentheses.vim'
 Bundle 'jQuery'
 Bundle 'molokai'
 
@@ -101,18 +111,18 @@ nnoremap <Down> gj
 nnoremap <kPlus> :cn<CR>
 nnoremap <kMinus> :cp<CR>
 nnoremap <F5> :w<CR>:! ./%<CR>
-nnoremap <F4> :FufBuffer<CR>
+nnoremap <F4> :CtrlPBuffer<CR>
 nnoremap <F3> :execute 'vimgrep /'.@/.'/g *'<CR>:copen<CR>
-nnoremap <F2> :FufCoverageFile<CR>
+nnoremap <F2> :CtrlP<CR>
 
 inoremap <Up> <C-o>gk
 inoremap <Down> <C-o>gj
 inoremap <kPlus> <Esc>:cn<CR>i
 inoremap <kMinus> <Esc>:cp<CR>i
 inoremap <F5> <Esc>:w<CR>:! ./%<CR>
-inoremap <F4> <Esc>:NERDTreeToggle<CR>
+inoremap <F4> <Esc>:CtrlPBuffer<CR>
 inoremap <F3> <Esc>:execute 'vimgrep /'.@/.'/g *'<CR>:copen<CR>
-inoremap <F2> <Esc>:FufCoverageFile<CR>
+inoremap <F2> <Esc>:CtrlP<CR>
 
 vnoremap <Right> >gv
 vnoremap <Left> <gv
@@ -122,9 +132,9 @@ vnoremap ` :normal @a<CR>
 cnoremap <C-p> <Up>
 cnoremap <C-n> <Down>
 
-cnorea Q :q<CR>
-cnorea mks :wa<CR>:mksession! ~/.vim/.session<CR>
-cnorea lds :source ~/.vim/.session<CR>
+cnorea Q q<CR>
+cnorea mks wa<CR>:mksession! ~/.vim/.session<CR>
+cnorea lds source ~/.vim/.session<CR>
 cnorea heb setlocal rightleft \| setlocal rightleftcmd \| setlocal keymap=hebrew
 cnorea noheb setlocal norightleft \| setlocal rightleftcmd= \| setlocal keymap=
 cnorea lowtag %s/<\/\?\u\+/\L&/g
@@ -133,8 +143,8 @@ if has("autocmd")
     au!
     filetype plugin indent on
     set ofu=syntaxcomplete#Complete
-    au BufWrite * mkview
-    au BufRead * loadview
+    au BufWinLeave * mkview
+    au BufWinEnter * silent! loadview
 
     au BufRead,BufNewFile *.js set ft=javascript.jquery
     au BufRead,BufNewFile *.htm* set ft=xml
