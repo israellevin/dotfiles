@@ -16,6 +16,7 @@ set smarttab
 set expandtab
 set autoindent
 set smartindent
+set shiftround
 set shiftwidth=4
 set softtabstop=4
 set tabstop=4
@@ -30,6 +31,7 @@ set ruler
 set showcmd
 set showmode
 set shortmess=aTW
+set laststatus=1
 set t_ti= t_te=
 set mouse=a
 
@@ -71,7 +73,6 @@ Bundle 'YankRing.vim'
 nnoremap <Leader>yd :YRMapsDelete<CR>
 nnoremap <Leader>yc :YRMapsCreatMapsCreate<CR>
 let g:yankring_history_dir = '$VIM'
-"let g:yankring_zap_keys = 'f F t T / ?'
 function! YRRunAfterMaps()
     nnoremap Y   :<C-U>YRYankCount 'y$'<CR>
 endfunction
@@ -85,7 +86,7 @@ Bundle 'xmledit'
 let xml_use_xhtml = 1
 
 Bundle 'ctrlp.vim'
-let g:ctrlp_map = '<m-p>'
+let g:ctrlp_map = '<F10>'
 
 Bundle 'Gundo'
 Bundle 'thinca/vim-visualstar'
@@ -93,6 +94,7 @@ Bundle 'vim-orgmode'
 Bundle 'tpope/vim-fugitive'
 Bundle 'Lokaltog/vim-easymotion'
 
+Bundle 'gregsexton/MatchTag.git'
 Bundle 'rainbow_parentheses.vim'
 Bundle 'jQuery'
 Bundle 'molokai'
@@ -101,7 +103,7 @@ Bundle 'molokai'
 nnoremap Y y$
 nnoremap <Space> <PageDown>
 nnoremap <S-Space> <PageUp>
-nnoremap <CR> :nohlsearch<CR>
+nnoremap <CR> :nohlsearch<CR><CR>
 nnoremap <Leader>s :setlocal spell!<CR>
 nnoremap <expr> <Leader>d 0 == &scrolloff ? ':setlocal scrolloff=999<CR>' : ':setlocal scrolloff=0<CR>'
 nnoremap <expr> <Leader>h "hebrew" == &keymap ? ':setlocal norightleft \| setlocal rightleftcmd= \| setlocal keymap=<CR>' : ':setlocal rightleft \| setlocal rightleftcmd \| setlocal keymap=hebrew<CR>'
@@ -111,18 +113,18 @@ nnoremap <Down> gj
 nnoremap <kPlus> :cn<CR>
 nnoremap <kMinus> :cp<CR>
 nnoremap <F5> :w<CR>:! ./%<CR>
-nnoremap <F4> :CtrlPBuffer<CR>
+nnoremap <F4> :b#<CR>
 nnoremap <F3> :execute 'vimgrep /'.@/.'/g *'<CR>:copen<CR>
-nnoremap <F2> :CtrlP<CR>
+nnoremap <F2> :CtrlPBuffer<CR>
 
 inoremap <Up> <C-o>gk
 inoremap <Down> <C-o>gj
 inoremap <kPlus> <Esc>:cn<CR>i
 inoremap <kMinus> <Esc>:cp<CR>i
 inoremap <F5> <Esc>:w<CR>:! ./%<CR>
-inoremap <F4> <Esc>:CtrlPBuffer<CR>
+inoremap <F4> <Esc>:b#<CR>
 inoremap <F3> <Esc>:execute 'vimgrep /'.@/.'/g *'<CR>:copen<CR>
-inoremap <F2> <Esc>:CtrlP<CR>
+inoremap <F2> <Esc>:CtrlPBuffer<CR>
 
 vnoremap <Right> >gv
 vnoremap <Left> <gv
