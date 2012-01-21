@@ -5,7 +5,9 @@ set show-all-if-unmodified on
 set page-completions off
 set visible-stats on
 set completion-prefix-display-length 2
+$if Bash
 " ": magic-space
+$endif
 C-p: history-search-backward
 C-n: history-search-forward
 "\e[A": history-search-backward

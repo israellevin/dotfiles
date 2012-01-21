@@ -105,7 +105,7 @@ nnoremap <Space> <PageDown>
 nnoremap <S-Space> <PageUp>
 nnoremap <CR> :nohlsearch<CR><CR>
 nnoremap <Leader>s :setlocal spell!<CR>
-nnoremap <expr> <Leader>d 0 == &scrolloff ? ':setlocal scrolloff=999<CR>' : ':setlocal scrolloff=0<CR>'
+nnoremap <expr> <Leader>z 0 == &scrolloff ? ':setlocal scrolloff=999<CR>' : ':setlocal scrolloff=0<CR>'
 nnoremap <expr> <Leader>h "hebrew" == &keymap ? ':setlocal norightleft \| setlocal rightleftcmd= \| setlocal keymap=<CR>' : ':setlocal rightleft \| setlocal rightleftcmd \| setlocal keymap=hebrew<CR>'
 
 nnoremap <Up> gk
