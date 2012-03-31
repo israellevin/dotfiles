@@ -6,11 +6,13 @@ set writebackup
 set backupdir=~/.vim/backups
 set undofile
 set undodir=~/.vim/undo
+set path+=.*
 
 set hidden
 set autoread
 set autochdir
 set tabpagemax=32
+set switchbuf=usetab
 
 set smarttab
 set expandtab
@@ -41,33 +43,16 @@ set ignorecase
 set smartcase
 
 set wildmenu
-set wildmode=longest:full,full
+set wildmode=list:longest,full
 set completeopt=longest,menuone,preview
 
 "Plugins
 filetype off
 
-set runtimepath+=/usr/share/vim/addons/
-let g:notmuch_initial_search_words = [ 'folder:INBOX and tag:unread' ]
-let s:notmuch_signature_defaults = [ ]
-let g:notmuch_folders = [
-        \ [ 'new', 'tag:unread and folder:INBOX' ],
-        \ [ 'important', 'tag:flagged and folder:INBOX' ],
-        \ [ 'starred', 'tag:flagged' ],
-        \ [ 'inbox', 'folder:INBOX' ],
-        \ [ 'unread', 'tag:unread and not folder:spam' ],
-        \ ]
-
 " Remember to git clone http://github.com/gmarik/vundle
 set runtimepath+=~/.vim/bundle/vundle/
 call vundle#rc()
 Bundle 'gmarik/vundle'
-
-Bundle 'ervandew/supertab'
-let g:SuperTabDefaultCompletionType="context"
-let g:SuperTabContextDefaultCompletionType="<c-x><c-p>"
-let g:SuperTabLongestEnhanced=1
-let g:SuperTabLongestHighlight=1
 
 Bundle 'YankRing.vim'
 nnoremap <Leader>yd :YRMapsDelete<CR>
@@ -77,42 +62,38 @@ function! YRRunAfterMaps()
     nnoremap Y   :<C-U>YRYankCount 'y$'<CR>
 endfunction
 
-Bundle 'vim-orgmode'
-nmap <Leader><CR> <Plug>OrgNewHeadingBelowNormal
-nmap <Leader><BS> <Plug>OrgNewHeadingBelowAfterChildrenNormal
-nmap <Leader><Up> <Plug>OrgNewHeadingAboveNormal
-
-Bundle 'xmledit'
-let xml_use_xhtml = 1
-
 Bundle 'ctrlp.vim'
 let g:ctrlp_map = '<F10>'
 
+Bundle 'Screen-vim---gnu-screentmux'
+let g:ScreenImpl = 'Tmux'
+let g:ScreenShellTerminal = 'urxvtcd'
+
 Bundle 'Gundo'
-Bundle 'thinca/vim-visualstar'
-Bundle 'vim-orgmode'
-Bundle 'tpope/vim-fugitive'
-Bundle 'Lokaltog/vim-easymotion'
+Bundle 'fugitive.vim'
+Bundle 'fuzzee.vim'
+Bundle 'EasyMotion'
 
-Bundle 'gregsexton/MatchTag.git'
 Bundle 'rainbow_parentheses.vim'
-Bundle 'jQuery'
-Bundle 'molokai'
+Bundle 'jellybeans.vim'
 
-"Maps and abrvs
+"Maps, abrvs, commands
 nnoremap Y y$
 nnoremap <Space> <PageDown>
 nnoremap <S-Space> <PageUp>
 nnoremap <CR> :nohlsearch<CR><CR>
+nnoremap gf :e <cfile><CR>
+nnoremap <Leader>gf :split <cfile><CR>
 nnoremap <Leader>s :setlocal spell!<CR>
+nnoremap <expr> <Leader>h "hebrew" == &keymap ? ':Noheb<CR>' : ':Heb<CR>'
+nnoremap <expr> <Leader>n &nu == &rnu ? ':setlocal nu!<CR>' : ':setlocal rnu!<CR>'
 nnoremap <expr> <Leader>z 0 == &scrolloff ? ':setlocal scrolloff=999<CR>' : ':setlocal scrolloff=0<CR>'
-nnoremap <expr> <Leader>h "hebrew" == &keymap ? ':setlocal norightleft \| setlocal rightleftcmd= \| setlocal keymap=<CR>' : ':setlocal rightleft \| setlocal rightleftcmd \| setlocal keymap=hebrew<CR>'
 
 nnoremap <Up> gk
 nnoremap <Down> gj
 nnoremap <kPlus> :cn<CR>
 nnoremap <kMinus> :cp<CR>
-nnoremap <F5> :w<CR>:! ./%<CR>
+nnoremap <F5> :w<CR>:! <C-r>=expand("%:p")<CR><CR>
 nnoremap <F4> :b#<CR>
 nnoremap <F3> :execute 'vimgrep /'.@/.'/g *'<CR>:copen<CR>
 nnoremap <F2> :CtrlPBuffer<CR>
@@ -121,7 +102,7 @@ inoremap <Up> <C-o>gk
 inoremap <Down> <C-o>gj
 inoremap <kPlus> <Esc>:cn<CR>i
 inoremap <kMinus> <Esc>:cp<CR>i
-inoremap <F5> <Esc>:w<CR>:! ./%<CR>
+inoremap <F5> <Esc>:w<CR>:! <C-r>=expand("%:p")<CR><CR>
 inoremap <F4> <Esc>:b#<CR>
 inoremap <F3> <Esc>:execute 'vimgrep /'.@/.'/g *'<CR>:copen<CR>
 inoremap <F2> <Esc>:CtrlPBuffer<CR>
@@ -133,24 +114,25 @@ vnoremap ` :normal @a<CR>
 
 cnoremap <C-p> <Up>
 cnoremap <C-n> <Down>
+cnoremap %% <C-r>=expand("%:p:h") . '/' <CR>
 
-cnorea Q q<CR>
-cnorea mks wa<CR>:mksession! ~/.vim/.session<CR>
-cnorea lds source ~/.vim/.session<CR>
-cnorea heb setlocal rightleft \| setlocal rightleftcmd \| setlocal keymap=hebrew
-cnorea noheb setlocal norightleft \| setlocal rightleftcmd= \| setlocal keymap=
-cnorea lowtag %s/<\/\?\u\+/\L&/g
+command! Q q
+command! Mks wa | mksession! ~/.vim/.session
+command! Lds source ~/.vim/.session
+command! Heb setlocal rightleft | setlocal rightleftcmd | setlocal keymap=hebrew | inoremap -- ־| inoremap --- –
+command! Noheb setlocal norightleft | setlocal rightleftcmd= | setlocal keymap=
+command! Lowtag %s/<\/\?\u\+/\L&/g
 
 if has("autocmd")
     au!
     filetype plugin indent on
-    set ofu=syntaxcomplete#Complete
-    au BufWinLeave * mkview
-    au BufWinEnter * silent! loadview
+    set omnifunc=syntaxcomplete#Complete
 
-    au BufRead,BufNewFile *.js set ft=javascript.jquery
-    au BufRead,BufNewFile *.htm* set ft=xml
-    au BufRead,BufNewFile ~/work/heb/* set rightleft | set rightleftcmd | set keymap=hebrew | inoremap -- ־| inoremap --- –
+    " Return to last position
+    au BufReadPost * normal `"
+
+    " Hebrew
+    au BufRead,BufNewFile ~/bildad/* Heb
 
     " Convert certain filetypes and open in read only
     au BufReadPre *.doc silent set ro
@@ -164,13 +146,17 @@ if has("autocmd")
     au BufReadPre *.rtf silent set ro
     au BufReadPost *.rtf silent %!unrtf --text "%"
 
-    " Wrap diffs
+    " Diff view
     au FilterWritePre * if &diff | windo set wrap | windo set virtualedit=all
 
     " Equal size windows upon resize
     au VimResized * wincmd =
 
-    " Source vimrc written
+    " cursor line and column for focused windows only
+    au WinEnter * setlocal cursorline | setlocal cursorcolumn
+    au WinLeave * setlocal nocursorline | setlocal nocursorcolumn
+
+    " Source vimrc when written
     au! BufWritePost $MYVIMRC source $MYVIMRC
 
     " Chmod +x shabanged files on save
@@ -184,12 +170,13 @@ syntax enable
 
 if '' == $DISPLAY
     set t_Co=16
-    colorscheme elflord
-    hi SpellBad ctermbg=red ctermfg=black
+    colorscheme desert
 else
     set t_Co=256
-    colorscheme molokai
-    hi SpellBad cterm=underline ctermfg=red ctermbg=black
+    colorscheme jellybeans
+    hi CursorLine ctermbg=234
+    hi CursorColumn ctermbg=234
+    hi Todo cterm=bold ctermfg=231 ctermbg=1
 endif
 
 set cursorline

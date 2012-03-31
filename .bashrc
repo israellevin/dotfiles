@@ -50,24 +50,43 @@ export HISTTIMEFORMAT='%F %T '
 export HISTIGNORE='&:exit'
 export PROMPT_COMMAND='history -a; history -n'
 
+# Prompt
+if [ -z "$debian_chroot" ] && [ -r /etc/debian_chroot ]; then
+    debian_chroot=$(cat /etc/debian_chroot)
+fi
+function parse_git_branch {
+  git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/(\1)/'
+}
+#PS1='u@\h:\w\$ '
+#PS1='\n\d \t\n\u@${debian_chroot:+($debian_chroot)} \h (\!)\n\w$(parse_git_branch)\$ '
+export PS1='\n\e[31;40m\d \t\e[0m\n\e[32;40m\u@\h (\!)\e[0m\n\w$(parse_git_branch)\$ '
+
+# Colors
+eval "`dircolors`"
+export LESS='-MR'
+export LESS_TERMCAP_us=$'\e[32m'
+export LESS_TERMCAP_ue=$'\e[0m'
+export LESS_TERMCAP_md=$'\e[1;31m'
+export LESS_TERMCAP_me=$'\e[0m'
+
 # Directory traversing and file management
-export PATH="~/bin:$PATH"
+#export PATH="~/bin:$PATH"
 #export CDPATH='.:~'
-cd() { [ -z "$1" ] && set -- ~; [ "$(pwd)" != "$(readlink -f "$1")" ] && pushd "$1";}
+cd() { [ -z "$1" ] && set -- ~; [ "$(pwd)" != "$(readlink -f "$1")" ] && pushd "$1"; }
 ..() { if [ $1 -ge 0 2> /dev/null ]; then x=$1; else x=1; fi; for (( i = 0; i < $x; i++ )); do cd ..; done; }
 mkcd() { mkdir -p "$*"; cd "$*"; }
 alias b='popd'
-alias m='~/bin/mntnir.sh'
+alias m='mntnir.sh'
 alias d='trash'
 alias dud='du --max-depth=1 -h | sort -h'
-export _F_IGNORE=(_f f echo)
-source ~/f/f.sh
-alias j='f -d -e cd'
+source ~/fasd/fasd
+eval "$(fasd --init auto)"
+alias j='fasd_cd -d'
 
 # Completion
-_f_bash_hook_cmd_complete j vv mm
 source /etc/bash_completion
 complete -W "$(echo $(grep '^ssh ' .bash_history | sort -u | sed 's/^ssh //'))" ssh
+_fasd_bash_hook_cmd_complete j vv mm
 define() {
     local ret
     local lines=0
@@ -147,16 +166,16 @@ _define(){
 complete -F _define define
 
 # ls
-export LS_OPTIONS='-lh'
-alias l='ls $LS_OPTIONS'
-alias ll='ls $LS_OPTIONS -A'
-alias lt='ls $LS_OPTIONS -tr'
-alias ld='ls $LS_OPTIONS -A -d */'
-alias lss='ls $LS_OPTIONS -Sr'
+export LS_OPTIONS='-lh --color=auto'
+alias l="ls $LS_OPTIONS"
+alias ll="ls $LS_OPTIONS -A"
+alias lt="ls $LS_OPTIONS -tr"
+alias ld="ls $LS_OPTIONS -A -d */"
+alias lss="ls $LS_OPTIONS -Sr"
 
 # grep
-export GREP_OPTIONS='-i'
-alias xgrep='~/bin/xgrep.sh'
+export GREP_OPTIONS='-i --color=auto'
+alias xgrep='grep'
 alias lg='ll | xgrep'
 alias fgg='find | xgrep'
 alias hgg='history | xgrep'
@@ -166,65 +185,34 @@ skill() { kill $(pg $@ | head -n 1 | cut -d ' ' -f 2); }
 # vim
 v() { if [ -z $1 ]; then vim -c "normal '0"; else vim -p *$1*; fi }
 vg() { vim -p $(grep -l "$*" *); }
-alias vv='f -e vim'
+alias vv='fasd -e vim'
 alias vf='find && vim -c "CtrlP"'
 alias vs='vim -c "set spell | set buftype=nofile"'
-alias les='/usr/share/vim/vimcurrent/macros/less.sh'
 
 # Media
 alias d0='DISPLAY=":0.0"'
 alias d1='DISPLAY="localhost:10.0"'
-alias mm='f -e DISPLAY=":0.0" mplayer -vo vdpau -fs -zoom'
-alias mp='DISPLAY=":0.0" mplayer -vo vdpau -fs -zoom'
-alias mpl='DISPLAY=":0.0" mplayer -vo vdpau -fs -zoom -lavdopts lowres=1:fast:skiploopfilter=all'
-alias mpy='DISPLAY=":0.0" mplayer -vo vdpau -fs -zoom -vf yadif'
+alias mm='fasd -e mplayer'
+alias mp='mplayer'
+alias mpl='mplayer -lavdopts lowres=1:fast:skiploopfilter=all'
+alias mpy='mplayer -vf yadif'
 alias feh='feh -ZF'
 alias webcam='mplayer tv:// -tv device=/dev/video0'
-mplen() { gc `mplayer -vo dummy -ao dummy -identify "$1" 2>/dev/null | grep ID_LENGTH | cut -c 11-` seconds in minutes; }
+mplen() { wf `mplayer -vo dummy -ao dummy -identify "$1" 2>/dev/null | grep ID_LENGTH | cut -c 11-` seconds to minutes; }
 
 # Web
 alias webshare='python -c "import SimpleHTTPServer;SimpleHTTPServer.test()"'
 alias wclip='curl -F "sprunge=<-" http://sprunge.us | xclip -f'
 wclipfile() { curl -F "sprunge=@$1" http://sprunge.us | xclip -f; }
-gc() {
-    q=$(perl -MURI::Escape -e "print uri_escape(\"$*\");")
-    a=$(curl -A 'mozilla/4.0' "http://www.google.com/search?q=$q" | grep 'class=r')
-    echo; echo "$a" | perl -pe 's/.*<h2 class=r.*?<b>(.*?)<\/b>.*/\1/;' ;}
-wg() { w3m "http://google.com/search?q=$*" ;}
-ww() { w3m "http://en.wikipedia.org/w/index.php?title=Special:Search&search=$*&go=Go" ;}
-wd() { w3m "http://dictionary.reference.com/browse/$*" ;}
-
-# Prompt
-if [ -z "$debian_chroot" ] && [ -r /etc/debian_chroot ]; then
-    debian_chroot=$(cat /etc/debian_chroot)
-fi
-function parse_git_branch {
-  git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/(\1)/'
-}
-PS1='u@\h:\w\$ '
-export PS1='\n\d \t\n\u@${debian_chroot:+($debian_chroot)} \h (\!)\n\w$(parse_git_branch)\$ '
-
-# Colors
-#if [ ':0' == ${DISPLAY:0:2} ]; then
-#if [ "$COLORTERM" ]; then
-if [ 1 ]; then
-    alias cgrep="grep $GREP_OPTIONS --color=always"
-    alias crgrep="rgrep $GREP_OPTIONS --color=always"
-    alias cls="ls $LS_OPTIONS --color=always"
-    eval "`dircolors`"
-    export PS1='\n\e[31;40m\d \t\e[0m\n\e[32;40m\u@\h (\!)\e[0m\n\w$(parse_git_branch)\$ '
-    export LS_OPTIONS="$LS_OPTIONS --color=auto"
-    export GREP_OPTIONS="$GREP_OPTIONS --color=auto"
-    export LESS='-MR'
-    export LESS_TERMCAP_us=$'\e[32m'
-    export LESS_TERMCAP_ue=$'\e[0m'
-    export LESS_TERMCAP_md=$'\e[1;31m'
-    export LESS_TERMCAP_me=$'\e[0m'
-fi
+wg() { w3m "http://google.com/search?q=$*"; }
+ww() { w3m "http://en.wikipedia.org/w/index.php?title=Special:Search&search=$*&go=Go"; }
+wd() { w3m -dump "http://dictionary.reference.com/browse/$*"; }
+wf() { w3m "http://m.wolframalpha.com/input/?i=$(perl -MURI::Escape -e "print uri_escape(\"$*\");")" -dump 2>/dev/null | grep -A 2 'Result:' | tail -n 1; }
+wf() { wget -O - "http://api.wolframalpha.com/v1/query?input=$*&appid=LAWJG2-J2GVW6WV9Q" 2>/dev/null | grep plaintext | sed -n 2,4p | cut -d '>' -f2 | cut -d '<' -f1; }
+wff() { while read r; do wf $r; done; }
 
 # General aliases and functions
 alias startx='TMUX="" startx &'
-alias dmenu='dmenu -i -l 20 -nb black -nf green -sb green -sf black -fn -*-terminus-*-*-*-*-24-*-*-*-*-*-*-*'
 log() { $@ 2>&1 | tee log.txt; }
 
 # Print some lines
