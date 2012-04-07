@@ -27,6 +27,7 @@ set list listchars=tab:\ \ ,trail:·
 set wrap
 set linebreak
 set scrolloff=999
+set formatoptions=tcqw
 set backspace=indent,eol,start
 
 set ruler
@@ -76,6 +77,7 @@ Bundle 'EasyMotion'
 
 Bundle 'rainbow_parentheses.vim'
 Bundle 'jellybeans.vim'
+Bundle 'kana/vim-smartinput'
 
 "Maps, abrvs, commands
 nnoremap Y y$
@@ -106,6 +108,10 @@ inoremap <F5> <Esc>:w<CR>:! <C-r>=expand("%:p")<CR><CR>
 inoremap <F4> <Esc>:b#<CR>
 inoremap <F3> <Esc>:execute 'vimgrep /'.@/.'/g *'<CR>:copen<CR>
 inoremap <F2> <Esc>:CtrlPBuffer<CR>
+inoremap <Leader><< ><Esc>ybi<<Esc>f>a</><Esc>PF<i
+inoremap <Leader><> ><Esc>ybi<<Esc>f>a</><Esc>PF>i 
+inoremap <Leader>>> ><Esc>ybi<<Esc>f>a</><Esc>PF<i<CR><Esc>O
+inoremap <Leader>>< ><Esc>ybi<<Esc>f>a</><Esc>PF<i<CR><Esc>?><CR>i 
 
 vnoremap <Right> >gv
 vnoremap <Left> <gv
@@ -131,8 +137,11 @@ if has("autocmd")
     " Return to last position
     au BufReadPost * normal `"
 
+    " Many ftplugins override formatoptions, so override them back
+    au BufReadPost,BufNewFile * setlocal formatoptions=tcqw
+
     " Hebrew
-    au BufRead,BufNewFile ~/bildad/* Heb
+    au BufReadPost,BufNewFile ~/bildad/* Heb
 
     " Convert certain filetypes and open in read only
     au BufReadPre *.doc silent set ro
