@@ -140,7 +140,7 @@ if has("autocmd")
     au BufReadPost,BufNewFile * setlocal formatoptions=tcqw
 
     " Hebrew
-    au BufReadPost,BufNewFile ~/bildad/* Heb
+    au BufReadPost,BufNewFile ~/heb/* Heb
 
     " Convert certain filetypes and open in read only
     au BufReadPre *.doc silent set ro
