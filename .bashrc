@@ -25,6 +25,8 @@ function muxsplit {
     done
 }
 
+alias muxheist='muxjoin && muxsplit'
+
 # Create a new group for this session
 mkdir -pm 0700 /sys/fs/cgroup/cpu/user/$$
 echo $$ > /sys/fs/cgroup/cpu/user/$$/tasks
@@ -179,7 +181,7 @@ alias xgrep='grep'
 alias lg='ll | xgrep'
 alias fgg='find | xgrep'
 alias hgg='history | xgrep'
-alias pg='ps -ef | xgrep'
+alias pg='ps -ef | grep -v grep | xgrep'
 skill() { kill $(pg $@ | head -n 1 | cut -d ' ' -f 2); }
 
 # vim
