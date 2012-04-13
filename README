@@ -5,3 +5,4 @@ Just configuration files and some handy scripts
 .vim
 .tmux.conf
 .Xdefaults
+.zshrc
