@@ -77,7 +77,6 @@ Bundle 'EasyMotion'
 
 Bundle 'rainbow_parentheses.vim'
 Bundle 'jellybeans.vim'
-Bundle 'kana/vim-smartinput'
 
 "Maps, abrvs, commands
 nnoremap Y y$
