@@ -34,8 +34,16 @@ echo $$ > /sys/fs/cgroup/cpu/user/$$/tasks
 
 # Shell options
 setopt autocontinue autoresume noflowcontrol
-setopt clobber
-setopt extendedglob nocaseglob
+setopt clobber extendedglob nocaseglob
+
+# Keys
+bindkey -e
+bindkey " " magic-space
+bindkey "^p" history-beginning-search-backward
+bindkey "^n" history-beginning-search-forward
+autoload -Uz edit-command-line
+zle -N edit-command-line
+bindkey "^x^e" edit-command-line
 
 # History
 HISTFILE=$HOME/.zsh_history
@@ -45,8 +53,33 @@ setopt histexpiredupsfirst histverify
 setopt extendedhistory sharehistory
 setopt histignoredups histignorespace histfindnodups
 
+# Completion.
+zstyle ':completion:*' use-cache 1
+zstyle ':completion:*' use-compctl false
+zstyle ':completion:*' matcher-list '' 'm:{a-z}={A-Z}' 'm:{a-zA-Z}={A-Za-z}' 'r:|[._-]=* r:|=*' 'l:|=* r:|=*'
+zstyle ':completion:*' ignore-parents parent pwd ..
+zstyle ':completion:*' menu select=2
+zstyle ':completion:*' group-name ''
+zstyle ':completion:*' format '%B%F{cyan}%d%f%b'
+zstyle ':completion:*' select-prompt '%B%F{cyan}%p %l %m %f%b'
+zstyle ':completion:*' auto-description ': %d'
+
+zstyle ':completion:*:kill:*' command 'ps -u $USER -o pid,%cpu,tty,cputime,cmd'
+
+#zstyle ':completion:*:default' list-colors ${(s.:.)LS_COLORS}
+#zstyle ':completion:*:*:kill:*:processes' list-colors '=(#b) #([0-9]#)*=0=01;31'
+
+setopt extended_glob
+highlights='${PREFIX:+=(#bi)($PREFIX:t)(?)*==31=1;32}':${(s.:.)LS_COLORS}}
+highlights2='=(#bi) #([0-9]#) #([^ ]#) #([^ ]#) ##*($PREFIX)*==1;31=1;35=1;33=1;32=}'
+zstyle -e ':completion:*' list-colors 'if [[ $words[1] != kill && $words[1] != strace ]]; then reply=("'$highlights'" ); else reply=( "'$highlights2'" ); fi'
+unset highlights
+
+setopt completealiases listpacked
+autoload -Uz compinit && compinit
+
 # Filesystem traversal
-#export PATH="~/bin:$PATH"
+export PATH="$HOME/bin:$PATH"
 #export CDPATH='.:~'
 setopt autocd autopushd pushdignoredups
 ..() { if [ $1 -ge 0 2> /dev/null ]; then x=$1; else x=1; fi; for (( i = 0; i < $x; i++ )); do cd ..; done; }
@@ -92,63 +125,74 @@ mplen() { wf `mplayer -vo dummy -ao dummy -identify "$1" 2>/dev/null | grep ID_L
 alias webshare='python -c "import SimpleHTTPServer;SimpleHTTPServer.test()"'
 alias wclip='curl -F "sprunge=<-" http://sprunge.us | xclip -f'
 wclipfile() { curl -F "sprunge=@$1" http://sprunge.us | xclip -f; }
-wg() { w3m "http://google.com/search?q=$*" -dump | less; }
-ww() { w3m "http://en.wikipedia.org/w/index.php?title=Special:Search&search=$*&go=Go" -dump | less; }
-wd() { w3m "http://dictionary.reference.com/browse/$*" -dump | less; }
+w() {
+    if [ '-d' = "$1" ]; then
+        local opts='-dump | more'
+        shift
+    fi
+    if [ "$1" ]; then
+        local query='http://'
+        local engine="$1"
+        shift
+        case "$engine" in
+            s ) query="${query}http://duckduckgo.com/?q=$*" ;;
+            g ) query="${query}google.com/search?q=$*" ;;
+            w ) query="${query}en.wikipedia.org/w/index.php?title=Special:Search&search=$*&go=Go" ;;
+            d ) query="${query}dictionary.reference.com/browse/$*" ;;
+            m )
+                if [ 'h' = "$1" ]; then
+                    shift
+                    opts="-dump | rev | more"
+                fi
+                query="${query}morfix.nana10.co.il/$*"
+            ;;
+        esac
+        local cmd="w3m '$query' $opts"
+        eval $cmd
+    else
+        while read cmd; do
+            eval "w -d $cmd"
+        done;
+    fi
+}
 wf() { w3m "http://m.wolframalpha.com/input/?i=$(perl -MURI::Escape -e "print uri_escape(\"$*\");")" -dump 2>/dev/null | grep -A 2 'Result:' | tail -n 1; }
 wff() { while read r; do wf $r; done; }
 
 # General aliases and functions
-alias startx='TMUX="" startx &'
+alias startx='TMUX="" startx &!'
 log() { $@ 2>&1 | tee log.txt; }
 
-# Less colors
+# Colors
+eval $(dircolors -b)
 export LESS='-MR'
 export LESS_TERMCAP_us=$'\e[32m'
 export LESS_TERMCAP_ue=$'\e[0m'
 export LESS_TERMCAP_md=$'\e[1;31m'
 export LESS_TERMCAP_me=$'\e[0m'
 
-# Completion.
-setopt autolist automenu autoremoveslash aliases
-autoload -Uz compinit && compinit
-zstyle ':completion:*' matcher-list '' 'm:{a-z}={A-Z}' 'm:{a-zA-Z}={A-Za-z}' 'r:|[._-]=* r:|=* l:|=*'
-zstyle ':completion:*' menu select=2
-zstyle ':completion:*' format '%S--- %d ---'
-zstyle ':completion:*' select-prompt '%Sselection at %p%s'
-zstyle ':completion:*' verbose true
-zstyle ':completion:*:descriptions' format '%U%F{cyan}%d%f%u'
-zstyle ':completion:*' auto-description 'specify: %d'
-zstyle ':completion:*' group-name ''
-zstyle ':completion:*' use-compctl false
-zstyle ':completion::complete:*' use-cache 1
-zstyle ':completion:*:default' list-colors ${(s.:.)LS_COLORS}
-zstyle ':completion:*:kill:*' command 'ps -u $USER -o pid,%cpu,tty,cputime,cmd'
-zstyle ':completion:*:*:kill:*:processes' list-colors '=(#b) #([0-9]#)*=0=01;31'
-
 # Extended prompt
-PROMPT="%F{blue}(%!)%#%f "
+PROMPT="%F{green}(%!)%#%f "
 
 precmd() {
     err=$?
-    print -P "%F{cyan}\\\\%D{%g-%m-%d %H:%M:%S}/%f"
+    print -P "%F{red}\\\\%D{%g-%m-%d %H:%M:%S}/%f"
     [ "$err" -eq 0 ] || print -P "%K{red}$err%k"
-    print -nP "%F{red}%n@%M:%F{green}%d%f"
+    print -nP "\n%F{red}%n@%M:%F{green}%d%f"
 
     if [ "$isgit" ]; then
         branch=${"$(git symbolic-ref HEAD 2> /dev/null)":11}
-        print -nP "%F{yellow}($branch"
+        print -nP "%F{cyan}($branch"
         dirty=$(git status --porcelain | grep '^ M' | wc -l)
-        if (( $dirty > 0)); then print -nP " %K{red}$dirty%k"; fi
+        if (( $dirty > 0)); then print -nP " %F{red}$dirty%k"; fi
         ahead=$(git log origin/$branch..HEAD | grep '^commit' | wc -l)
-        if (( $ahead > 0)); then print -nP " %K{green}$ahead%k"; fi
+        if (( $ahead > 0)); then print -nP " %F{green}$ahead%k"; fi
         print -nP ")%f"
     fi
     echo
 }
 
 preexec() {
-    print -P "%F{cyan}/%D{%g-%m-%d %H:%M:%S}\\\\%f"
+    print -P "%F{green}/%D{%g-%m-%d %H:%M:%S}\\\\%f"
 }
 
 chpwd() {
