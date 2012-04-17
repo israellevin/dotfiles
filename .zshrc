@@ -35,48 +35,58 @@ echo $$ > /sys/fs/cgroup/cpu/user/$$/tasks
 # Shell options
 setopt autocontinue autoresume noflowcontrol
 setopt clobber extendedglob nocaseglob
+REPORTTIME=10
+PAGER=pager.sh
+READNULLCMD=$PAGER
 
 # Keys
 bindkey -e
 bindkey " " magic-space
 bindkey "^p" history-beginning-search-backward
 bindkey "^n" history-beginning-search-forward
-autoload -Uz edit-command-line
-zle -N edit-command-line
-bindkey "^x^e" edit-command-line
+autoload -Uz edit-command-line && zle -N edit-command-line && bindkey "^x^e" edit-command-line
 
 # History
 HISTFILE=$HOME/.zsh_history
 HISTSIZE=1000
 SAVEHIST=999999999
-setopt histexpiredupsfirst histverify
-setopt extendedhistory sharehistory
+setopt histexpiredupsfirst
+setopt extendedhistory sharehistory histverify
 setopt histignoredups histignorespace histfindnodups
 
+# Optionally save cancelled commands to history
+TRAPINT () {
+    echo "\nSave '$BUFFER'? "
+    read -q r
+    [ 'y' = "$r" ] && zle && print -s -- $BUFFER && echo "Saved"
+    return $1
+}
+
 # Completion.
-zstyle ':completion:*' use-cache 1
-zstyle ':completion:*' use-compctl false
-zstyle ':completion:*' matcher-list '' 'm:{a-z}={A-Z}' 'm:{a-zA-Z}={A-Za-z}' 'r:|[._-]=* r:|=*' 'l:|=* r:|=*'
-zstyle ':completion:*' ignore-parents parent pwd ..
-zstyle ':completion:*' menu select=2
-zstyle ':completion:*' group-name ''
-zstyle ':completion:*' format '%B%F{cyan}%d%f%b'
-zstyle ':completion:*' select-prompt '%B%F{cyan}%p %l %m %f%b'
-zstyle ':completion:*' auto-description ': %d'
+autoload -Uz compinit && compinit && {
+    setopt listpacked #nolistambiguous
+    zstyle ':completion:*' use-cache 1
+    zstyle ':completion:*' matcher-list '' 'm:{a-z}={A-Z}' 'm:{a-zA-Z}={A-Za-z}' 'r:|[._-]=* r:|=*' 'l:|=* r:|=*'
+    zstyle ':completion:*' ignore-parents parent pwd ..
+    zstyle ':completion:*' menu select=2
+    zstyle ':completion:*' group-name ''
+    zstyle ':completion:*' format '%B%F{cyan}%d%f%b'
+    zstyle ':completion:*' select-prompt '%B%F{cyan}%p %l %m %f%b'
+    zstyle ':completion:*' auto-description ': %d'
 
-zstyle ':completion:*:kill:*' command 'ps -u $USER -o pid,%cpu,tty,cputime,cmd'
+    zstyle ':completion:*:kill:*' command 'ps -u $USER -o pid,%cpu,tty,cputime,cmd'
+    hosts=($(cut -d ';' -f 2 "$HOME/.zsh_history" | grep '^ssh ' | cut -c 4- | sort -u | tr "\n" " "))
+    zstyle ':completion:*:(ssh|scp|sshfs):*' hosts $hosts
 
-#zstyle ':completion:*:default' list-colors ${(s.:.)LS_COLORS}
-#zstyle ':completion:*:*:kill:*:processes' list-colors '=(#b) #([0-9]#)*=0=01;31'
+    # Highlight non-ambiguous part of completion in menu
+    setopt extended_glob
+    highlights='${PREFIX:+=(#bi)($PREFIX:t)(?)*==31=1;32}':${(s.:.)LS_COLORS}}
+    highlights2='=(#bi) #([0-9]#) #([^ ]#) #([^ ]#) ##*($PREFIX)*==1;31=1;35=1;33=1;32=}'
+    zstyle -e ':completion:*' list-colors 'if [[ $words[1] != kill && $words[1] != strace ]]; then reply=("'$highlights'" ); else reply=( "'$highlights2'" ); fi'
+    unset highlights
+}
 
-setopt extended_glob
-highlights='${PREFIX:+=(#bi)($PREFIX:t)(?)*==31=1;32}':${(s.:.)LS_COLORS}}
-highlights2='=(#bi) #([0-9]#) #([^ ]#) #([^ ]#) ##*($PREFIX)*==1;31=1;35=1;33=1;32=}'
-zstyle -e ':completion:*' list-colors 'if [[ $words[1] != kill && $words[1] != strace ]]; then reply=("'$highlights'" ); else reply=( "'$highlights2'" ); fi'
-unset highlights
-
-setopt completealiases listpacked
-autoload -Uz compinit && compinit
+autoload -U url-quote-magic && zle -N self-insert url-quote-magic
 
 # Filesystem traversal
 export PATH="$HOME/bin:$PATH"
@@ -88,7 +98,9 @@ alias b='popd'
 alias m='mntnir.sh'
 alias d='trash'
 alias dud='du --max-depth=1 -h | sort -h'
-eval "$(fasd --init auto)"
+eval "$(fasd --init zsh-hook zsh-ccomp zsh-ccomp-install zsh-wcomp zsh-wcomp-install)"
+fasd_cd() { [ $# -gt 1 ] && cd "$(fasd -e echo "$@")" || fasd "$@"; }
+alias j='fasd_cd -d'
 
 # ls
 export LS_OPTIONS='-lh --color=auto'
@@ -114,7 +126,7 @@ alias vs='vim -c "set spell | set buftype=nofile"'
 # Media
 alias d0='DISPLAY=":0.0"'
 alias d1='DISPLAY="localhost:10.0"'
-alias mm='fasd -e mplayer'
+alias mm='fasd -fe mplayer'
 alias mp='mplayer'
 alias mpl='mplayer -lavdopts lowres=1:fast:skiploopfilter=all'
 alias mpy='mplayer -vf yadif'
@@ -163,36 +175,45 @@ alias startx='TMUX="" startx &!'
 log() { $@ 2>&1 | tee log.txt; }
 
 # Colors
+reset='[0m'
+green='[00;31m'
+red='[00;32m'
+blue='[00;34m'
 eval $(dircolors -b)
 export LESS='-MR'
-export LESS_TERMCAP_us=$'\e[32m'
-export LESS_TERMCAP_ue=$'\e[0m'
-export LESS_TERMCAP_md=$'\e[1;31m'
-export LESS_TERMCAP_me=$'\e[0m'
+export LESS_TERMCAP_us=$green
+export LESS_TERMCAP_ue=$reset
+export LESS_TERMCAP_md=$red
+export LESS_TERMCAP_me=$reset
+if [ "$DISPLAY" ]; then
+    green='[38;5;22m'
+    red='[38;5;52m'
+    blue='[38;5;69m'
+fi
 
 # Extended prompt
-PROMPT="%F{green}(%!)%#%f "
+PROMPT="%{$green%}(%!)%#%f "
 
 precmd() {
     err=$?
-    print -P "%F{red}\\\\%D{%g-%m-%d %H:%M:%S}/%f"
-    [ "$err" -eq 0 ] || print -P "%K{red}$err%k"
-    print -nP "\n%F{red}%n@%M:%F{green}%d%f"
+    print -P "%{$red\%}\\\%D{%g-%m-%d %H:%M:%S}/%f"
+    [ "$err" -eq 0 ] || print -P "%K{red}%F{black}$err%f%k"
+    print -nP "\n%{$red%}%n@%M:%{$green%}%d%f"
 
     if [ "$isgit" ]; then
         branch=${"$(git symbolic-ref HEAD 2> /dev/null)":11}
-        print -nP "%F{cyan}($branch"
-        dirty=$(git status --porcelain | grep '^ M' | wc -l)
-        if (( $dirty > 0)); then print -nP " %F{red}$dirty%k"; fi
-        ahead=$(git log origin/$branch..HEAD | grep '^commit' | wc -l)
-        if (( $ahead > 0)); then print -nP " %F{green}$ahead%k"; fi
+        print -nP "%{$blue%}($branch"
+        dirty=$(git status --porcelain 2> /dev/null | grep -v '^??' | wc -l)
+        if (( $dirty > 0)); then print -nP " %F{red}$dirty%f"; fi
+        ahead=$(git log origin/$branch..HEAD 2> /dev/null | grep '^commit' | wc -l)
+        if (( $ahead > 0)); then print -nP " %F{green}$ahead%f"; fi
         print -nP ")%f"
     fi
     echo
 }
 
 preexec() {
-    print -P "%F{green}/%D{%g-%m-%d %H:%M:%S}\\\\%f"
+    print -P "%{$green%}/%D{%g-%m-%d %H:%M:%S}\\\\%f"
 }
 
 chpwd() {
