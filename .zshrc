@@ -44,7 +44,11 @@ bindkey -e
 bindkey " " magic-space
 bindkey "^p" history-beginning-search-backward
 bindkey "^n" history-beginning-search-forward
+bindkey "^q" push-line-or-edit
 autoload -Uz edit-command-line && zle -N edit-command-line && bindkey "^x^e" edit-command-line
+
+# Ugly kludge to make sure PREFIX is set after the longest unambiguous completion, so I can mark the spot with list-colors
+unambigandmenu() { zle expand-or-complete; zle magic-space; zle backward-delete-char; zle expand-or-complete; } && zle -N unambigandmenu && bindkey "^i" unambigandmenu
 
 # History
 HISTFILE=$HOME/.zsh_history
@@ -54,39 +58,43 @@ setopt histexpiredupsfirst
 setopt extendedhistory sharehistory histverify
 setopt histignoredups histignorespace histfindnodups
 
-# Optionally save cancelled commands to history
+# Save cancelled commands to clipboard, or - conditionally - to history
 TRAPINT () {
-    echo "\nSave '$BUFFER'? "
-    read -q r
-    [ 'y' = "$r" ] && zle && print -s -- $BUFFER && echo "Saved"
-    return $1
+    if [ "$BUFFER" ]; then
+        if [ "$DISPLAY" ]; then
+            echo -n $BUFFER | xclip
+        else
+            echo "\nSave '$BUFFER'? "
+            read -q r
+            [ "$r" = 'y' ] && zle && print -s -- $BUFFER && echo "Saved"
+        fi
+    fi
+    return $(( 128 + $1 ))
 }
 
 # Completion.
 autoload -Uz compinit && compinit && {
-    setopt listpacked #nolistambiguous
+    setopt listpacked nolistambiguous
     zstyle ':completion:*' use-cache 1
     zstyle ':completion:*' matcher-list '' 'm:{a-z}={A-Z}' 'm:{a-zA-Z}={A-Za-z}' 'r:|[._-]=* r:|=*' 'l:|=* r:|=*'
     zstyle ':completion:*' ignore-parents parent pwd ..
-    zstyle ':completion:*' menu select=2
+    zstyle ':completion:*' menu auto select
     zstyle ':completion:*' group-name ''
     zstyle ':completion:*' format '%B%F{cyan}%d%f%b'
     zstyle ':completion:*' select-prompt '%B%F{cyan}%p %l %m %f%b'
     zstyle ':completion:*' auto-description ': %d'
+    zstyle ':completion:*' show-completer true
 
+    # Pretty style for kill
     zstyle ':completion:*:kill:*' command 'ps -u $USER -o pid,%cpu,tty,cputime,cmd'
+
+    # Get hosts from history
     hosts=($(cut -d ';' -f 2 "$HOME/.zsh_history" | grep '^ssh ' | cut -c 4- | sort -u | tr "\n" " "))
     zstyle ':completion:*:(ssh|scp|sshfs):*' hosts $hosts
 
-    # Highlight non-ambiguous part of completion in menu
-    setopt extended_glob
-    highlights='${PREFIX:+=(#bi)($PREFIX:t)(?)*==31=1;32}':${(s.:.)LS_COLORS}}
-    highlights2='=(#bi) #([0-9]#) #([^ ]#) #([^ ]#) ##*($PREFIX)*==1;31=1;35=1;33=1;32=}'
-    zstyle -e ':completion:*' list-colors 'if [[ $words[1] != kill && $words[1] != strace ]]; then reply=("'$highlights'" ); else reply=( "'$highlights2'" ); fi'
-    unset highlights
+   # Highlight non-ambiguous part of completion in menu
+   zstyle -e ':completion:*' list-colors 'reply=("${PREFIX:+=(#bi)($PREFIX:t)(?)*==31=32}:${(s.:.)LS_COLORS}")'
 }
-
-autoload -U url-quote-magic && zle -N self-insert url-quote-magic
 
 # Filesystem traversal
 export PATH="$HOME/bin:$PATH"
@@ -137,6 +145,18 @@ mplen() { wf `mplayer -vo dummy -ao dummy -identify "$1" 2>/dev/null | grep ID_L
 alias webshare='python -c "import SimpleHTTPServer;SimpleHTTPServer.test()"'
 alias wclip='curl -F "sprunge=<-" http://sprunge.us | xclip -f'
 wclipfile() { curl -F "sprunge=@$1" http://sprunge.us | xclip -f; }
+t() {
+    [ "$(pgrep deluged)" ] || deluged
+    if [ "$1" ]; then
+        if [ 'q' = "$1" ]; then killall deluged
+        elif [ 'i' = "$1" ]; then shift && deluge-console "info $@ --sort-reverse=state"
+        elif [ 'f' = "$1" ]; then shift && watch -n 0.5 "deluge-console 'info $@ --sort-reverse=state' | tail -n 6"
+        else deluge-console add $@
+        fi
+    else
+        deluge-console "info --sort-reverse=state"
+    fi
+}
 w() {
     if [ '-d' = "$1" ]; then
         local opts='-dump | more'
@@ -147,8 +167,9 @@ w() {
         local engine="$1"
         shift
         case "$engine" in
-            s ) query="${query}http://duckduckgo.com/?q=$*" ;;
+            s ) query="${query}duckduckgo.com/?q=$*" ;;
             g ) query="${query}google.com/search?q=$*" ;;
+            l ) query="${query}google.com/search?q=$*&btnI=" ;;
             w ) query="${query}en.wikipedia.org/w/index.php?title=Special:Search&search=$*&go=Go" ;;
             d ) query="${query}dictionary.reference.com/browse/$*" ;;
             m )
@@ -171,13 +192,13 @@ wf() { w3m "http://m.wolframalpha.com/input/?i=$(perl -MURI::Escape -e "print ur
 wff() { while read r; do wf $r; done; }
 
 # General aliases and functions
-alias startx='TMUX="" startx &!'
+alias x='TMUX="" startx &!'
 log() { $@ 2>&1 | tee log.txt; }
 
 # Colors
 reset='[0m'
-green='[00;31m'
-red='[00;32m'
+red='[00;31m'
+green='[00;32m'
 blue='[00;34m'
 eval $(dircolors -b)
 export LESS='-MR'
@@ -185,24 +206,20 @@ export LESS_TERMCAP_us=$green
 export LESS_TERMCAP_ue=$reset
 export LESS_TERMCAP_md=$red
 export LESS_TERMCAP_me=$reset
-if [ "$DISPLAY" ]; then
-    green='[38;5;22m'
-    red='[38;5;52m'
-    blue='[38;5;69m'
-fi
+source "$HOME/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh"
 
 # Extended prompt
-PROMPT="%{$green%}(%!)%#%f "
+PROMPT="%F{green}(%!)%#%f "
 
 precmd() {
     err=$?
-    print -P "%{$red\%}\\\%D{%g-%m-%d %H:%M:%S}/%f"
+    print -P "%F{red}\\\%D{%g-%m-%d %H:%M:%S}/%f"
     [ "$err" -eq 0 ] || print -P "%K{red}%F{black}$err%f%k"
-    print -nP "\n%{$red%}%n@%M:%{$green%}%d%f"
+    print -nP "\n%F{red}%n@%M:%F{green}%d%f"
 
     if [ "$isgit" ]; then
         branch=${"$(git symbolic-ref HEAD 2> /dev/null)":11}
-        print -nP "%{$blue%}($branch"
+        print -nP "%F{cyan}($branch"
         dirty=$(git status --porcelain 2> /dev/null | grep -v '^??' | wc -l)
         if (( $dirty > 0)); then print -nP " %F{red}$dirty%f"; fi
         ahead=$(git log origin/$branch..HEAD 2> /dev/null | grep '^commit' | wc -l)
@@ -213,7 +230,7 @@ precmd() {
 }
 
 preexec() {
-    print -P "%{$green%}/%D{%g-%m-%d %H:%M:%S}\\\\%f"
+    print -P "%F{green}/%D{%g-%m-%d %H:%M:%S}\\\\%f"
 }
 
 chpwd() {
