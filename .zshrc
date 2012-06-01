@@ -65,8 +65,7 @@ TRAPINT () {
             echo -n $BUFFER | xclip
         else
             echo "\nSave '$BUFFER'? "
-            read -q r
-            [ "$r" = 'y' ] && zle && print -s -- $BUFFER && echo "Saved"
+            read -q && zle && print -s -- $BUFFER && echo "Saved"
         fi
     fi
     return $(( 128 + $1 ))
@@ -76,7 +75,7 @@ TRAPINT () {
 autoload -Uz compinit && compinit && {
     setopt listpacked nolistambiguous
     zstyle ':completion:*' use-cache 1
-    zstyle ':completion:*' matcher-list '' 'm:{a-z}={A-Z}' 'm:{a-zA-Z}={A-Za-z}' 'r:|[._-]=* r:|=*' 'l:|=* r:|=*'
+    zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}' 'r:|[._-]=*'
     zstyle ':completion:*' ignore-parents parent pwd ..
     zstyle ':completion:*' menu auto select
     zstyle ':completion:*' group-name ''
@@ -92,8 +91,8 @@ autoload -Uz compinit && compinit && {
     hosts=($(cut -d ';' -f 2 "$HOME/.zsh_history" | grep '^ssh ' | cut -c 4- | sort -u | tr "\n" " "))
     zstyle ':completion:*:(ssh|scp|sshfs):*' hosts $hosts
 
-   # Highlight non-ambiguous part of completion in menu
-   zstyle -e ':completion:*' list-colors 'reply=("${PREFIX:+=(#bi)($PREFIX:t)(?)*==31=32}:${(s.:.)LS_COLORS}")'
+    # Highlight non-ambiguous part of completion in menu
+    zstyle -e ':completion:*' list-colors 'reply=("${PREFIX:+=(#bi)($PREFIX:t)(?)*==31=32}:${(s.:.)LS_COLORS}")'
 }
 
 # Filesystem traversal
@@ -104,7 +103,7 @@ setopt autocd autopushd pushdignoredups
 mkcd() { mkdir -p "$*"; cd "$*"; }
 alias b='popd'
 alias m='mntnir.sh'
-alias d='trash'
+alias d='trash-put'
 alias dud='du --max-depth=1 -h | sort -h'
 eval "$(fasd --init zsh-hook zsh-ccomp zsh-ccomp-install zsh-wcomp zsh-wcomp-install)"
 fasd_cd() { [ $# -gt 1 ] && cd "$(fasd -e echo "$@")" || fasd "$@"; }
@@ -125,9 +124,9 @@ alias fgg='find | grep'
 alias pg='ps -ef | grep -v grep | grep'
 
 # vim
-v() { if [ -z $1 ]; then vim -c "normal '0"; else vim -p *$1*; fi }
+v() { [ -z $1 ] && vim -c "normal '0" || fasd -e vim $@; }
+vv() { vim -p *$**; }
 vg() { vim -p $(grep -l "$*" *); }
-alias vv='fasd -e vim'
 alias vf='find && vim -c "CtrlP"'
 alias vs='vim -c "set spell | set buftype=nofile"'
 
@@ -144,18 +143,40 @@ mplen() { wf `mplayer -vo dummy -ao dummy -identify "$1" 2>/dev/null | grep ID_L
 # Web
 alias webshare='python -c "import SimpleHTTPServer;SimpleHTTPServer.test()"'
 alias wclip='curl -F "sprunge=<-" http://sprunge.us | xclip -f'
-wclipfile() { curl -F "sprunge=@$1" http://sprunge.us | xclip -f; }
 t() {
-    [ "$(pgrep deluged)" ] || deluged
-    if [ "$1" ]; then
-        if [ 'q' = "$1" ]; then killall deluged
-        elif [ 'i' = "$1" ]; then shift && deluge-console "info $@ --sort-reverse=state"
-        elif [ 'f' = "$1" ]; then shift && watch -n 0.5 "deluge-console 'info $@ --sort-reverse=state' | tail -n 6"
-        else deluge-console add $@
-        fi
-    else
-        deluge-console "info --sort-reverse=state"
+    [ 'q' = "$1" ] && return $(killall deluged)
+    if [ ! "$(pgrep deluged)" ]; then
+        read -q "?Daemon not running, abort? " && return 0
+        deluged && echo ' Starting daemon' && sleep 1
     fi
+    case "$1" in
+        a) cmd='add';;
+        p) cmd='pause';;
+        r) cmd='resume';;
+        f) cmd='follow';;
+        t) cmd='throttle';;
+        *) cmd='';;
+    esac
+    if [ "$cmd" ]; then
+        shift
+        if [ 'follow' = "$cmd" ]; then
+            watch -n 0.5 "deluge-console 'info --sort-reverse=state $@' | tail -n 8"
+        elif [ 'throttle' = "$cmd" ]; then
+            if [ ' -1.0' = "$(deluge-console 'config max_upload_speed' | cut -d ':' -f 2)" ]; then
+                deluge-console 'config -s max_upload_speed 90'
+                deluge-console 'config -s max_download_speed 900'
+            else
+                deluge-console 'config -s max_upload_speed -1'
+                deluge-console 'config -s max_download_speed -1'
+            fi
+        else
+            deluge-console "$cmd $@"
+        fi
+        while [ "$@" ]; do shift; done
+    fi
+    deluge-console "info --sort-reverse=progress $@"
+    deluge-console 'config max_upload_speed'
+    deluge-console 'config max_download_speed'
 }
 w() {
     if [ '-d' = "$1" ]; then
@@ -167,12 +188,12 @@ w() {
         local engine="$1"
         shift
         case "$engine" in
-            s ) query="${query}duckduckgo.com/?q=$*" ;;
-            g ) query="${query}google.com/search?q=$*" ;;
-            l ) query="${query}google.com/search?q=$*&btnI=" ;;
-            w ) query="${query}en.wikipedia.org/w/index.php?title=Special:Search&search=$*&go=Go" ;;
-            d ) query="${query}dictionary.reference.com/browse/$*" ;;
-            m )
+            s) query="${query}duckduckgo.com/?q=$*";;
+            g) query="${query}google.com/search?q=$*";;
+            l) query="${query}google.com/search?q=$*&btnI=";;
+            w) query="${query}en.wikipedia.org/w/index.php?title=Special:Search&search=$*&go=Go";;
+            d) query="${query}dictionary.reference.com/browse/$*";;
+            m)
                 if [ 'h' = "$1" ]; then
                     shift
                     opts="-dump | rev | more"
