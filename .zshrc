@@ -4,6 +4,9 @@
 # Multiplex
 [ ! "$TMUX" ] && tmux -2 new-session && [ ! -e /tmp/dontquit ] && exit 0
 
+# Show stats bar for remote connections
+[ "$SSH_CONNECTION" ] && tmux set status on
+
 # Steal all tmux windows into current session
 function muxjoin {
     [ ! "$TMUX" ] && echo 'tmux not running' 1>&2 && exit 1
@@ -40,20 +43,45 @@ PAGER=pager.sh
 READNULLCMD=$PAGER
 
 # Keys
+export WORDCHARS=''
 bindkey -e
-bindkey " " magic-space
 bindkey "^p" history-beginning-search-backward
 bindkey "^n" history-beginning-search-forward
 bindkey "^q" push-line-or-edit
+bindkey -s '\eu' '^qcd ..^M'
+bindkey -s '|p' " | $PAGER"
+bindkey -s '|g' " | grep "
+bindkey -s '|w' " | wc "
+bindkey -s '|c' " | cut -d ' ' -f "
+
 autoload -Uz edit-command-line && zle -N edit-command-line && bindkey "^x^e" edit-command-line
 
-# Ugly kludge to make sure PREFIX is set after the longest unambiguous completion, so I can mark the spot with list-colors
+# Space at the start of a command line starts history search.
+# Double space tries to completes what is already typed.
+# Otherwise just insert a magic space.
+space-check() {
+    if [ ! "$LBUFFER" ]; then
+        zle history-incremental-search-backward '^'
+    elif [ ' ' = "${LBUFFER[-1]}" ]; then
+        zle backward-delete-char
+        zle history-beginning-search-backward
+    else
+        zle magic-space
+    fi
+} && zle -N space-check && bindkey ' ' space-check
+bindkey -M isearch ' ' history-incremental-search-backward
+bindkey -M isearch '^x ' self-insert
+
+# C-j kills till end of line before accepting
+kill-accept() { zle kill-line; zle accept-line } && zle -N kill-accept && bindkey '^j' kill-accept
+
+# Kludge to make sure PREFIX is set after the longest unambiguous completion, so I can mark the spot with list-colors
 unambigandmenu() { zle expand-or-complete; zle magic-space; zle backward-delete-char; zle expand-or-complete; } && zle -N unambigandmenu && bindkey "^i" unambigandmenu
 
 # History
-HISTFILE=$HOME/.zsh_history
-HISTSIZE=1000
-SAVEHIST=999999999
+export HISTFILE=$HOME/.zsh_history
+export HISTSIZE=999999999
+export SAVEHIST=999999999
 setopt histexpiredupsfirst
 setopt extendedhistory sharehistory histverify
 setopt histignoredups histignorespace histfindnodups
@@ -74,7 +102,7 @@ TRAPINT () {
 # Completion.
 autoload -Uz compinit && compinit && {
     setopt listpacked nolistambiguous
-    zstyle ':completion:*' use-cache 1
+    zstyle ':completion:*' use-cache true
     zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}' 'r:|[._-]=*'
     zstyle ':completion:*' ignore-parents parent pwd ..
     zstyle ':completion:*' menu auto select
@@ -108,6 +136,7 @@ alias dud='du --max-depth=1 -h | sort -h'
 eval "$(fasd --init zsh-hook zsh-ccomp zsh-ccomp-install zsh-wcomp zsh-wcomp-install)"
 fasd_cd() { [ $# -gt 1 ] && cd "$(fasd -e echo "$@")" || fasd "$@"; }
 alias j='fasd_cd -d'
+alias f='fasd -f'
 
 # ls
 export LS_OPTIONS='-lh --color=auto'
@@ -124,8 +153,8 @@ alias fgg='find | grep'
 alias pg='ps -ef | grep -v grep | grep'
 
 # vim
-v() { [ -z $1 ] && vim -c "normal '0" || fasd -e vim $@; }
-vv() { vim -p *$**; }
+alias v='fasd -e vim -b viminfo'
+vv() { [ -z $1 ] && vim -c "normal '0" || vim -p *$**; }
 vg() { vim -p $(grep -l "$*" *); }
 alias vf='find && vim -c "CtrlP"'
 alias vs='vim -c "set spell | set buftype=nofile"'
@@ -133,7 +162,6 @@ alias vs='vim -c "set spell | set buftype=nofile"'
 # Media
 alias d0='DISPLAY=":0.0"'
 alias d1='DISPLAY="localhost:10.0"'
-alias mm='fasd -fe mplayer'
 alias mp='mplayer'
 alias mpl='mplayer -lavdopts lowres=1:fast:skiploopfilter=all'
 alias mpy='mplayer -vf yadif'
@@ -210,6 +238,7 @@ w() {
     fi
 }
 wf() { w3m "http://m.wolframalpha.com/input/?i=$(perl -MURI::Escape -e "print uri_escape(\"$*\");")" -dump 2>/dev/null | grep -A 2 'Result:' | tail -n 1; }
+wf() { wget -O - "http://api.wolframalpha.com/v1/query?input=$*&appid=LAWJG2-J2GVW6WV9Q" 2>/dev/null | grep plaintext | sed -n 2,4p | cut -d '>' -f2 | cut -d '<' -f1; }
 wff() { while read r; do wf $r; done; }
 
 # General aliases and functions
@@ -220,12 +249,12 @@ log() { $@ 2>&1 | tee log.txt; }
 reset='[0m'
 red='[00;31m'
 green='[00;32m'
-blue='[00;34m'
+blue='[00;36m'
 eval $(dircolors -b)
 export LESS='-MR'
 export LESS_TERMCAP_us=$green
 export LESS_TERMCAP_ue=$reset
-export LESS_TERMCAP_md=$red
+export LESS_TERMCAP_md=$blue
 export LESS_TERMCAP_me=$reset
 source "$HOME/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh"
 
