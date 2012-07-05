@@ -66,14 +66,12 @@ endfunction
 Bundle 'ctrlp.vim'
 let g:ctrlp_map = '<F10>'
 
-Bundle 'Screen-vim---gnu-screentmux'
-let g:ScreenImpl = 'Tmux'
-let g:ScreenShellTerminal = 'urxvtcd'
-
 Bundle 'Gundo'
 Bundle 'fugitive.vim'
+Bundle 'vimux'
 Bundle 'fuzzee.vim'
 Bundle 'EasyMotion'
+Bundle 'AutoComplPop'
 
 Bundle 'rainbow_parentheses.vim'
 Bundle 'jellybeans.vim'
@@ -107,10 +105,6 @@ inoremap <F5> <Esc>:w<CR>:! <C-r>=expand("%:p")<CR><CR>
 inoremap <F4> <Esc>:b#<CR>
 inoremap <F3> <Esc>:execute 'vimgrep /'.@/.'/g *'<CR>:copen<CR>
 inoremap <F2> <Esc>:CtrlPBuffer<CR>
-inoremap <Leader><< ><Esc>ybi<<Esc>f>a</><Esc>PF<i
-inoremap <Leader><> ><Esc>ybi<<Esc>f>a</><Esc>PF>i 
-inoremap <Leader>>> ><Esc>ybi<<Esc>f>a</><Esc>PF<i<CR><Esc>O
-inoremap <Leader>>< ><Esc>ybi<<Esc>f>a</><Esc>PF<i<CR><Esc>?><CR>i 
 
 vnoremap <Right> >gv
 vnoremap <Left> <gv
