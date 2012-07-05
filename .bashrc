@@ -1,10 +1,11 @@
-# ~/.bashrc: executed by bash(1) for non-login shells.
-
 # Don't do shit if not connected to a terminal
 [ -t 0 ] || return
 
 # Multiplex
 [ ! "$TMUX" ] && tmux -2 new-session && [ ! -e /tmp/dontquit ] && exit 0
+
+# Show stats bar for remote connections
+[ "$SSH_CONNECTION" ] && tmux set status on
 
 # Steal all tmux windows into current session
 function muxjoin {
@@ -26,6 +27,9 @@ function muxsplit {
 }
 
 alias muxheist='muxjoin && muxsplit'
+
+# Make nice
+renice -n -10 -p "$$" > /dev/null
 
 # Create a new group for this session
 mkdir -pm 0700 /sys/fs/cgroup/cpu/user/$$
@@ -51,39 +55,6 @@ export HISTCONTROL=erasedups,ignoreboth
 export HISTTIMEFORMAT='%F %T '
 export HISTIGNORE='&:exit'
 export PROMPT_COMMAND='history -a; history -n'
-
-# Prompt
-if [ -z "$debian_chroot" ] && [ -r /etc/debian_chroot ]; then
-    debian_chroot=$(cat /etc/debian_chroot)
-fi
-function parse_git_branch {
-  git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/(\1)/'
-}
-#PS1='u@\h:\w\$ '
-#PS1='\n\d \t\n\u@${debian_chroot:+($debian_chroot)} \h (\!)\n\w$(parse_git_branch)\$ '
-export PS1='\n\e[31;40m\d \t\e[0m\n\e[32;40m\u@\h (\!)\e[0m\n\w$(parse_git_branch)\$ '
-
-# Colors
-eval "`dircolors`"
-export LESS='-MR'
-export LESS_TERMCAP_us=$'\e[32m'
-export LESS_TERMCAP_ue=$'\e[0m'
-export LESS_TERMCAP_md=$'\e[1;31m'
-export LESS_TERMCAP_me=$'\e[0m'
-
-# Directory traversing and file management
-#export PATH="~/bin:$PATH"
-#export CDPATH='.:~'
-cd() { [ -z "$1" ] && set -- ~; [ "$(pwd)" != "$(readlink -f "$1")" ] && pushd "$1"; }
-..() { if [ $1 -ge 0 2> /dev/null ]; then x=$1; else x=1; fi; for (( i = 0; i < $x; i++ )); do cd ..; done; }
-mkcd() { mkdir -p "$*"; cd "$*"; }
-alias b='popd'
-alias m='mntnir.sh'
-alias d='trash'
-alias dud='du --max-depth=1 -h | sort -h'
-source ~/fasd/fasd
-eval "$(fasd --init auto)"
-alias j='fasd_cd -d'
 
 # Completion
 source /etc/bash_completion
@@ -167,6 +138,23 @@ _define(){
 }
 complete -F _define define
 
+
+
+# Filesystem traversal
+export PATH="$HOME/bin:$PATH"
+#export CDPATH='.:~'
+cd() { [ -z "$1" ] && set -- ~; [ "$(pwd)" != "$(readlink -f "$1")" ] && pushd "$1"; }
+..() { if [ $1 -ge 0 2> /dev/null ]; then x=$1; else x=1; fi; for (( i = 0; i < $x; i++ )); do cd ..; done; }
+mkcd() { mkdir -p "$*"; cd "$*"; }
+alias b='popd'
+alias m='mntnir.sh'
+alias d='trash-put'
+alias dud='du --max-depth=1 -h | sort -h'
+eval "$(fasd --init auto)"
+fasd_cd() { [ $# -gt 1 ] && cd "$(fasd -e echo "$@")" || fasd "$@"; }
+alias j='fasd_cd -d'
+alias f='fasd -f'
+
 # ls
 export LS_OPTIONS='-lh --color=auto'
 alias l="ls $LS_OPTIONS"
@@ -177,45 +165,122 @@ alias lss="ls $LS_OPTIONS -Sr"
 
 # grep
 export GREP_OPTIONS='-i --color=auto'
-alias xgrep='grep'
-alias lg='ll | xgrep'
-alias fgg='find | xgrep'
-alias hgg='history | xgrep'
-alias pg='ps -ef | grep -v grep | xgrep'
-skill() { kill $(pg $@ | head -n 1 | cut -d ' ' -f 2); }
+alias lg='ll | grep'
+alias fgg='find | grep'
+alias pg='ps -ef | grep -v grep | grep'
 
 # vim
-v() { if [ -z $1 ]; then vim -c "normal '0"; else vim -p *$1*; fi }
+alias v='fasd -e vim -b viminfo'
+vv() { [ -z $1 ] && vim -c "normal '0" || vim -p *$**; }
 vg() { vim -p $(grep -l "$*" *); }
-alias vv='fasd -e vim'
 alias vf='find && vim -c "CtrlP"'
 alias vs='vim -c "set spell | set buftype=nofile"'
 
 # Media
 alias d0='DISPLAY=":0.0"'
 alias d1='DISPLAY="localhost:10.0"'
-alias mm='fasd -e mplayer'
 alias mp='mplayer'
 alias mpl='mplayer -lavdopts lowres=1:fast:skiploopfilter=all'
 alias mpy='mplayer -vf yadif'
 alias feh='feh -ZF'
-alias webcam='mplayer tv:// -tv device=/dev/video0'
 mplen() { wf `mplayer -vo dummy -ao dummy -identify "$1" 2>/dev/null | grep ID_LENGTH | cut -c 11-` seconds to minutes; }
 
 # Web
 alias webshare='python -c "import SimpleHTTPServer;SimpleHTTPServer.test()"'
 alias wclip='curl -F "sprunge=<-" http://sprunge.us | xclip -f'
-wclipfile() { curl -F "sprunge=@$1" http://sprunge.us | xclip -f; }
-wg() { w3m "http://google.com/search?q=$*"; }
-ww() { w3m "http://en.wikipedia.org/w/index.php?title=Special:Search&search=$*&go=Go"; }
-wd() { w3m -dump "http://dictionary.reference.com/browse/$*"; }
+t() {
+    [ 'q' = "$1" ] && return $(killall deluged)
+    if [ ! "$(pgrep deluged)" ]; then
+        read -q "?Daemon not running, abort? " && return 0
+        deluged && echo ' Starting daemon' && sleep 1
+    fi
+    case "$1" in
+        a) cmd='add';;
+        p) cmd='pause';;
+        r) cmd='resume';;
+        f) cmd='follow';;
+        t) cmd='throttle';;
+        *) cmd='';;
+    esac
+    if [ "$cmd" ]; then
+        shift
+        if [ 'follow' = "$cmd" ]; then
+            watch -n 0.5 "deluge-console 'info --sort-reverse=state $@' | tail -n 8"
+        elif [ 'throttle' = "$cmd" ]; then
+            if [ ' -1.0' = "$(deluge-console 'config max_upload_speed' | cut -d ':' -f 2)" ]; then
+                deluge-console 'config -s max_upload_speed 90'
+                deluge-console 'config -s max_download_speed 900'
+            else
+                deluge-console 'config -s max_upload_speed -1'
+                deluge-console 'config -s max_download_speed -1'
+            fi
+        else
+            deluge-console "$cmd $@"
+        fi
+        while [ "$@" ]; do shift; done
+    fi
+    deluge-console "info --sort-reverse=progress $@"
+    deluge-console 'config max_upload_speed'
+    deluge-console 'config max_download_speed'
+}
+w() {
+    if [ '-d' = "$1" ]; then
+        local opts='-dump | more'
+        shift
+    fi
+    if [ "$1" ]; then
+        local query='http://'
+        local engine="$1"
+        shift
+        case "$engine" in
+            s) query="${query}duckduckgo.com/?q=$*";;
+            g) query="${query}google.com/search?q=$*";;
+            l) query="${query}google.com/search?q=$*&btnI=";;
+            w) query="${query}en.wikipedia.org/w/index.php?title=Special:Search&search=$*&go=Go";;
+            d) query="${query}dictionary.reference.com/browse/$*";;
+            m)
+                if [ 'h' = "$1" ]; then
+                    shift
+                    opts="-dump | rev | more"
+                fi
+                query="${query}morfix.nana10.co.il/$*"
+            ;;
+        esac
+        local cmd="w3m '$query' $opts"
+        eval $cmd
+    else
+        while read cmd; do
+            eval "w -d $cmd"
+        done;
+    fi
+}
 wf() { w3m "http://m.wolframalpha.com/input/?i=$(perl -MURI::Escape -e "print uri_escape(\"$*\");")" -dump 2>/dev/null | grep -A 2 'Result:' | tail -n 1; }
 wf() { wget -O - "http://api.wolframalpha.com/v1/query?input=$*&appid=LAWJG2-J2GVW6WV9Q" 2>/dev/null | grep plaintext | sed -n 2,4p | cut -d '>' -f2 | cut -d '<' -f1; }
 wff() { while read r; do wf $r; done; }
 
 # General aliases and functions
-alias startx='TMUX="" startx &'
+alias x='TMUX="" startx &'
 log() { $@ 2>&1 | tee log.txt; }
+
+# Colors
+eval "`dircolors`"
+export LESS='-MR'
+export LESS_TERMCAP_us=$'\e[32m'
+export LESS_TERMCAP_ue=$'\e[0m'
+export LESS_TERMCAP_md=$'\e[1;31m'
+export LESS_TERMCAP_me=$'\e[0m'
+
+# Prompt
+if [ -z "$debian_chroot" ] && [ -r /etc/debian_chroot ]; then
+    debian_chroot=$(cat /etc/debian_chroot)
+fi
+function parse_git_branch {
+  git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/(\1)/'
+}
+#PS1='u@\h:\w\$ '
+#PS1='\n\d \t\n\u@${debian_chroot:+($debian_chroot)} \h (\!)\n\w$(parse_git_branch)\$ '
+export PS1='\n\e[31;40m\d \t\e[0m\n\e[32;40m\u@\h (\!)\e[0m\n\w$(parse_git_branch)\$ '
+
 
 # Print some lines
 echo
