@@ -2,9 +2,11 @@
 [ -t 0 ] || return
 
 # Multiplex
-[ ! "$TMUX" ] && tmux -2 new-session && [ ! -e /tmp/dontquit ] && exit 0
+[ ! "$TMUX" ] &&
+    ([ "$SSH_CONNECTION" ] && tmux -2 attach \; set status on || tmux -2 new) &&
+    [ ! -e /tmp/dontquit ] && exit 0
 
-# Show stats bar for remote connections
+# Turn status line for remote connections
 [ "$SSH_CONNECTION" ] && tmux set status on
 
 # Steal all tmux windows into current session
@@ -28,8 +30,11 @@ function muxsplit {
 
 alias muxheist='muxjoin && muxsplit'
 
+export TERM=screen
+
 # Make nice
 renice -n -10 -p "$$" > /dev/null
+ionice -c 2 -n 0 -p "$$" > /dev/null
 
 # Create a new group for this session
 mkdir -pm 0700 /sys/fs/cgroup/cpu/user/$$
@@ -44,15 +49,18 @@ READNULLCMD=$PAGER
 
 # Keys
 export WORDCHARS=''
+export KEYTIMEOUT=100
 bindkey -e
 bindkey "^p" history-beginning-search-backward
 bindkey "^n" history-beginning-search-forward
 bindkey "^q" push-line-or-edit
+bindkey "^u" vi-kill-line
 bindkey -s '\eu' '^qcd ..^M'
-bindkey -s '|p' " | $PAGER"
-bindkey -s '|g' " | grep "
-bindkey -s '|w' " | wc "
-bindkey -s '|c' " | cut -d ' ' -f "
+bindkey -s '|p' "| $PAGER"
+bindkey -s '|g' '| grep '
+bindkey -s '|w' '| wc '
+bindkey -s '|v' '| vi -c "set buftype=nofile" - '
+bindkey -s '|c' '| cut -d " " -f '
 
 autoload -Uz edit-command-line && zle -N edit-command-line && bindkey "^x^e" edit-command-line
 
@@ -60,8 +68,10 @@ autoload -Uz edit-command-line && zle -N edit-command-line && bindkey "^x^e" edi
 # Double space tries to completes what is already typed.
 # Otherwise just insert a magic space.
 space-check() {
-    if [ ! "$LBUFFER" ]; then
-        zle history-incremental-search-backward '^'
+    if [ "$MC_TMPDIR" ]; then
+        zle magic-space
+    elif [ ! "$LBUFFER" ]; then
+        zle history-incremental-search-backward ''
     elif [ ' ' = "${LBUFFER[-1]}" ]; then
         zle backward-delete-char
         zle history-beginning-search-backward
@@ -103,7 +113,7 @@ TRAPINT () {
 autoload -Uz compinit && compinit && {
     setopt listpacked nolistambiguous
     zstyle ':completion:*' use-cache true
-    zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}' 'r:|[._-]=*'
+    zstyle ':completion:*' matcher-list 'm:{[:lower:]}={[:upper:]}' 'r:[._-]=*'
     zstyle ':completion:*' ignore-parents parent pwd ..
     zstyle ':completion:*' menu auto select
     zstyle ':completion:*' group-name ''
@@ -116,12 +126,40 @@ autoload -Uz compinit && compinit && {
     zstyle ':completion:*:kill:*' command 'ps -u $USER -o pid,%cpu,tty,cputime,cmd'
 
     # Get hosts from history
-    hosts=($(cut -d ';' -f 2 "$HOME/.zsh_history" | grep '^ssh ' | cut -c 4- | sort -u | tr "\n" " "))
-    zstyle ':completion:*:(ssh|scp|sshfs):*' hosts $hosts
+    zstyle -e ':completion:*' hosts 'reply=($(grep "^.\{15\}ssh " "$HOME/.zsh_history" | cut -c 20-))'
 
     # Highlight non-ambiguous part of completion in menu
-    zstyle -e ':completion:*' list-colors 'reply=("${PREFIX:+=(#bi)($PREFIX:t)(?)*==31=32}:${(s.:.)LS_COLORS}")'
+    zstyle -e ':completion:*' list-colors 'reply=("${PREFIX:+=(#bi)($PREFIX:t)(?)*==34=37}:${(s.:.)LS_COLORS}")'
 }
+
+xsfind() {
+    needle="$@"
+    reply=()
+    while read line ;do
+        reply+=("${line:2}")
+    done < <(find ./ -type d -iname "*${needle%% }*" 2>/dev/null)
+}
+
+xs() {
+    [ -d "$@" ] 2>/dev/null && cd "$@" && return
+    xsfind $@
+    case ${#reply[@]} in
+        0)
+            false
+            ;;
+        1)
+            pushd "${reply[@]}"
+            ;;
+        *)
+            select dir in "${reply[@]}" ; do
+                pushd "$dir"
+                break
+            done
+            ;;
+    esac
+}
+
+compctl -K xsfind -M 'r:|[a-z]=**' xs
 
 # Filesystem traversal
 export PATH="$HOME/bin:$PATH"
@@ -172,8 +210,8 @@ mplen() { wf `mplayer -vo dummy -ao dummy -identify "$1" 2>/dev/null | grep ID_L
 alias webshare='python -c "import SimpleHTTPServer;SimpleHTTPServer.test()"'
 alias wclip='curl -F "sprunge=<-" http://sprunge.us | xclip -f'
 t() {
-    [ 'q' = "$1" ] && return $(killall deluged)
-    if [ ! "$(pgrep deluged)" ]; then
+    [ 'q' = "$1" ] && return $(pkill -x deluged)
+    if [ ! "$(pgrep -x deluged)" ]; then
         read -q "?Daemon not running, abort? " && return 0
         deluged && echo ' Starting daemon' && sleep 1
     fi
