@@ -22,7 +22,7 @@ set shiftround
 set shiftwidth=4
 set softtabstop=4
 set tabstop=4
-set list listchars=tab:\ \ ,trail:·
+set list listchars=tab:»\ ,trail:•,extends:↜,precedes:↜,nbsp:°
 
 set wrap
 set linebreak
@@ -36,7 +36,7 @@ set showmode
 set shortmess=aTW
 set laststatus=1
 set t_ti= t_te=
-set mouse=a
+set mouse=
 
 set incsearch
 set hlsearch
@@ -55,26 +55,39 @@ set runtimepath+=~/.vim/bundle/vundle/
 call vundle#rc()
 Bundle 'gmarik/vundle'
 
-Bundle 'YankRing.vim'
-nnoremap <Leader>yd :YRMapsDelete<CR>
-nnoremap <Leader>yc :YRMapsCreatMapsCreate<CR>
-let g:yankring_history_dir = '$VIM'
-function! YRRunAfterMaps()
-    nnoremap Y   :<C-U>YRYankCount 'y$'<CR>
-endfunction
+Bundle 'yankstack'
+let g:yankstack_map_keys = 0
+call yankstack#setup()
+nmap <C-p> <Plug>yankstack_substitute_older_paste
+nmap <C-n> <Plug>yankstack_substitute_newer_paste
+" FIXME Yankstack seems to create some problems with the + register
+"Bundle 'YankRing.vim'
+"nnoremap <Leader>yd :YRMapsDelete<CR>
+"nnoremap <Leader>yc :YRMapsCreatMapsCreate<CR>
+"let g:yankring_history_dir = '$VIM'
+"function! YRRunAfterMaps()
+"    nnoremap Y   :<C-U>YRYankCount 'y$'<CR>
+"endfunction
 
 Bundle 'ctrlp.vim'
 let g:ctrlp_map = '<F10>'
 
+
+Bundle 'vimux'
+map <LocalLeader>v :VimuxPromptCommand<CR>
+vmap <LocalLeader>v "vy :call VimuxRunCommand(@v . "\n", 0)<CR>
+
 Bundle 'Gundo'
+Bundle 'AutoComplPop'
 Bundle 'fugitive.vim'
 Bundle 'vimux'
 Bundle 'fuzzee.vim'
 Bundle 'EasyMotion'
-Bundle 'AutoComplPop'
+Bundle 'kaihendry/vim-html5.git'
 
 Bundle 'rainbow_parentheses.vim'
 Bundle 'jellybeans.vim'
+Bundle 'yuratomo/w3m.vim'
 
 "Maps, abrvs, commands
 nnoremap Y y$
@@ -134,11 +147,11 @@ if has("autocmd")
     au BufReadPost,BufNewFile * setlocal formatoptions=tcqw
 
     " Hebrew
-    au BufReadPost,BufNewFile ~/heb/* Heb
+    au BufReadPost,BufNewFile ~/heb/* silent Heb
 
     " Convert certain filetypes and open in read only
     au BufReadPre *.doc silent set ro
-    au BufReadPost *.doc silent %!antiword "%"
+    au BufReadPost *.doc silent %!catdoc "%"
     au BufReadPre *.odt,*.odp silent set ro
     au BufReadPost *.odt,*.odp silent %!odt2txt "%"
     au BufReadPre *.sxw silent set ro
