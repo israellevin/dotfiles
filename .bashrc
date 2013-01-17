@@ -2,36 +2,22 @@
 [ -t 0 ] || return
 
 # Multiplex
-[ ! "$TMUX" ] && tmux -2 new-session && [ ! -e /tmp/dontquit ] && exit 0
-
-# Show stats bar for remote connections
-[ "$SSH_CONNECTION" ] && tmux set status on
-
-# Steal all tmux windows into current session
-function muxjoin {
-    [ ! "$TMUX" ] && echo 'tmux not running' 1>&2 && exit 1
-    tmux set status on
-    for win in $(tmux list-windows -a | cut -d : -f 1-2); do
-        tmux move-window -d -s "$win"
-    done
-}
-
-# Split current tmux session to multiple X terminals
-function muxsplit {
-    [ ! "$TMUX" ] && echo 'tmux not running' 1>&2 && exit 1
-    tmux rename-session split
-    [ ! "$?" ] && echo 'split session exists' 1>&2 && exit 1
-    for win in $(tmux list-windows -t split | cut -d : -f 1); do
-        TMUX='' urxvtcd -e dash -c "tmux new-session \\; move-window -k -s 'split:$win' -t 0"
-    done
-}
-
-alias muxheist='muxjoin && muxsplit'
+if [ ! "$TMUX" ]; then
+    if [ "$SSH_CONNECTION" ]; then
+        if [ "$DISPLAY" ]; then
+            export DISPLAY=localhost:10.0
+        fi
+        tmux -2 attach
+    else
+        tmux -2 new
+        [ -e /tmp/dontquit ] || exit 0
+    fi
+fi
 
 # Make nice
-renice -n -10 -p "$$" > /dev/null
+renice -n -10 -p "$$"
 
-# Create a new group for this session
+# Create a new cgroup for this session
 mkdir -pm 0700 /sys/fs/cgroup/cpu/user/$$
 echo $$ > /sys/fs/cgroup/cpu/user/$$/tasks
 
@@ -46,7 +32,6 @@ shopt -s histverify
 shopt -s checkwinsize
 shopt -u force_fignore
 shopt -s no_empty_cmd_completion
-export IGNOREEOF=1
 
 # History
 export HISTFILESIZE=999999
@@ -56,104 +41,23 @@ export HISTTIMEFORMAT='%F %T '
 export HISTIGNORE='&:exit'
 export PROMPT_COMMAND='history -a; history -n'
 
-# Completion
-source /etc/bash_completion
-complete -W "$(echo $(grep '^ssh ' .bash_history | sort -u | sed 's/^ssh //'))" ssh
-_fasd_bash_hook_cmd_complete j vv mm
-define() {
-    local ret
-    local lines=0
-    local match
-    local url="dict://dict.org"
-    if [ $# -eq 0 ]; then
-        echo "Usage: 'define word'"
-        echo "Use specific database: 'define word db'"
-        echo "Get listing of possible databases: 'define showdb'"
-        echo "Word match: 'define word-part match-type' (suf, pre, sub, re)"
-        echo "Suffix, prefix, substring, regular expression respectively"
-        echo "If you use regular expression matching: 'define ^s.*r re'"
-    fi
-    if [ $# -eq 1 ]; then
-        if [ $1 == "showdb" ]; then
-            ret="`curl -# ${url}/show:db|tail -n +3|head -n -2|sed 's/^110.//'`"
-        else
-            #Lookup word
-            ret="`curl -# ${url}/d:$1|tail -n +3|head -n -2|sed 's/^15[0-2].//'`"
-        fi
-    fi
-    if [ $# -eq 2 ]; then
-        case "$2" in
-        "suf")
-            #Match by suffix
-            match="suffix"
-            ret="`curl -# ${url}/m:$1::${match}|tail -n +3|head -n -2|sed 's/^15[0-2].//'`"
-        ;;
-        "pre")
-            #Match by prefix
-            match="prefix";
-            ret="`curl -# ${url}/m:$1::${match}|tail -n +3|head -n -2|sed 's/^15[0-2].//'`"
-        ;;
-        "sub")
-            #Match by substring
-            match="substring";
-            ret="`curl -# ${url}/m:$1::${match}|tail -n +3|head -n -2|sed 's/^15[0-2].//'`"
-        ;;
-        "re")
-            #Regular expression match
-            match="re";
-            ret="`curl -# ${url}/m:$1::${match}|tail -n +3|head -n -2|sed 's/^15[0-2].//'`"
-        ;;
-        *)
-            #Use specific databse for lookup
-            ret="`curl -# ${url}/d:$1:$2|tail -n +3|head -n -2|sed 's/^15[0-2].//'`"
-        ;;
-        esac
-    fi
-
-    lines=`echo "${ret}"|grep -c -`
-
-    #Output
-    if [ ${lines} -gt 4 ]; then
-        #Use less if more than 4 definitions
-        echo "${ret}"|less -R
-    else
-        echo "${ret}"
-    fi
-}
-_define(){
-    local opts="re sub suf pre"
-    if [ $COMP_CWORD -eq 1 ];then
-        if [ -f /usr/share/dict/words ];then
-            COMPREPLY=( $( grep -h "^${COMP_WORDS[COMP_CWORD]}" /usr/share/dict/words <(echo -e "showdb") ) )
-        else
-            COMPREPLY=( $( compgen -W "showdb" -- "${COMP_WORDS[COMP_CWORD]}"  ) )
-        fi
-        return 0
-    elif [ $COMP_CWORD -ge 2 ];then
-        COMPREPLY=( \
-            $( compgen -W "$opts $(define showdb 2>/dev/null | awk '{print $1}' |\
-            grep -Ev "\.|--exit--|^[0-9]*$")" -- "${COMP_WORDS[COMP_CWORD]}" ) )
-        return 0
-    fi
-}
-complete -F _define define
-
-
-
 # Filesystem traversal
 export PATH="$HOME/bin:$PATH"
-#export CDPATH='.:~'
 cd() { [ -z "$1" ] && set -- ~; [ "$(pwd)" != "$(readlink -f "$1")" ] && pushd "$1"; }
 ..() { if [ $1 -ge 0 2> /dev/null ]; then x=$1; else x=1; fi; for (( i = 0; i < $x; i++ )); do cd ..; done; }
 mkcd() { mkdir -p "$*"; cd "$*"; }
 alias b='popd'
-alias m='mntnir.sh'
 alias d='trash-put'
-alias dud='du --max-depth=1 -h | sort -h'
+alias dud='du -hxd 1 | sort -h'
 eval "$(fasd --init auto)"
 fasd_cd() { [ $# -gt 1 ] && cd "$(fasd -e echo "$@")" || fasd "$@"; }
 alias j='fasd_cd -d'
 alias f='fasd -f'
+
+# Completion
+source /etc/bash_completion
+complete -W "$(echo $(grep '^ssh ' .bash_history | sort -u | sed 's/^ssh //'))" ssh
+_fasd_bash_hook_cmd_complete j vv mm
 
 # ls
 export LS_OPTIONS='-lh --color=auto'
@@ -261,6 +165,27 @@ wff() { while read r; do wf $r; done; }
 # General aliases and functions
 alias x='TMUX="" startx &'
 log() { $@ 2>&1 | tee log.txt; }
+
+# Steal all tmux windows into current session
+function muxjoin {
+    [ ! "$TMUX" ] && echo 'tmux not running' 1>&2 && exit 1
+    tmux set status on
+    for win in $(tmux list-windows -a | cut -d : -f 1-2); do
+        tmux move-window -d -s "$win"
+    done
+}
+
+# Split current tmux session to multiple X terminals
+function muxsplit {
+    [ ! "$TMUX" ] && echo 'tmux not running' 1>&2 && exit 1
+    tmux rename-session split
+    [ ! "$?" ] && echo 'split session exists' 1>&2 && exit 1
+    for win in $(tmux list-windows -t split | cut -d : -f 1); do
+        TMUX='' urxvtcd -e dash -c "tmux new-session \\; move-window -k -s 'split:$win' -t 0"
+    done
+}
+
+alias muxheist='muxjoin && muxsplit'
 
 # Colors
 eval "`dircolors`"
