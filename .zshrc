@@ -30,7 +30,7 @@ function muxsplit {
 
 alias muxheist='muxjoin && muxsplit'
 
-export TERM=screen
+export TERM=screen-256color
 
 # Make nice
 renice -n -10 -p "$$" > /dev/null
@@ -113,7 +113,9 @@ TRAPINT () {
 autoload -Uz compinit && compinit && {
     setopt listpacked nolistambiguous
     zstyle ':completion:*' use-cache true
-    zstyle ':completion:*' matcher-list 'm:{[:lower:]}={[:upper:]}' 'r:[._-]=*'
+    #zstyle ':completion:*' completer _complete _correct _approximate
+    #zstyle ':completion:*' matcher-list 'm:{[:lower:]}={[:upper:]}' '+r:|{[:lower:][:upper:]}=**'
+    zstyle ':completion:*' matcher-list 'm:{[:lower:]}={[:upper:]}'
     zstyle ':completion:*' ignore-parents parent pwd ..
     zstyle ':completion:*' menu auto select
     zstyle ':completion:*' group-name ''
@@ -170,14 +172,14 @@ mkcd() { mkdir -p "$*"; cd "$*"; }
 alias b='popd'
 alias m='mntnir.sh'
 alias d='trash-put'
-alias dud='du --max-depth=1 -h | sort -h'
+alias dud='du -hxd 1 | sort -h'
 eval "$(fasd --init zsh-hook zsh-ccomp zsh-ccomp-install zsh-wcomp zsh-wcomp-install)"
 fasd_cd() { [ $# -gt 1 ] && cd "$(fasd -e echo "$@")" || fasd "$@"; }
 alias j='fasd_cd -d'
 alias f='fasd -f'
 
 # ls
-export LS_OPTIONS='-lh --color=auto'
+export LS_OPTIONS='-lh --color=auto --group-directories-first'
 alias l="ls $LS_OPTIONS"
 alias ll="ls $LS_OPTIONS -A"
 alias lt="ls $LS_OPTIONS -tr"
@@ -294,7 +296,8 @@ export LESS_TERMCAP_us=$green
 export LESS_TERMCAP_ue=$reset
 export LESS_TERMCAP_md=$blue
 export LESS_TERMCAP_me=$reset
-source "$HOME/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh"
+source "$HOME/bin/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh"
+export MANPAGER='sh -c "col -b | vim -c \"set buftype=nofile ft=man ts=8 nolist nonumber\" -c \"map q <Esc>:qa!<CR>\" -c \"normal M\" -"'
 
 # Extended prompt
 PROMPT="%F{green}(%!)%#%f "
