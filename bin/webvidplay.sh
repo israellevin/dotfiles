@@ -1,13 +1,9 @@
 #!/bin/bash
-fname=$(youtube-dl -t --get-filename "$1")
+# dwb: Control y
+fname=$(youtube-dl --no-part -t --get-filename "$1")
 if [ "$fname" ]; then
     cd
-    if [ -f "$fname" ]; then
-        mplayer "$fname" && exit 0
-    fi
-
-    url=$(youtube-dl -g "$1")
-    wget "$url" -O "$fname" &
+    youtube-dl --no-part -t "$1" &
     sleep 3
     mplayer "$fname"
 else
