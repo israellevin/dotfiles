@@ -31,6 +31,7 @@ set formatoptions=tcqw
 set backspace=indent,eol,start
 
 set ruler
+set number
 set showcmd
 set showmode
 set shortmess=aTW
@@ -72,7 +73,6 @@ nmap <C-n> <Plug>yankstack_substitute_newer_paste
 Bundle 'ctrlp.vim'
 let g:ctrlp_map = '<F10>'
 
-
 Bundle 'vimux'
 map <LocalLeader>v :VimuxPromptCommand<CR>
 vmap <LocalLeader>v "vy :call VimuxRunCommand(@v . "\n", 0)<CR>
@@ -80,7 +80,6 @@ vmap <LocalLeader>v "vy :call VimuxRunCommand(@v . "\n", 0)<CR>
 Bundle 'Gundo'
 Bundle 'AutoComplPop'
 Bundle 'fugitive.vim'
-Bundle 'vimux'
 Bundle 'fuzzee.vim'
 Bundle 'EasyMotion'
 Bundle 'kaihendry/vim-html5.git'
@@ -184,7 +183,7 @@ set background=dark
 syntax enable
 
 if '' == $DISPLAY
-    set t_Co=16
+    set t_Co=8
     colorscheme desert
 else
     set t_Co=256
