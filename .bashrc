@@ -54,6 +54,33 @@ fasd_cd() { [ $# -gt 1 ] && cd "$(fasd -e echo "$@")" || fasd "$@"; }
 alias j='fasd_cd -d'
 alias f='fasd -f'
 
+xsfind() {
+    needle="$@"
+    reply=()
+    while read line ;do
+        reply+=("${line:2}")
+    done < <(find ./ -type d -iname "*${needle%% }*" 2>/dev/null)
+}
+
+xs() {
+    [ -d "$@" ] 2>/dev/null && cd "$@" && return
+    xsfind $@
+    case ${#reply[@]} in
+        0)
+            false
+            ;;
+        1)
+            pushd "${reply[@]}"
+            ;;
+        *)
+            select dir in "${reply[@]}" ; do
+                pushd "$dir"
+                break
+            done
+            ;;
+    esac
+}
+
 # Completion
 source /etc/bash_completion
 complete -W "$(echo $(grep '^ssh ' .bash_history | sort -u | sed 's/^ssh //'))" ssh
@@ -92,41 +119,6 @@ mplen() { wf `mplayer -vo dummy -ao dummy -identify "$1" 2>/dev/null | grep ID_L
 # Web
 alias webshare='python -c "import SimpleHTTPServer;SimpleHTTPServer.test()"'
 alias wclip='curl -F "sprunge=<-" http://sprunge.us | xclip -f'
-t() {
-    [ 'q' = "$1" ] && return $(killall deluged)
-    if [ ! "$(pgrep deluged)" ]; then
-        read -q "?Daemon not running, abort? " && return 0
-        deluged && echo ' Starting daemon' && sleep 1
-    fi
-    case "$1" in
-        a) cmd='add';;
-        p) cmd='pause';;
-        r) cmd='resume';;
-        f) cmd='follow';;
-        t) cmd='throttle';;
-        *) cmd='';;
-    esac
-    if [ "$cmd" ]; then
-        shift
-        if [ 'follow' = "$cmd" ]; then
-            watch -n 0.5 "deluge-console 'info --sort-reverse=state $@' | tail -n 8"
-        elif [ 'throttle' = "$cmd" ]; then
-            if [ ' -1.0' = "$(deluge-console 'config max_upload_speed' | cut -d ':' -f 2)" ]; then
-                deluge-console 'config -s max_upload_speed 90'
-                deluge-console 'config -s max_download_speed 900'
-            else
-                deluge-console 'config -s max_upload_speed -1'
-                deluge-console 'config -s max_download_speed -1'
-            fi
-        else
-            deluge-console "$cmd $@"
-        fi
-        while [ "$@" ]; do shift; done
-    fi
-    deluge-console "info --sort-reverse=progress $@"
-    deluge-console 'config max_upload_speed'
-    deluge-console 'config max_download_speed'
-}
 w() {
     if [ '-d' = "$1" ]; then
         local opts='-dump | more'
@@ -194,6 +186,8 @@ export LESS_TERMCAP_us=$'\e[32m'
 export LESS_TERMCAP_ue=$'\e[0m'
 export LESS_TERMCAP_md=$'\e[1;31m'
 export LESS_TERMCAP_me=$'\e[0m'
+export MANPAGER='sh -c "col -b | vim -c \"set buftype=nofile ft=man ts=8 nolist\" -c \"map q <Esc>:qa!<CR>\" -c \"normal M\" -"'
+export TERM=screen-256color
 
 # Prompt
 if [ -z "$debian_chroot" ] && [ -r /etc/debian_chroot ]; then
@@ -205,7 +199,6 @@ function parse_git_branch {
 #PS1='u@\h:\w\$ '
 #PS1='\n\d \t\n\u@${debian_chroot:+($debian_chroot)} \h (\!)\n\w$(parse_git_branch)\$ '
 export PS1='\n\e[31;40m\d \t\e[0m\n\e[32;40m\u@\h (\!)\e[0m\n\w$(parse_git_branch)\$ '
-
 
 # Print some lines
 echo
