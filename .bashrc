@@ -1,6 +1,11 @@
 # Don't do shit if not connected to a terminal
 [ -t 0 ] || return
 
+# Truisms
+export PATH="$HOME/bin:$PATH"
+export LANG=C.UTF-8
+#export TERM=screen-256color
+
 # Multiplex
 if [ ! "$TMUX" ]; then
     if [ "$SSH_CONNECTION" ]; then
