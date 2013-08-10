@@ -29,6 +29,7 @@ set linebreak
 set scrolloff=999
 set formatoptions=tcqw
 set backspace=indent,eol,start
+set indentkeys-=-<Return>
 
 set ruler
 set number
@@ -56,67 +57,46 @@ set runtimepath+=~/.vim/bundle/vundle/
 call vundle#rc()
 Bundle 'gmarik/vundle'
 
-Bundle 'yankstack'
+Bundle 'maxbrunsfeld/vim-yankstack'
 let g:yankstack_map_keys = 0
 call yankstack#setup()
 nmap <C-p> <Plug>yankstack_substitute_older_paste
 nmap <C-n> <Plug>yankstack_substitute_newer_paste
-" FIXME Yankstack seems to create some problems with the + register
-"Bundle 'YankRing.vim'
-"nnoremap <Leader>yd :YRMapsDelete<CR>
-"nnoremap <Leader>yc :YRMapsCreatMapsCreate<CR>
-"let g:yankring_history_dir = '$VIM'
-"function! YRRunAfterMaps()
-"    nnoremap Y   :<C-U>YRYankCount 'y$'<CR>
-"endfunction
+nnoremap Y y$
+
+Bundle 'AutoComplPop'
+let g:acp_behaviorKeywordLength = 2
 
 Bundle 'ctrlp.vim'
 let g:ctrlp_map = '<F10>'
+nnoremap <Leader>B :CtrlPBuffer<CR>
 
-Bundle 'vimux'
-map <LocalLeader>v :VimuxPromptCommand<CR>
-vmap <LocalLeader>v "vy :call VimuxRunCommand(@v . "\n", 0)<CR>
-
-Bundle 'Gundo'
-Bundle 'AutoComplPop'
-Bundle 'fugitive.vim'
-Bundle 'fuzzee.vim'
-Bundle 'EasyMotion'
-Bundle 'kaihendry/vim-html5.git'
-
-Bundle 'rainbow_parentheses.vim'
 Bundle 'jellybeans.vim'
-Bundle 'yuratomo/w3m.vim'
+Bundle 'mmedvede/w3m.vim'
+
+Bundle 'ZenCoding.vim'
+Bundle 'HTML-AutoCloseTag'
 
 "Maps, abrvs, commands
 nnoremap Y y$
 nnoremap <Space> <PageDown>
-nnoremap <S-Space> <PageUp>
+nnoremap <Backspace> <PageUp>
 nnoremap <CR> :nohlsearch<CR><CR>
 nnoremap gf :e <cfile><CR>
 nnoremap <Leader>gf :split <cfile><CR>
 nnoremap <Leader>s :setlocal spell!<CR>
+nnoremap <Leader>b :b#<CR>
 nnoremap <expr> <Leader>h "hebrew" == &keymap ? ':Noheb<CR>' : ':Heb<CR>'
 nnoremap <expr> <Leader>n &nu == &rnu ? ':setlocal nu!<CR>' : ':setlocal rnu!<CR>'
 nnoremap <expr> <Leader>z 0 == &scrolloff ? ':setlocal scrolloff=999<CR>' : ':setlocal scrolloff=0<CR>'
 
 nnoremap <Up> gk
 nnoremap <Down> gj
-nnoremap <kPlus> :cn<CR>
-nnoremap <kMinus> :cp<CR>
 nnoremap <F5> :w<CR>:! <C-r>=expand("%:p")<CR><CR>
-nnoremap <F4> :b#<CR>
-nnoremap <F3> :execute 'vimgrep /'.@/.'/g *'<CR>:copen<CR>
-nnoremap <F2> :CtrlPBuffer<CR>
 
 inoremap <Up> <C-o>gk
 inoremap <Down> <C-o>gj
-inoremap <kPlus> <Esc>:cn<CR>i
-inoremap <kMinus> <Esc>:cp<CR>i
 inoremap <F5> <Esc>:w<CR>:! <C-r>=expand("%:p")<CR><CR>
-inoremap <F4> <Esc>:b#<CR>
-inoremap <F3> <Esc>:execute 'vimgrep /'.@/.'/g *'<CR>:copen<CR>
-inoremap <F2> <Esc>:CtrlPBuffer<CR>
 
 vnoremap <Right> >gv
 vnoremap <Left> <gv
@@ -134,48 +114,47 @@ command! Heb setlocal rightleft | setlocal rightleftcmd | setlocal keymap=hebrew
 command! Noheb setlocal norightleft | setlocal rightleftcmd= | setlocal keymap=
 command! Lowtag %s/<\/\?\u\+/\L&/g
 
-if has("autocmd")
-    au!
-    filetype plugin indent on
-    set omnifunc=syntaxcomplete#Complete
+" autocommands
+au!
+filetype plugin indent on
+set omnifunc=syntaxcomplete#Complete
 
-    " Return to last position
-    au BufReadPost * normal `"
+" Return to last position
+au BufReadPost * normal `"
 
-    " Many ftplugins override formatoptions, so override them back
-    au BufReadPost,BufNewFile * setlocal formatoptions=tcqw
+" Many ftplugins override formatoptions, so override them back
+au BufReadPost,BufNewFile * setlocal formatoptions=tcqw
 
-    " Hebrew
-    au BufReadPost,BufNewFile ~/heb/* silent Heb
+" Hebrew
+au BufReadPost,BufNewFile ~/heb/* silent Heb
 
-    " Convert certain filetypes and open in read only
-    au BufReadPre *.doc silent set ro
-    au BufReadPost *.doc silent %!catdoc "%"
-    au BufReadPre *.odt,*.odp silent set ro
-    au BufReadPost *.odt,*.odp silent %!odt2txt "%"
-    au BufReadPre *.sxw silent set ro
-    au BufReadPost *.sxw silent %!sxw2txt "%"
-    au BufReadPre *.pdf silent set ro
-    au BufReadPost *.pdf silent %!pdftotext -nopgbrk -layout -q -eol unix "%" - | fmt -w78
-    au BufReadPre *.rtf silent set ro
-    au BufReadPost *.rtf silent %!unrtf --text "%"
+" Convert certain filetypes and open in read only
+au BufReadPre *.doc silent set ro
+au BufReadPost *.doc silent %!catdoc "%"
+au BufReadPre *.odt,*.odp silent set ro
+au BufReadPost *.odt,*.odp silent %!odt2txt "%"
+au BufReadPre *.sxw silent set ro
+au BufReadPost *.sxw silent %!sxw2txt "%"
+au BufReadPre *.pdf silent set ro
+au BufReadPost *.pdf silent %!pdftotext -nopgbrk -layout -q -eol unix "%" - | fmt -w78
+au BufReadPre *.rtf silent set ro
+au BufReadPost *.rtf silent %!unrtf --text "%"
 
-    " Diff view
-    au FilterWritePre * if &diff | windo set wrap | windo set virtualedit=all
+" Diff view
+au FilterWritePre * if &diff | windo set wrap | windo set virtualedit=all
 
-    " Equal size windows upon resize
-    au VimResized * wincmd =
+" Equal size windows upon resize
+au VimResized * wincmd =
 
-    " cursor line and column for focused windows only
-    au WinEnter * setlocal cursorline | setlocal cursorcolumn
-    au WinLeave * setlocal nocursorline | setlocal nocursorcolumn
+" cursor line and column for focused windows only
+au WinEnter * setlocal cursorline | setlocal cursorcolumn
+au WinLeave * setlocal nocursorline | setlocal nocursorcolumn
 
-    " Source vimrc when written
-    au! BufWritePost $MYVIMRC source $MYVIMRC
+" Source vimrc when written
+au! BufWritePost $MYVIMRC source $MYVIMRC
 
-    " Chmod +x shabanged files on save
-    au BufWritePost * if getline(1) =~ "^#!" | silent !chmod +x <afile>
-endif
+" Chmod +x shabanged files on save
+au BufWritePost * if getline(1) =~ "^#!" | silent !chmod u+x <afile>
 
 " Pretty
 set encoding=utf-8
