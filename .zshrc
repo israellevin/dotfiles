@@ -3,7 +3,7 @@
 
 # Multiplex
 [ ! "$TMUX" ] &&
-    ([ "$SSH_CONNECTION" ] && tmux -2 attach \; set status on || tmux -2 new) &&
+    ([ "$SSH_CONNECTION" ] && tmux -2 attach || tmux -2 new) &&
     [ ! -e /tmp/dontquit ] && exit 0
 
 # Turn status line for remote connections
@@ -30,7 +30,7 @@ function muxsplit {
 
 alias muxheist='muxjoin && muxsplit'
 
-export TERM=screen-256color
+TERM=screen-256color
 
 # Make nice
 renice -n -10 -p "$$" > /dev/null
@@ -48,8 +48,8 @@ PAGER=pager.sh
 READNULLCMD=$PAGER
 
 # Keys
-export WORDCHARS=''
-export KEYTIMEOUT=100
+WORDCHARS=''
+KEYTIMEOUT=100
 bindkey -e
 bindkey "^p" history-beginning-search-backward
 bindkey "^n" history-beginning-search-forward
@@ -89,9 +89,9 @@ kill-accept() { zle kill-line; zle accept-line } && zle -N kill-accept && bindke
 unambigandmenu() { zle expand-or-complete; zle magic-space; zle backward-delete-char; zle expand-or-complete; } && zle -N unambigandmenu && bindkey "^i" unambigandmenu
 
 # History
-export HISTFILE=$HOME/.zsh_history
-export HISTSIZE=999999999
-export SAVEHIST=999999999
+HISTFILE=$HOME/.zsh_history
+HISTSIZE=999999999
+SAVEHIST=999999999
 setopt histexpiredupsfirst
 setopt extendedhistory sharehistory histverify
 setopt histignoredups histignorespace histfindnodups
@@ -164,8 +164,8 @@ xs() {
 compctl -K xsfind -M 'r:|[a-z]=**' xs
 
 # Filesystem traversal
-export PATH="$HOME/bin:$PATH"
-#export CDPATH='.:~'
+PATH="$HOME/bin:$PATH"
+#CDPATH='.:~'
 setopt autocd autopushd pushdignoredups
 ..() { if [ $1 -ge 0 2> /dev/null ]; then x=$1; else x=1; fi; for (( i = 0; i < $x; i++ )); do cd ..; done; }
 mkcd() { mkdir -p "$*"; cd "$*"; }
@@ -179,7 +179,7 @@ alias j='fasd_cd -d'
 alias f='fasd -f'
 
 # ls
-export LS_OPTIONS='-lh --color=auto --group-directories-first'
+LS_OPTIONS='-lh --color=auto'
 alias l="ls $LS_OPTIONS"
 alias ll="ls $LS_OPTIONS -A"
 alias lt="ls $LS_OPTIONS -tr"
@@ -187,10 +187,10 @@ alias ld="ls $LS_OPTIONS -A -d */"
 alias lss="ls $LS_OPTIONS -Sr"
 
 # grep
-export GREP_OPTIONS='-i --color=auto'
+GREP_OPTIONS='-i --color=auto'
 alias lg='ll | grep'
 alias fgg='find | grep'
-alias pg='ps -ef | grep -v grep | grep'
+alias pg='ps -eo start_time,pid,command --sort=start_time | grep -v grep | grep'
 
 # vim
 alias v='fasd -e vim -b viminfo'
@@ -246,37 +246,6 @@ t() {
     deluge-console 'config max_upload_speed'
     deluge-console 'config max_download_speed'
 }
-w() {
-    if [ '-d' = "$1" ]; then
-        local opts='-dump | more'
-        shift
-    fi
-    if [ "$1" ]; then
-        local query='http://'
-        local engine="$1"
-        shift
-        case "$engine" in
-            s) query="${query}duckduckgo.com/?q=$*";;
-            g) query="${query}google.com/search?q=$*";;
-            l) query="${query}google.com/search?q=$*&btnI=";;
-            w) query="${query}en.wikipedia.org/w/index.php?title=Special:Search&search=$*&go=Go";;
-            d) query="${query}dictionary.reference.com/browse/$*";;
-            m)
-                if [ 'h' = "$1" ]; then
-                    shift
-                    opts="-dump | rev | more"
-                fi
-                query="${query}morfix.nana10.co.il/$*"
-            ;;
-        esac
-        local cmd="w3m '$query' $opts"
-        eval $cmd
-    else
-        while read cmd; do
-            eval "w -d $cmd"
-        done;
-    fi
-}
 wf() { w3m "http://m.wolframalpha.com/input/?i=$(perl -MURI::Escape -e "print uri_escape(\"$*\");")" -dump 2>/dev/null | grep -A 2 'Result:' | tail -n 1; }
 wf() { wget -O - "http://api.wolframalpha.com/v1/query?input=$*&appid=LAWJG2-J2GVW6WV9Q" 2>/dev/null | grep plaintext | sed -n 2,4p | cut -d '>' -f2 | cut -d '<' -f1; }
 wff() { while read r; do wf $r; done; }
@@ -291,13 +260,13 @@ red='[00;31m'
 green='[00;32m'
 blue='[00;36m'
 eval $(dircolors -b)
-export LESS='-MR'
-export LESS_TERMCAP_us=$green
-export LESS_TERMCAP_ue=$reset
-export LESS_TERMCAP_md=$blue
-export LESS_TERMCAP_me=$reset
+LESS='-MR'
+LESS_TERMCAP_us=$green
+LESS_TERMCAP_ue=$reset
+LESS_TERMCAP_md=$blue
+LESS_TERMCAP_me=$reset
 source "$HOME/bin/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh"
-export MANPAGER='sh -c "col -b | vim -c \"set buftype=nofile ft=man ts=8 nolist nonumber\" -c \"map q <Esc>:qa!<CR>\" -c \"normal M\" -"'
+MANPAGER='sh -c "col -b | vim -c \"set buftype=nofile ft=man ts=8 nolist nonumber\" -c \"map q <Esc>:qa!<CR>\" -c \"normal M\" -"'
 
 # Extended prompt
 PROMPT="%F{green}(%!)%#%f "
@@ -344,4 +313,4 @@ echo
 echo
 echo
 echo
-lt --group-directories-first
+ls -lhtr --color=auto --group-directories-first
