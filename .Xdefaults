@@ -2,10 +2,6 @@ URxvt.perl-ext-common: default,matcher
 URxvt.urlLauncher: dwb
 URxvt.colorUL: #86a2be
 
-#URxvt.font: -*-terminus-*-*-*-*-32-*-*-*-*-*-*-*
-#URxvt.keysym.C-0: command:\033]710;-*-terminus-*-*-*-*-24-*-*-*-*-*-*-*\007
-#URxvt.keysym.C-minus: command:\033]710;-*-terminus-*-*-*-*-32-*-*-*-*-*-*-*\007
-#URxvt.keysym.C-equal: command:\033]710;-*-terminus-*-*-*-*-48-*-*-*-*-*-*-*\007
 URxvt.font: xft:DejaVu Sans Mono:autohint=true:antialias=true:size=20
 URxvt.keysym.C-9: command:\033]710;xft:DejaVu Sans Mono:autohint=true:antialias=true:size=5\007
 URxvt.keysym.C-0: command:\033]710;xft:DejaVu Sans Mono:autohint=true:antialias=true:size=10\007
@@ -19,14 +15,9 @@ URxvt.foreground: grey
 URxvt.background: black
 URxvt.colorIT: #ffff00
 URxvt.urgentOnBell: true
+# Transparency
 #URxvt.depth:32
 #URxvt.background:rgba:0000/0000/0000/0000
 URxvt.cursorColor: green
 URxvt.color12: white
 URxvt.iso14755_52: false
-
-xterm*font: -*-terminus-*-*-*-*-32-*-*-*-*-*-*-*
-xterm*foreground: grey
-xterm*background: black
-xterm*cursorColor: green
-xterm*color12: white
