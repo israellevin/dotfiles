@@ -7,18 +7,23 @@ Configuration files and some handy scripts
 .Xdefaults
 .xinitrc
 .zshrc
-bin/browser.sh - dmenu to launch browser sessions
-bin/comix.sh - dmenu to launch comix
-bin/gmail.sh - periodically download gmail feed to a file
-bin/lyrics.sh - dump lyrics according to search string
-bin/mntnir.sh - CLI volume mounter
-bin/mpdplay.sh - create and play MPD playlists according to a string or dmenu
-bin/pager.sh - more for short files, less for long ones
-bin/red.sh - create and execute redshift commands
-bin/remote.sh - control mplayer2 or MPD remotely, for the media keys
-bin/status.sh - status line for tmux
-bin/vidplay.sh - dmenu to launch mplayer from a background tmux session
-bin/vol.sh - set the alsa master volume and refreshe the status bar
-bin/webvidplay.sh - use dl-youtube to wget and play a video from the Web
-bin/w.sh - simple web searches for the terminal (w3m.vim or plain dump)
-bin/xchroot.sh - chroot with x auth, proc, sys, dev and dev/pts
+
+bin/
+ comix.sh - dmenu to launch comix
+ define - bash front end to dict.org, with completion (not mine, source unknown)
+ dyndnslogin.sh - login to dyndns's site (note to self, stop using dyndns)
+ gmail.sh - periodically download gmail feed to a file
+ img - tput images (not mine, from https://gist.github.com/heptal/6052573)
+ lyrics.sh - dump lyrics according to search string
+ m - mntnir, the CLI volume mounter (from http://github.com/israellevin/mntnir)
+ mus - create and play MPD playlists according to a string or dmenu
+ p - more for short files, vim for long ones
+ red - shorthand redshift commands
+ remote.sh - control mplayer2 or MPD remotely, for the media keys
+ status.sh - status line for tmux
+ t - shorthand deluge-console commands
+ vid - dmenu to list videos (with history) and play them
+ vol - set the alsa master volume and update root window title with status
+ w - simple web searches for the terminal (w3m.vim or plain dump)
+ webvidplay.sh - from tube URI to running mplayer (via dl-youtube)
+ xchroot.sh - chroot with x auth, proc, sys, dev and dev/pts

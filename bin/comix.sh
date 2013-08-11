@@ -1,13 +1,22 @@
 #!/bin/dash
-cmxtypes="zip\|rar\|cbz\|cbr"
-cmxread="/home/i/read"
+cmxtypes='zip\|rar\|cbz\|cbr'
+cmxlist='/home/i/comix'
+tmp='/tmp/vids'
 
-cmx="$(tac $cmxread | awk '!x[$0]++' | head -n 20)
-$(find /media/Tera/pub/comics -type f -iregex ".*\.\($cmxtypes\)")"
+dolist() {
+    find ~pub/comics ~/torrents -type f -iregex ".*\\.\\($cmxtypes\\)")"
+}
 
-cmx=$(echo "$cmx" | dmenu)
+[ -f "$cmxlist" ] || dolist > "$cmxlist"
+cmx=$(cat "$cmxlist" | dmenu)
 
-if [ "$cmx" ]; then
-    echo $cmx >> $cmxread
+if [ -f "$cmx" ]; then
     comix -f "$cmx"
+    echo $cmx > $tmp
 fi
+
+cat "$cmxlist" >> "$tmp"
+dolist >> "$tmp"
+awk '!x[$0]++' "$tmp" > "$cmxlist"
+
+exit 0

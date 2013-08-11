@@ -1,12 +1,7 @@
-#!/bin/bash
-# dwb: Control y
-fname=$(youtube-dl --no-part -t --get-filename "$1")
-if [ "$fname" ]; then
-    cd
-    youtube-dl --no-part -t "$1" &
-    sleep 3
-    mplayer "$fname"
-else
-    exit 1
-fi
+#!/bin/dash
+cd
+youtube-dl -t --no-part "$1" &
+f=$(youtube-dl -t --get-filename "$1")
+sleep 3 && [ -f "$f" ] && mplayer "$f"
+wait
 exit 0

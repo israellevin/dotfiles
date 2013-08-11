@@ -49,8 +49,8 @@ function query
 # Case insensitive matching
 function matchi
 {
-    local s; s=$(tr [:upper:] [:lower:] <<< $1)
-    local p; p=$(tr [:upper:] [:lower:] <<< $2)
+    local s; s=$(tr '[:upper:]' '[:lower:]' <<< $1)
+    local p; p=$(tr '[:upper:]' '[:lower:]' <<< $2)
     local r; r=${s/${p}*/}
     [ ${#r} -eq ${#s} ] && echo -1 || echo "${#r}"
 }

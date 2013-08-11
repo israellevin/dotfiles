@@ -22,8 +22,9 @@ else
             fi;;
         'back') mpc prev;;
         'forward') mpc next;;
-        'mute') vol.sh toggle;;
-        'volup') vol.sh '5%+';;
-        'voldown') vol.sh '5%-';;
+        'mute') vol toggle;;
+        'volup') vol '5%+';;
+        'voldown') vol '5%-';;
     esac
 fi
+exit 0
