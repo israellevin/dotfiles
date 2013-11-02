@@ -1,10 +1,10 @@
 #!/bin/dash
 cmxtypes='zip\|rar\|cbz\|cbr'
 cmxlist='/home/i/comix'
-tmp='/tmp/vids'
+tmp='/tmp/comix'
 
 dolist() {
-    find ~pub/comics ~/torrents -type f -iregex ".*\\.\\($cmxtypes\\)")"
+    find ~/pub/comics ~/torrents -type f -iregex ".*\\.\\($cmxtypes\\)"
 }
 
 [ -f "$cmxlist" ] || dolist > "$cmxlist"

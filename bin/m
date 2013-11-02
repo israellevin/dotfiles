@@ -58,7 +58,7 @@ function matchi
 # Turn number of bytes into human readable size
 function humanify
 {
-    awk '{split("B K M G",v); s=1; while($1>1024){$1/=1024; s++} print int($1)v[s]}' <<< $1
+    awk '{split("B kB MB GB TB PB",v); s=1; while($1>1000){$1/=1000; s++} print int($1)v[s]}' <<< $1
 }
 
 # Accept commands from stdin

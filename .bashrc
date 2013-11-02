@@ -104,7 +104,7 @@ alias ld="ls $LS_OPTIONS -A -d */"
 alias lss="ls $LS_OPTIONS -Sr"
 
 # grep
-GREP_OPTIONS='-i --color=auto'
+export GREP_OPTIONS='-i --color=auto'
 alias lg='ll | grep'
 alias fgg='find | grep'
 alias pg='ps -eo start_time,pid,command --sort=start_time | grep -v grep | grep'
@@ -129,37 +129,6 @@ mplen() { wf `mplayer -vo dummy -ao dummy -identify "$1" 2>/dev/null | grep ID_L
 # Web
 alias webshare='python -c "import SimpleHTTPServer;SimpleHTTPServer.test()"'
 alias wclip='curl -F "sprunge=<-" http://sprunge.us | xclip -f'
-w() {
-    if [ '-d' = "$1" ]; then
-        local opts='-dump | more'
-        shift
-    fi
-    if [ "$1" ]; then
-        local query='http://'
-        local engine="$1"
-        shift
-        case "$engine" in
-            s) query="${query}duckduckgo.com/?q=$*";;
-            g) query="${query}google.com/search?q=$*";;
-            l) query="${query}google.com/search?q=$*&btnI=";;
-            w) query="${query}en.wikipedia.org/w/index.php?title=Special:Search&search=$*&go=Go";;
-            d) query="${query}dictionary.reference.com/browse/$*";;
-            m)
-                if [ 'h' = "$1" ]; then
-                    shift
-                    opts="-dump | rev | more"
-                fi
-                query="${query}morfix.nana10.co.il/$*"
-            ;;
-        esac
-        local cmd="w3m '$query' $opts"
-        eval $cmd
-    else
-        while read cmd; do
-            eval "w -d $cmd"
-        done;
-    fi
-}
 wf() { w3m "http://m.wolframalpha.com/input/?i=$(perl -MURI::Escape -e "print uri_escape(\"$*\");")" -dump 2>/dev/null | grep -A 2 'Result:' | tail -n 1; }
 wf() { wget -O - "http://api.wolframalpha.com/v1/query?input=$*&appid=LAWJG2-J2GVW6WV9Q" 2>/dev/null | grep plaintext | sed -n 2,4p | cut -d '>' -f2 | cut -d '<' -f1; }
 wff() { while read r; do wf $r; done; }

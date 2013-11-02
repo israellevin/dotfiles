@@ -12,3 +12,5 @@ C-p: history-search-backward
 C-n: history-search-forward
 "\e[A": history-search-backward
 "\e[B": history-search-forward
+C-j: menu-complete
+C-k: menu-complete-backward

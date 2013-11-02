@@ -35,7 +35,7 @@ set ruler
 set number
 set showcmd
 set showmode
-set shortmess=aTW
+set shortmess=aoTW
 set laststatus=1
 set t_ti= t_te=
 set mouse=
@@ -71,11 +71,17 @@ Bundle 'ctrlp.vim'
 let g:ctrlp_map = '<F10>'
 nnoremap <Leader>B :CtrlPBuffer<CR>
 
-Bundle 'jellybeans.vim'
 Bundle 'mmedvede/w3m.vim'
+Bundle 'zweifisch/pipe2eval'
+
+Bundle 'jellybeans.vim'
 
 Bundle 'ZenCoding.vim'
 Bundle 'HTML-AutoCloseTag'
+
+"Bundle 'Gundo'
+"Bundle 'rainbow_parentheses.vim'
+"Bundle 'fugitive.vim'
 
 "Maps, abrvs, commands
 nnoremap Y y$
