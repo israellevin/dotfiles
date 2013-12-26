@@ -7,6 +7,7 @@ set backupdir=~/.vim/backups
 set undofile
 set undodir=~/.vim/undo
 set path+=.*
+set modeline
 
 set hidden
 set autoread
@@ -32,6 +33,7 @@ set backspace=indent,eol,start
 set indentkeys-=-<Return>
 
 set ruler
+set relativenumber
 set number
 set showcmd
 set showmode
@@ -46,13 +48,18 @@ set ignorecase
 set smartcase
 
 set wildmenu
-set wildmode=list:longest,full
-set completeopt=longest,menuone,preview
+set wildmode=longest:full,full
+set completeopt=longest,menu
 
 "Plugins
 filetype off
 
-" Remember to git clone http://github.com/gmarik/vundle
+let firstrun=0
+if !filereadable(expand("~/.vim/bundle/vundle/README.md"))
+    let firstrun=1
+    silent !mkdir -p ~/.vim/{bundle,undo,backups}
+    silent !git clone http://github.com/gmarik/vundle ~/.vim/bundle/vundle
+endif
 set runtimepath+=~/.vim/bundle/vundle/
 call vundle#rc()
 Bundle 'gmarik/vundle'
@@ -73,15 +80,14 @@ nnoremap <Leader>B :CtrlPBuffer<CR>
 
 Bundle 'mmedvede/w3m.vim'
 Bundle 'zweifisch/pipe2eval'
+Bundle 'mattn/emmet-vim'
 
 Bundle 'jellybeans.vim'
 
-Bundle 'ZenCoding.vim'
-Bundle 'HTML-AutoCloseTag'
-
-"Bundle 'Gundo'
 "Bundle 'rainbow_parentheses.vim'
-"Bundle 'fugitive.vim'
+if 1 == firstrun
+    :BundleInstall!
+endif
 
 "Maps, abrvs, commands
 nnoremap Y y$
@@ -100,6 +106,8 @@ nnoremap <Up> gk
 nnoremap <Down> gj
 nnoremap <F5> :w<CR>:! <C-r>=expand("%:p")<CR><CR>
 
+inoremap jj <ESC>
+inoremap <expr> <Tab> pumvisible() ? "\<C-n>" : "\<C-g>u\<Tab>"
 inoremap <Up> <C-o>gk
 inoremap <Down> <C-o>gj
 inoremap <F5> <Esc>:w<CR>:! <C-r>=expand("%:p")<CR><CR>

@@ -1,12 +1,19 @@
 #!/bin/bash
 if [ "$1" ]; then
-    engine="$1"
-    shift
-
+    # Isolate dash (dump marker)
     a=$*
     q=${a%-}
-    [ "${a#$q}" ] && dump=yes
-    q=${q/ /+}
+    dump=${a#$q}
+    # Isolate ' h' (rtl marker)
+    a=$q
+    q=${q% h}
+    rtl=${a#$q}
+    # Isolate first arg (engine)
+    engine=$1
+    shift
+    q=${q#$engine }
+    # Escape spaces for URL
+    q=${q// /+}
 
     req="http://"
     case "$engine" in
@@ -28,16 +35,14 @@ if [ "$1" ]; then
         fi
     else
         if [ "$rtl" ]; then
-            rtl='+silent Heb'
+            vi "+W3m $req" "+set nonumber" "+map q <Esc>:qa!<CR>" "+silent Heb"
         else
-            rtl=''
+            w3m "$req"
         fi
-        vi "+W3m $req" "+set nonumber" "+map q <Esc>:qa!<CR>" "$rtl"
     fi
 else
     while read cmd; do
         $0 $cmd -
     done;
 fi
-
 exit 0
