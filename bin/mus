@@ -1,13 +1,14 @@
 #!/bin/dash
-if [ "$*" ]; then
-    list='mpc search'
-    for arg in "$@"; do
-        list="$list any $arg"
-    done
-    list=$($list)
-else
-    list=$(mpc listall | dmenu)
+if [ ! "$1" ]; then
+    list="$(mpc listall | dmenu)"
+    [ "$list" ] && $0 $list
+    exit 0
 fi
+
+list="$(mpc listall)"
+for arg in $@; do
+    list="$(echo "$list" | grep "$arg")"
+done
 
 [ "$list" ] || exit 0
 
