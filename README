@@ -11,7 +11,6 @@ Configuration files and some handy scripts
 bin/
  comix.sh - dmenu to launch comix
  define - bash front end to dict.org, with completion (not mine, source unknown)
- dyndnslogin.sh - login to dyndns's site (note to self, stop using dyndns)
  gmail.sh - periodically download gmail feed to a file
  img - tput images (not mine, from https://gist.github.com/heptal/6052573)
  lyrics.sh - dump lyrics according to search string
