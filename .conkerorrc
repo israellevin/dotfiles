@@ -1,0 +1,106 @@
+homepage = 'about:blank';
+url_completion_use_history = true;
+isearch_keep_selection = true;
+can_kill_last_buffer = false;
+
+webjumps.l = webjumps.lucky;
+webjumps.w = webjumps.wikipedia;
+read_url_handler_list = [
+    function(input){
+        var m = /^(\S+\|\S+)\s+(.*)/.exec(input);
+        if(m) return 'http://translate.google.com/#' + m[1] + '|' + m[2];
+        return null;
+    },
+    function(input){
+        var m = /^(.*)\s+(\S)$/.exec(input);
+        if(m) return m[2] + ' ' + m[1];
+        return null;
+    },
+    read_url_make_default_webjump_handler('google')
+];
+function possibly_valid_url(str){return /^\s*[^\/\s]*(\/|\s*$)/.test(str) && /[:\/\.]/.test(str);}
+
+require('session.js');
+session_auto_save_auto_load = 'prompt';
+
+var undos = [];
+var kill_buffer_orig = kill_buffer_orig || kill_buffer;
+kill_buffer = function(b, f){
+    b.display_uri_string && undos.push(b.display_uri_string);
+    kill_buffer_orig(b, f);
+}
+interactive('undo_close', 'Loads url from a previously killed buffer', function undo_close(b){
+    if(0 === undos.length){
+        b.window.minibuffer.message('No killed buffers');
+    }else{
+        load_url_in_new_buffer(
+            yield b.minibuffer.read(
+                $prompt = 'Restore killed url:',
+                $completer = all_word_completer($completions = undos),
+                $default_completion = undos[undos.length - 1],
+                $auto_complete = 'url',
+                $auto_complete_initial = true,
+                $auto_complete_delay = 0,
+                $match_required
+            )
+        );
+    }
+});
+
+editor_shell_command = view_source_function = 'urxvt -e vi ';
+
+function firebug (I) {
+    var doc = I.buffer.document;
+    var script = doc.createElement('script');
+    script.setAttribute('type', 'text/javascript');
+    script.setAttribute('src', 'http://getfirebug.com/releases/lite/1.2/firebug-lite-compressed.js');
+    script.setAttribute('onload', 'firebug.init();');
+    doc.body.appendChild(script);
+}
+interactive("firebug", "open firebug lite", firebug);
+
+add_hook('create_buffer_late_hook', function(b){browser_zoom_set(b, true, 150);});
+
+var minibuffer_autohide_timer = null;
+var hide_minibuffer = function(window){window.minibuffer.element.collapsed = true;}
+var show_minibuffer = function(window){window.minibuffer.element.collapsed = false;}
+add_hook('window_initialize_hook', hide_minibuffer);
+var minibuffer_restore = minibuffer_restore || minibuffer.prototype._restore_state;
+minibuffer.prototype._restore_state = function(){
+    if(this.current_state) show_minibuffer(this.window);
+    else hide_minibuffer(this.window);
+    minibuffer_restore.call(this);
+};
+
+hints_auto_exit_delay = 100;
+active_hint_background_color = '#bbffdd';
+active_img_hint_background_color = '#bbffdd';
+hint_background_color = 'transparent';
+img_hint_background_color = 'transparent';
+register_user_stylesheet(
+    'data:text/css,' +
+    escape(
+        '@namespace url(\'http://www.w3.org/1999/xhtml\');\n' +
+        'span.__conkeror_hint{' +
+            'font-size: 16px !important;' +
+            'line-height: 16px !important;' +
+            'background: black !important;' +
+            'color: white !important;' +
+        '}'
+    )
+);
+
+xkcd_add_title = true;
+
+define_key(content_buffer_normal_keymap, 'j', 'cmd_lineNext')
+define_key(content_buffer_normal_keymap, 'k', 'cmd_linePrevious')
+define_key(content_buffer_normal_keymap, 'G', 'cmd_moveTop')
+define_key(content_buffer_normal_keymap, 'd', 'kill-current-buffer')
+define_key(content_buffer_normal_keymap, 'J', 'buffer-next')
+define_key(content_buffer_normal_keymap, 'K', 'buffer-previous')
+define_key(content_buffer_normal_keymap, 'H', 'back')
+define_key(content_buffer_normal_keymap, 'L', 'forward')
+define_key(content_buffer_normal_keymap, 'F', 'follow-new-buffer-background')
+define_key(content_buffer_normal_keymap, 'O', 'find-url-new-buffer')
+define_key(content_buffer_normal_keymap, 'u', 'undo_close')
+define_key(content_buffer_normal_keymap, 'i', 'focus_input')
