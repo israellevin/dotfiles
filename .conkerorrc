@@ -22,7 +22,6 @@ function possibly_valid_url(str){return /^\s*[^\/\s]*(\/|\s*$)/.test(str) && /[:
 
 require('session.js');
 session_auto_save_auto_load = 'prompt';
-
 var undos = [];
 var kill_buffer_orig = kill_buffer_orig || kill_buffer;
 kill_buffer = function(b, f){
@@ -71,6 +70,8 @@ minibuffer.prototype._restore_state = function(){
     else hide_minibuffer(this.window);
     minibuffer_restore.call(this);
 };
+add_hook("mode_line_hook", mode_line_adder(buffer_count_widget), true);
+add_hook("mode_line_hook", mode_line_adder(loading_count_widget), true);
 
 hints_auto_exit_delay = 100;
 active_hint_background_color = '#bbffdd';
@@ -91,6 +92,10 @@ register_user_stylesheet(
 );
 
 xkcd_add_title = true;
+
+interactive('focus_input', 'Focuses the first input in the page', function focus_input(b){
+    alert(1);
+});
 
 define_key(content_buffer_normal_keymap, 'j', 'cmd_lineNext')
 define_key(content_buffer_normal_keymap, 'k', 'cmd_linePrevious')
