@@ -46,17 +46,8 @@ interactive('undo_close', 'Loads url from a previously killed buffer', function 
     }
 });
 
-editor_shell_command = view_source_function = 'urxvt -e vi ';
-
-function firebug (I) {
-    var doc = I.buffer.document;
-    var script = doc.createElement('script');
-    script.setAttribute('type', 'text/javascript');
-    script.setAttribute('src', 'http://getfirebug.com/releases/lite/1.2/firebug-lite-compressed.js');
-    script.setAttribute('onload', 'firebug.init();');
-    doc.body.appendChild(script);
-}
-interactive("firebug", "open firebug lite", firebug);
+editor_shell_command = 'urxvt -e vi ';
+view_source_use_external_editor = true;
 
 add_hook('create_buffer_late_hook', function(b){browser_zoom_set(b, true, 150);});
 
@@ -93,10 +84,6 @@ register_user_stylesheet(
 
 xkcd_add_title = true;
 
-interactive('focus_input', 'Focuses the first input in the page', function focus_input(b){
-    alert(1);
-});
-
 define_key(content_buffer_normal_keymap, 'j', 'cmd_lineNext')
 define_key(content_buffer_normal_keymap, 'k', 'cmd_linePrevious')
 define_key(content_buffer_normal_keymap, 'G', 'cmd_moveTop')
@@ -108,4 +95,19 @@ define_key(content_buffer_normal_keymap, 'L', 'forward')
 define_key(content_buffer_normal_keymap, 'F', 'follow-new-buffer-background')
 define_key(content_buffer_normal_keymap, 'O', 'find-url-new-buffer')
 define_key(content_buffer_normal_keymap, 'u', 'undo_close')
+
+interactive('focus_input', 'Focuses the first input in the page', function focus_input(b){
+    alert(1);
+});
+
 define_key(content_buffer_normal_keymap, 'i', 'focus_input')
+
+function firebug (I) {
+    var doc = I.buffer.document;
+    var script = doc.createElement('script');
+    script.setAttribute('type', 'text/javascript');
+    script.setAttribute('src', 'http://getfirebug.com/releases/lite/1.2/firebug-lite-compressed.js');
+    script.setAttribute('onload', 'firebug.init();');
+    doc.body.appendChild(script);
+}
+interactive("firebug", "open firebug lite", firebug);
