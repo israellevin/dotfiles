@@ -39,7 +39,6 @@ set showcmd
 set showmode
 set shortmess=aoTW
 set laststatus=1
-set t_ti= t_te=
 set mouse=
 
 set incsearch
