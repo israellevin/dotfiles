@@ -9,7 +9,7 @@ export LANG=C.UTF-8
 if [ "$SSH_CONNECTION" ] && [ 0 -ne "$UID" ]; then
     su -c 'tmux list-ses' && sux || sux -
     exit 0
-elif [ ! "$TMUX" ]
+elif [ ! "$TMUX" ]; then
     ([ "$SSH_CONNECTION" ] && tmux -2 attach || tmux -2 new) &&
     [ ! -e /tmp/dontquit ] && exit 0
 fi
