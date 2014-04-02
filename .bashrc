@@ -140,7 +140,7 @@ trans() {
     shift 2
     q="$*"
     q=${q// /+}
-    curl -s -A "Mozilla" "http://translate.google.com.br/translate_a/t?client=t&text=$q&sl=$from&tl=$to" | awk -F'"' '{print $2}'
+    curl -s -A "Mozilla/5.0" "http://translate.google.com.br/translate_a/t?client=t&text=$q&sl=$from&tl=$to" | awk -F'"' '{print $2}'
 }
 say() {
     local lang="$1"
