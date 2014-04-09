@@ -53,19 +53,31 @@ interactive('undo_close', 'Loads url from a previously killed buffer', function 
 });
 
 // Keys
-define_key(content_buffer_normal_keymap, 'j', 'cmd_lineNext');
-define_key(content_buffer_normal_keymap, 'k', 'cmd_linePrevious');
-define_key(content_buffer_normal_keymap, 'G', 'cmd_moveTop');
-define_key(content_buffer_normal_keymap, 'J', 'buffer-next');
-define_key(content_buffer_normal_keymap, 'K', 'buffer-previous');
-define_key(content_buffer_normal_keymap, 'H', 'back');
-define_key(content_buffer_normal_keymap, 'L', 'forward');
-define_key(content_buffer_normal_keymap, 'F', 'follow-new-buffer-background');
-define_key(content_buffer_normal_keymap, 'O', 'find-url-new-buffer');
+define_key(default_global_keymap, 'j', 'cmd_lineNext');
+define_key(default_global_keymap, 'k', 'cmd_linePrevious');
+define_key(default_global_keymap, 'G', 'cmd_moveTop');
+define_key(default_global_keymap, 'J', 'buffer-next');
+define_key(default_global_keymap, 'K', 'buffer-previous');
+define_key(default_global_keymap, 'H', 'back');
+define_key(default_global_keymap, 'L', 'forward');
+define_key(default_global_keymap, 'F', 'follow-new-buffer-background');
+define_key(default_global_keymap, 'O', 'find-url-new-buffer');
 
 // Go modal
-require('key-kill');
-key_kill_mode.test.push(/.*/);
+define_page_mode("key-kill-mode",
+    /.*/,
+    function enable (buffer) {
+        buffer.browser.addEventListener("keyup", event_kill, true);
+        buffer.browser.addEventListener("keydown", event_kill, true);
+    },
+    function disable (buffer) {
+        buffer.browser.removeEventListener("keyup", event_kill, true);
+        buffer.browser.removeEventListener("keydown", event_kill, true);
+    },
+    $display_name = "Key-kill"
+);
+page_mode_activate(key_kill_mode);
+define_key(text_keymap, 'i', 'key-kill-mode');
 define_key(content_buffer_normal_keymap, 'i', 'key-kill-mode');
 
 // Good looks
@@ -115,3 +127,5 @@ function firebug (I){
     doc.body.appendChild(script);
 }
 interactive('firebug', 'open firebug lite', firebug);
+
+// vim:filetype=javascript
