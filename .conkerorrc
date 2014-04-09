@@ -55,13 +55,13 @@ interactive('undo_close', 'Loads url from a previously killed buffer', function 
 // Keys
 define_key(default_global_keymap, 'j', 'cmd_lineNext');
 define_key(default_global_keymap, 'k', 'cmd_linePrevious');
-define_key(default_global_keymap, 'G', 'cmd_moveTop');
 define_key(default_global_keymap, 'J', 'buffer-next');
 define_key(default_global_keymap, 'K', 'buffer-previous');
 define_key(default_global_keymap, 'H', 'back');
 define_key(default_global_keymap, 'L', 'forward');
-define_key(default_global_keymap, 'F', 'follow-new-buffer-background');
 define_key(default_global_keymap, 'O', 'find-url-new-buffer');
+define_key(content_buffer_normal_keymap, 'G', 'cmd_moveTop');
+define_key(content_buffer_normal_keymap, 'F', 'follow-new-buffer-background');
 
 // Go modal
 define_page_mode("key-kill-mode",
