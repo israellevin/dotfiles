@@ -64,21 +64,18 @@ define_key(content_buffer_normal_keymap, 'G', 'cmd_moveTop');
 define_key(content_buffer_normal_keymap, 'F', 'follow-new-buffer-background');
 
 // Go modal
-define_page_mode("key-kill-mode",
-    /.*/,
-    function enable (buffer) {
-        buffer.browser.addEventListener("keyup", event_kill, true);
-        buffer.browser.addEventListener("keydown", event_kill, true);
-    },
-    function disable (buffer) {
-        buffer.browser.removeEventListener("keyup", event_kill, true);
-        buffer.browser.removeEventListener("keydown", event_kill, true);
-    },
-    $display_name = "Key-kill"
-);
-page_mode_activate(key_kill_mode);
-define_key(text_keymap, 'i', 'key-kill-mode');
-define_key(content_buffer_normal_keymap, 'i', 'key-kill-mode');
+var insertmode = false;
+function modal(e){
+    if('keydown' === e.type && true === e.ctrlKey && 74 === e.which) insertmode = false;
+    if(false === insertmode) event_kill(e);
+    if('keyup' === e.type && 73 === e.which) insertmode = true;
+}
+add_hook('create_buffer_late_hook', function(b){
+    b.browser.addEventListener('keydown', modal, true);
+    b.browser.addEventListener('keyup', modal, true);
+    b.browser.addEventListener('keypress', modal, true);
+});
+define_key(default_global_keymap, 'i', 'quote-mode');
 
 // Good looks
 add_hook('create_buffer_late_hook', function(b){
