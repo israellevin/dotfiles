@@ -1,8 +1,13 @@
+// General settings
 homepage = 'about:blank';
+can_kill_last_buffer = false;
 url_completion_use_history = true;
 isearch_keep_selection = true;
-can_kill_last_buffer = false;
+editor_shell_command = 'urxvt -e vi ';
+view_source_use_external_editor = true;
+session_pref('general.useragent.compatMode.firefox', true);
 
+// Jumps
 webjumps.l = webjumps.lucky;
 webjumps.w = webjumps.wikipedia;
 read_url_handler_list = [
@@ -20,6 +25,7 @@ read_url_handler_list = [
 ];
 function possibly_valid_url(str){return /^\s*[^\/\s]*(\/|\s*$)/.test(str) && /[:\/\.]/.test(str);}
 
+// Session
 require('session.js');
 session_auto_save_auto_load = 'prompt';
 var undos = [];
@@ -46,11 +52,26 @@ interactive('undo_close', 'Loads url from a previously killed buffer', function 
     }
 });
 
-editor_shell_command = 'urxvt -e vi ';
-view_source_use_external_editor = true;
+// Keys
+define_key(content_buffer_normal_keymap, 'j', 'cmd_lineNext');
+define_key(content_buffer_normal_keymap, 'k', 'cmd_linePrevious');
+define_key(content_buffer_normal_keymap, 'G', 'cmd_moveTop');
+define_key(content_buffer_normal_keymap, 'J', 'buffer-next');
+define_key(content_buffer_normal_keymap, 'K', 'buffer-previous');
+define_key(content_buffer_normal_keymap, 'H', 'back');
+define_key(content_buffer_normal_keymap, 'L', 'forward');
+define_key(content_buffer_normal_keymap, 'F', 'follow-new-buffer-background');
+define_key(content_buffer_normal_keymap, 'O', 'find-url-new-buffer');
 
-add_hook('create_buffer_late_hook', function(b){browser_zoom_set(b, true, 150);});
+// Go modal
+require('key-kill');
+key_kill_mode.test.push(/.*/);
+define_key(content_buffer_normal_keymap, 'i', 'key-kill-mode');
 
+// Good looks
+add_hook('create_buffer_late_hook', function(b){
+    browser_zoom_set(b, true, 150);
+});
 var minibuffer_autohide_timer = null;
 var hide_minibuffer = function(window){window.minibuffer.element.collapsed = true;}
 var show_minibuffer = function(window){window.minibuffer.element.collapsed = false;}
@@ -61,8 +82,8 @@ minibuffer.prototype._restore_state = function(){
     else hide_minibuffer(this.window);
     minibuffer_restore.call(this);
 };
-add_hook("mode_line_hook", mode_line_adder(buffer_count_widget), true);
-add_hook("mode_line_hook", mode_line_adder(loading_count_widget), true);
+add_hook('mode_line_hook', mode_line_adder(buffer_count_widget), true);
+add_hook('mode_line_hook', mode_line_adder(loading_count_widget), true);
 
 hints_auto_exit_delay = 100;
 active_hint_background_color = '#bbffdd';
@@ -84,25 +105,8 @@ register_user_stylesheet(
 
 xkcd_add_title = true;
 
-define_key(content_buffer_normal_keymap, 'j', 'cmd_lineNext')
-define_key(content_buffer_normal_keymap, 'k', 'cmd_linePrevious')
-define_key(content_buffer_normal_keymap, 'G', 'cmd_moveTop')
-define_key(content_buffer_normal_keymap, 'd', 'kill-current-buffer')
-define_key(content_buffer_normal_keymap, 'J', 'buffer-next')
-define_key(content_buffer_normal_keymap, 'K', 'buffer-previous')
-define_key(content_buffer_normal_keymap, 'H', 'back')
-define_key(content_buffer_normal_keymap, 'L', 'forward')
-define_key(content_buffer_normal_keymap, 'F', 'follow-new-buffer-background')
-define_key(content_buffer_normal_keymap, 'O', 'find-url-new-buffer')
-define_key(content_buffer_normal_keymap, 'u', 'undo_close')
-
-interactive('focus_input', 'Focuses the first input in the page', function focus_input(b){
-    alert(1);
-});
-
-define_key(content_buffer_normal_keymap, 'i', 'focus_input')
-
-function firebug (I) {
+// Misc
+function firebug (I){
     var doc = I.buffer.document;
     var script = doc.createElement('script');
     script.setAttribute('type', 'text/javascript');
@@ -110,4 +114,4 @@ function firebug (I) {
     script.setAttribute('onload', 'firebug.init();');
     doc.body.appendChild(script);
 }
-interactive("firebug", "open firebug lite", firebug);
+interactive('firebug', 'open firebug lite', firebug);
