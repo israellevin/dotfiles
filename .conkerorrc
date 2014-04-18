@@ -66,9 +66,15 @@ define_key(content_buffer_normal_keymap, 'F', 'follow-new-buffer-background');
 // Go modal
 var insertmode = false;
 function modal(e){
-    if('keydown' === e.type && true === e.ctrlKey && 74 === e.which) insertmode = false;
+    if('keydown' === e.type && 27 === e.which){
+        e.target.ownerDocument.body.style.opacity = 1;
+        insertmode = false;
+    }
     if(false === insertmode) event_kill(e);
-    if('keyup' === e.type && 73 === e.which) insertmode = true;
+    if('keyup' === e.type && 73 === e.which){
+        e.target.ownerDocument.body.style.opacity = 0.3;
+        insertmode = true;
+    }
 }
 add_hook('create_buffer_late_hook', function(b){
     b.browser.addEventListener('keydown', modal, true);
@@ -78,6 +84,8 @@ add_hook('create_buffer_late_hook', function(b){
 define_key(default_global_keymap, 'i', 'quote-mode');
 
 // Good looks
+theme_load('gesso');
+register_user_stylesheet(make_css_data_uri(['.mode-line {background-color:white;}'], $namespace = XUL_NS));
 add_hook('create_buffer_late_hook', function(b){
     browser_zoom_set(b, true, 150);
 });
