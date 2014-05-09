@@ -53,35 +53,20 @@ interactive('undo_close', 'Loads url from a previously killed buffer', function 
 });
 
 // Keys
-define_key(default_global_keymap, 'j', 'cmd_lineNext');
-define_key(default_global_keymap, 'k', 'cmd_linePrevious');
-define_key(default_global_keymap, 'J', 'buffer-next');
-define_key(default_global_keymap, 'K', 'buffer-previous');
-define_key(default_global_keymap, 'H', 'back');
-define_key(default_global_keymap, 'L', 'forward');
-define_key(default_global_keymap, 'O', 'find-url-new-buffer');
-define_key(content_buffer_normal_keymap, 'G', 'cmd_moveTop');
-define_key(content_buffer_normal_keymap, 'F', 'follow-new-buffer-background');
-
-// Go modal
-var insertmode = false;
-function modal(e){
-    if('keydown' === e.type && 27 === e.which){
-        e.target.ownerDocument.body.style.opacity = 1;
-        insertmode = false;
-    }
-    if(false === insertmode) event_kill(e);
-    if('keyup' === e.type && 73 === e.which){
-        e.target.ownerDocument.body.style.opacity = 0.3;
-        insertmode = true;
-    }
+require("block-content-focus-change.js");
+var maps = [default_global_keymap, content_buffer_normal_keymap];
+for(var i = 0; i < maps.length; i++){
+    define_key(maps[i], 'j', 'cmd_lineNext');
+    define_key(maps[i], 'k', 'cmd_linePrevious');
+    define_key(maps[i], 'J', 'buffer-next');
+    define_key(maps[i], 'K', 'buffer-previous');
+    define_key(maps[i], 'H', 'back');
+    define_key(maps[i], 'L', 'forward');
+    define_key(maps[i], 'O', 'find-url-new-buffer');
+    define_key(maps[i], 'G', 'cmd_moveTop');
+    define_key(maps[i], 'F', 'follow-new-buffer-background');
+    define_key(maps[i], 'i', 'block-content-focus-change-mode');
 }
-add_hook('create_buffer_late_hook', function(b){
-    b.browser.addEventListener('keydown', modal, true);
-    b.browser.addEventListener('keyup', modal, true);
-    b.browser.addEventListener('keypress', modal, true);
-});
-define_key(default_global_keymap, 'i', 'quote-mode');
 
 // Good looks
 theme_load('gesso');
@@ -123,7 +108,7 @@ register_user_stylesheet(
 xkcd_add_title = true;
 
 // Misc
-function firebug (I){
+function firebug(I){
     var doc = I.buffer.document;
     var script = doc.createElement('script');
     script.setAttribute('type', 'text/javascript');
