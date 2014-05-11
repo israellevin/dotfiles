@@ -65,7 +65,8 @@ for(var i = 0; i < maps.length; i++){
     define_key(maps[i], 'O', 'find-url-new-buffer');
     define_key(maps[i], 'G', 'cmd_moveTop');
     define_key(maps[i], 'F', 'follow-new-buffer-background');
-    define_key(maps[i], 'i', 'block-content-focus-change-mode');
+    define_key(maps[i], 'i', 'quote-mode');
+    define_key(maps[i], 'I', 'block-content-focus-change-mode');
 }
 
 // Good looks
