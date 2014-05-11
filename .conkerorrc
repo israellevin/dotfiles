@@ -52,8 +52,23 @@ interactive('undo_close', 'Loads url from a previously killed buffer', function 
     }
 });
 
+// Some modality
+require('block-content-focus-change.js');
+interactive('insertmode', 'Quote mode with no focus blocking', function(b){
+    b.window.minibuffer.message('ins');
+    block_content_focus_change_mode(false);
+    quote_mode.enable(b.buffer);
+});
+define_key(content_buffer_normal_keymap, 'i', 'insertmode');
+
+interactive('normalmode', 'Disable quote mode and bring back focus blocking', function stam(b){
+    b.window.minibuffer.message('nor');
+    block_content_focus_change_mode(true);
+    quote_mode.disable(b.buffer);
+});
+define_key(quote_keymap, 'escape', 'normalmode');
+
 // Keys
-require("block-content-focus-change.js");
 var maps = [default_global_keymap, content_buffer_normal_keymap];
 for(var i = 0; i < maps.length; i++){
     define_key(maps[i], 'j', 'cmd_lineNext');
@@ -65,8 +80,6 @@ for(var i = 0; i < maps.length; i++){
     define_key(maps[i], 'O', 'find-url-new-buffer');
     define_key(maps[i], 'G', 'cmd_moveTop');
     define_key(maps[i], 'F', 'follow-new-buffer-background');
-    define_key(maps[i], 'i', 'quote-mode');
-    define_key(maps[i], 'I', 'block-content-focus-change-mode');
 }
 
 // Good looks
@@ -108,15 +121,27 @@ register_user_stylesheet(
 
 xkcd_add_title = true;
 
-// Misc
-function firebug(I){
-    var doc = I.buffer.document;
+// Dev
+interactive('firebug', 'open firebug lite', function(b){
+    var doc = b.buffer.document;
     var script = doc.createElement('script');
     script.setAttribute('type', 'text/javascript');
     script.setAttribute('src', 'http://getfirebug.com/releases/lite/1.2/firebug-lite-compressed.js');
     script.setAttribute('onload', 'firebug.init();');
     doc.body.appendChild(script);
-}
-interactive('firebug', 'open firebug lite', firebug);
+});
+
+interactive('jquery', 'run a jquery command', function(b){
+    var doc = b.buffer.document;
+    var script_el = doc.createElementNS(XHTML_NS, 'script');
+    script_el.setAttribute('language', 'javascript');
+    script_el.setAttribute('type', 'text/javascript');
+    script_el.setAttribute('src', 'http://code.jquery.com/jquery-latest.min.js');
+    doc.body.appendChild(script_el);
+
+    script_el = doc.createElementNS(XHTML_NS, 'script');
+    script_el.textContent = yield b.minibuffer.read($prompt = 'jq: ', $history = 'jquery-here');
+    doc.body.appendChild(script_el);
+});
 
 // vim:filetype=javascript
