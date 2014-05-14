@@ -5,7 +5,6 @@ url_completion_use_history = true;
 isearch_keep_selection = true;
 editor_shell_command = 'urxvt -e vi ';
 view_source_use_external_editor = true;
-session_pref('general.useragent.compatMode.firefox', true);
 
 // Jumps
 webjumps.l = webjumps.lucky;
@@ -57,6 +56,7 @@ require('block-content-focus-change.js');
 var maps = [default_global_keymap, content_buffer_normal_keymap];
 for(var i = 0; i < maps.length; i++){
     define_key(maps[i], 'i', 'quote-mode');
+    define_key(maps[i], 'I', 'block-content-focus-change-mode');
     define_key(maps[i], 'j', 'cmd_lineNext');
     define_key(maps[i], 'k', 'cmd_linePrevious');
     define_key(maps[i], 'J', 'buffer-next');
@@ -108,6 +108,13 @@ register_user_stylesheet(
 xkcd_add_title = true;
 
 // Dev
+interactive('toggle-agent', 'pretend to be firefox', function(b){
+    session_pref(
+        'general.useragent.compatMode.firefox',
+        ! get_pref('general.useragent.compatMode.firefox')
+    );
+});
+
 interactive('firebug', 'open firebug lite', function(b){
     var doc = b.buffer.document;
     var script = doc.createElement('script');
