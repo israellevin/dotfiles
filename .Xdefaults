@@ -1,5 +1,5 @@
 URxvt.perl-ext-common: default,matcher
-URxvt.urlLauncher: dwb
+URxvt.urlLauncher: conkeror
 URxvt.colorUL: #86a2be
 
 URxvt.font: xft:DejaVu Sans Mono:autohint=true:antialias=true:size=20
