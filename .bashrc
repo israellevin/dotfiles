@@ -122,12 +122,11 @@ alias vs='vim -c "set spell | set buftype=nofile"'
 # Media
 alias d0='DISPLAY=":0.0"'
 alias d1='DISPLAY="localhost:10.0"'
-alias mp='mplayer'
-alias mpp='mplayer'
-alias mpl='mplayer -lavdopts lowres=1:fast:skiploopfilter=all'
-alias mpy='mplayer -vf yadif'
+alias mpp='mpv'
+alias mpl='mpv -lavdopts lowres=1:fast:skiploopfilter=all'
+alias mpy='mpv -vf yadif'
 alias feh='feh -ZF'
-mplen() { wf `mplayer -vo dummy -ao dummy -identify "$1" 2>/dev/null | grep ID_LENGTH | cut -c 11-` seconds to minutes; }
+mplen() { wf `mpv -vo dummy -ao dummy -identify "$1" 2>/dev/null | grep ID_LENGTH | cut -c 11-` seconds to minutes; }
 
 # Web
 alias webshare='python -c "import SimpleHTTPServer;SimpleHTTPServer.test()"'
@@ -148,7 +147,7 @@ say() {
     shift
     q="$*"
     q=${q// /+}
-    mplayer "http://translate.google.com/translate_tts?ie=UTF-8&tl=$lang&q=$q"
+    mpv "http://translate.google.com/translate_tts?ie=UTF-8&tl=$lang&q=$q"
 }
 
 # General aliases and functions

@@ -202,11 +202,10 @@ alias vs='vim -c "set spell | set buftype=nofile"'
 # Media
 alias d0='DISPLAY=":0.0"'
 alias d1='DISPLAY="localhost:10.0"'
-alias mp='mplayer'
-alias mpl='mplayer -lavdopts lowres=1:fast:skiploopfilter=all'
-alias mpy='mplayer -vf yadif'
+alias mpl='mpv -lavdopts lowres=1:fast:skiploopfilter=all'
+alias mpy='mpv -vf yadif'
 alias feh='feh -ZF'
-mplen() { wf `mplayer -vo dummy -ao dummy -identify "$1" 2>/dev/null | grep ID_LENGTH | cut -c 11-` seconds to minutes; }
+mplen() { wf `mpv -vo dummy -ao dummy -identify "$1" 2>/dev/null | grep ID_LENGTH | cut -c 11-` seconds to minutes; }
 
 # Web
 alias webshare='python -c "import SimpleHTTPServer;SimpleHTTPServer.test()"'
