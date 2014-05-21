@@ -21,7 +21,7 @@ if [ "$1" ]; then
         g) req="${req}google.com/search?q=$q";;
         l) req="${req}google.com/search?q=$q&btnI=";;
         w) req="${req}en.wikipedia.org/w/index.php?title=Special:Search&search=$q&go=Go";;
-        d) req="${req}dictionary.reference.com/browse/$q";;
+        d) req="${req}machaut.uchicago.edu/?resource=Webster%27s&word=$q&use1913=on&use1828=on";;
         m) req="${req}morfix.co.il/$q";;
         h) req="${req}morfix.co.il/$q"; rtl=yes;;
         *) $0 l $engine $@; exit 0;;
