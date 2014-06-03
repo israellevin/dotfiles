@@ -33,12 +33,12 @@ kill_buffer = function(b, f){
     b.display_uri_string && undos.push(b.display_uri_string);
     kill_buffer_orig(b, f);
 }
-interactive('undo_close', 'Loads url from a previously killed buffer', function undo_close(b){
+interactive('undo_close', 'Loads url from a previously killed buffer', function undo_close(I){
     if(0 === undos.length){
-        b.window.minibuffer.message('No killed buffers');
+        I.window.minibuffer.message('No killed buffers');
     }else{
         load_url_in_new_buffer(
-            yield b.minibuffer.read(
+            yield I.minibuffer.read(
                 $prompt = 'Restore killed url:',
                 $completer = all_word_completer($completions = undos),
                 $default_completion = undos[undos.length - 1],
@@ -51,8 +51,21 @@ interactive('undo_close', 'Loads url from a previously killed buffer', function 
     }
 });
 
-// Keys
+// Go modal
+var insertmode = true;
+function modal(e){
+    if('keydown' === e.type && 27 === e.which) insertmode = false;
+    else if('keyup' === e.type && 73 === e.which) insertmode = true;
+    if(false === insertmode) e.stopPropagation();
+}
+add_hook('create_buffer_late_hook', function(I){
+    I.browser.addEventListener('keydown', modal, true);
+    I.browser.addEventListener('keyup', modal, true);
+    I.browser.addEventListener('keypress', modal, true);
+});
 require('block-content-focus-change.js');
+
+// Keys
 var maps = [default_global_keymap, content_buffer_normal_keymap];
 for(var i = 0; i < maps.length; i++){
     define_key(maps[i], 'i', 'quote-mode');
@@ -71,8 +84,8 @@ for(var i = 0; i < maps.length; i++){
 // Good looks
 theme_load('gesso');
 register_user_stylesheet(make_css_data_uri(['.mode-line {background-color:white;}'], $namespace = XUL_NS));
-add_hook('create_buffer_late_hook', function(b){
-    browser_zoom_set(b, true, 150);
+add_hook('create_buffer_late_hook', function(I){
+    browser_zoom_set(I, true, 150);
 });
 var minibuffer_autohide_timer = null;
 var hide_minibuffer = function(window){window.minibuffer.element.collapsed = true;}
@@ -86,6 +99,7 @@ minibuffer.prototype._restore_state = function(){
 };
 add_hook('mode_line_hook', mode_line_adder(buffer_count_widget), true);
 add_hook('mode_line_hook', mode_line_adder(loading_count_widget), true);
+remove_hook('download_added_hook', open_download_buffer_automatically);
 
 hints_auto_exit_delay = 100;
 active_hint_background_color = '#bbffdd';
@@ -108,15 +122,30 @@ register_user_stylesheet(
 xkcd_add_title = true;
 
 // Dev
-interactive('toggle-agent', 'pretend to be firefox', function(b){
+interactive('toggle-agent', 'pretend to be firefox', function(I){
     session_pref(
         'general.useragent.compatMode.firefox',
         ! get_pref('general.useragent.compatMode.firefox')
     );
 });
+var user_agents = {
+    'conkeror': 'Mozilla/5.0 (X11; Linux i686; rv:29.0) Gecko/20100101 conkeror/1.0pre (Debian-1.0~~pre+git140428-1)',
+    'firefox': 'Mozilla/5.0 (X11; Linux i686; rv:29.0) Gecko/20100101 Firefox/29.0 Iceweasel/29.0.1',
+    'chromium': 'Mozilla/5.0 (X11; Linux i686) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/35.0.1916.114 Safari/537.36',
+    'android': 'Mozilla/5.0 (Linux; U; Android 2.2; en-us; Nexus One Build/FRF91) AppleWebKit/533.1 (KHTML, like Gecko) Version/4.0 Mobile Safari/533.1'
+};
+var agent_completer = prefix_completer($completions = Object.keys(user_agents));
+interactive('user-agent', 'Pick an agent',
+    function(I){
+        var ua = (yield I.window.minibuffer.read(
+            $prompt = "Agent:",
+            $completer = agent_completer));
+        set_user_agent(user_agents[ua]);
+    }
+);
 
-interactive('firebug', 'open firebug lite', function(b){
-    var doc = b.buffer.document;
+interactive('firebug', 'open firebug lite', function(I){
+    var doc = I.buffer.document;
     var script = doc.createElement('script');
     script.setAttribute('type', 'text/javascript');
     script.setAttribute('src', 'http://getfirebug.com/releases/lite/1.2/firebug-lite-compressed.js');
@@ -124,8 +153,8 @@ interactive('firebug', 'open firebug lite', function(b){
     doc.body.appendChild(script);
 });
 
-interactive('jquery', 'run a jquery command', function(b){
-    var doc = b.buffer.document;
+interactive('jquery', 'run a jquery command', function(I){
+    var doc = I.buffer.document;
     var script_el = doc.createElementNS(XHTML_NS, 'script');
     script_el.setAttribute('language', 'javascript');
     script_el.setAttribute('type', 'text/javascript');
@@ -133,7 +162,7 @@ interactive('jquery', 'run a jquery command', function(b){
     doc.body.appendChild(script_el);
 
     script_el = doc.createElementNS(XHTML_NS, 'script');
-    script_el.textContent = yield b.minibuffer.read($prompt = 'jq: ', $history = 'jquery-here');
+    script_el.textContent = yield I.minibuffer.read($prompt = 'jq: ', $history = 'jquery-here');
     doc.body.appendChild(script_el);
 });
 
