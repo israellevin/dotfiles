@@ -7,7 +7,6 @@ export LANG=C.UTF-8
 
 # Multiplex
 if [ "$SSH_CONNECTION" ] && [ 0 -ne "$UID" ]; then
-    su -c 'cp ~i/.Xauthority /root/.'
     su -c 'tmux list-ses' && su || su -
     exit 0
 elif [ ! "$TMUX" ]; then
