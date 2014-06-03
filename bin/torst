@@ -1,0 +1,23 @@
+#!/bin/bash
+q="$*"
+q=${q// /+}
+hits="$(curl -s "http://torrentz.eu/search?f=$q" | grep -Pom10 '(?<=<dl><dt><a href="/)[0-9a-f]*.*(?=</a>)' | grep -v nofollow)"
+while :; do
+    echo "$hits" | cut -c 43- | nl
+    read -p '> ' q
+    [ q = "$q" ] && break
+    hit="$(echo "$hits" | cut -c 1-40 | head -n $q | tail -n 1)"
+    trackers="$(curl -s "http://torrentz.eu/$hit" | grep -Po '(?<=<dl><dt><a href=")http[^"]*' | head -n 9)"
+    echo "$trackers" | nl
+    while :; do
+        read -p '> ' q
+        [ q = "$q" ] && break
+        tracker="$(echo "$trackers" | head -n $q | tail -n 1)"
+        magnet="$(curl -s "$tracker" | grep -Pom1 '(?<=href=")magnet:[^"]*')"
+        if [ "$magnet" ]; then
+            nodejs ~/peerflix/app.js "$magnet"
+            exit 0
+        fi
+    done
+done
+exit 1
