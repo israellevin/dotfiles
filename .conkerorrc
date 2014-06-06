@@ -82,7 +82,7 @@ for(var i = 0; i < maps.length; i++){
 }
 
 // Block plugins
-require("content-policy.js");
+require('content-policy.js');
 var enableplugins = false;
 interactive('toggle-plugins', 'toggle plugins', function(I){enableplugins = !enableplugins;});
 function block_plugins (content_type, content_location){
@@ -111,7 +111,6 @@ minibuffer.prototype._restore_state = function(){
 };
 add_hook('mode_line_hook', mode_line_adder(buffer_count_widget), true);
 add_hook('mode_line_hook', mode_line_adder(loading_count_widget), true);
-remove_hook('download_added_hook', open_download_buffer_automatically);
 
 hints_auto_exit_delay = 100;
 active_hint_background_color = '#bbffdd';
@@ -132,6 +131,7 @@ register_user_stylesheet(
 );
 
 xkcd_add_title = true;
+remove_hook('download_added_hook', open_download_buffer_automatically);
 
 // Dev
 interactive('toggle-agent', 'pretend to be firefox', function(I){
@@ -140,6 +140,7 @@ interactive('toggle-agent', 'pretend to be firefox', function(I){
         ! get_pref('general.useragent.compatMode.firefox')
     );
 });
+
 var user_agents = {
     'conkeror': 'Mozilla/5.0 (X11; Linux i686; rv:29.0) Gecko/20100101 conkeror/1.0pre (Debian-1.0~~pre+git140428-1)',
     'firefox': 'Mozilla/5.0 (X11; Linux i686; rv:29.0) Gecko/20100101 Firefox/29.0 Iceweasel/29.0.1',
@@ -150,7 +151,7 @@ var agent_completer = prefix_completer($completions = Object.keys(user_agents));
 interactive('user-agent', 'Pick an agent',
     function(I){
         var ua = (yield I.window.minibuffer.read(
-            $prompt = "Agent:",
+            $prompt = 'Agent:',
             $completer = agent_completer));
         set_user_agent(user_agents[ua]);
     }
