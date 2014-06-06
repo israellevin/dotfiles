@@ -81,6 +81,18 @@ for(var i = 0; i < maps.length; i++){
     define_key(maps[i], 'F', 'follow-new-buffer-background');
 }
 
+// Block plugins
+require("content-policy.js");
+var enableplugins = false;
+interactive('toggle-plugins', 'toggle plugins', function(I){enableplugins = !enableplugins;});
+function block_plugins (content_type, content_location){
+    var Y = content_policy_accept, N = content_policy_reject;
+    if(true === enableplugins) return Y;
+    return N;
+}
+content_policy_bytype_table.object = block_plugins;
+add_hook('content_policy_hook', content_policy_bytype);
+
 // Good looks
 theme_load('gesso');
 register_user_stylesheet(make_css_data_uri(['.mode-line {background-color:white;}'], $namespace = XUL_NS));
