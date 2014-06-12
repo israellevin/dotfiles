@@ -23,7 +23,8 @@ else
     pplay=''
 fi
 
-pmail=$(grep 'fullcount' < ~/unreadgmail.xml | sed 's/<fullcount>\(.*\)<\/fullcount>/\1/') 2> /dev/null
+pmail=$(grep -Po '(?<=<fullcount>).*(?=\</fullcount>)' ~/ars/root/unreadgmail.xml) 2> /dev/null
+
 if [ "$pmail" \> "0" ]; then
     pmail="[$pmail] "
 else
