@@ -7,6 +7,7 @@ export LANG=C.UTF-8
 
 # Multiplex
 if [ "$SSH_CONNECTION" ] && [ 0 -ne "$UID" ]; then
+    su -c 'cp ~i/.Xauthority /root/.'
     su -c 'tmux list-ses' && su || su -
     exit 0
 elif [ ! "$TMUX" ]; then
@@ -89,7 +90,7 @@ xs() {
 # Completion
 source /etc/bash_completion
 complete -W "$(echo $(grep -a '^ssh ' "$HOME/.bash_history" | sort -u | sed 's/^ssh //'))" ssh
-_fasd_bash_hook_cmd_complete j v mpp
+_fasd_bash_hook_cmd_complete j v mp
 
 _w(){
     COMPREPLY=($(grep -h "^${COMP_WORDS[COMP_CWORD]}" /usr/share/dict/words))
@@ -121,10 +122,11 @@ alias vs='vim -c "set spell | set buftype=nofile"'
 # Media
 alias d0='DISPLAY=":0.0"'
 alias d1='DISPLAY="localhost:10.0"'
-alias mpp='mpv'
+alias feh='feh -ZF'
+alias mp='mpv'
+alias mpp='mpv --softvol=yes --softvol-max=600'
 alias mpl='mpv -lavdopts lowres=1:fast:skiploopfilter=all'
 alias mpy='mpv -vf yadif'
-alias feh='feh -ZF'
 mplen() { wf `mpv -vo dummy -ao dummy -identify "$1" 2>/dev/null | grep ID_LENGTH | cut -c 11-` seconds to minutes; }
 
 # Web
