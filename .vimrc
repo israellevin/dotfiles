@@ -77,9 +77,11 @@ Bundle 'ctrlp.vim'
 let g:ctrlp_map = '<F10>'
 nnoremap <Leader>B :CtrlPBuffer<CR>
 
+Bundle 'tommcdo/vim-exchange'
 Bundle 'mmedvede/w3m.vim'
 Bundle 'zweifisch/pipe2eval'
 Bundle 'mattn/emmet-vim'
+Bundle 'matchit.zip'
 
 Bundle 'jellybeans.vim'
 
@@ -100,6 +102,7 @@ nnoremap <Leader>b :b#<CR>
 nnoremap <expr> <Leader>h "hebrew" == &keymap ? ':Noheb<CR>' : ':Heb<CR>'
 nnoremap <expr> <Leader>n &nu == &rnu ? ':setlocal nu!<CR>' : ':setlocal rnu!<CR>'
 nnoremap <expr> <Leader>z 0 == &scrolloff ? ':setlocal scrolloff=999<CR>' : ':setlocal scrolloff=0<CR>'
+nnoremap ?? o<Esc>:.!howdoi <c-r>=expand(&filetype)<CR><Space>
 
 nnoremap <Up> gk
 nnoremap <Down> gj
@@ -119,6 +122,7 @@ vnoremap ` :normal @a<CR>
 cnoremap <C-p> <Up>
 cnoremap <C-n> <Down>
 cnoremap %% <C-r>=expand("%:p:h") . '/' <CR>
+cnoremap ?? .!howdoi <c-r>=expand(&filetype)<CR><Space>
 
 command! Q q
 command! Mks wa | mksession! ~/.vim/.session
@@ -134,6 +138,10 @@ set omnifunc=syntaxcomplete#Complete
 
 " Return to last position
 au BufReadPost * normal `"
+
+" Folding
+au BufReadPost * set foldmethod=indent
+au BufReadPost * normal zR
 
 " Many ftplugins override formatoptions, so override them back
 au BufReadPost,BufNewFile * setlocal formatoptions=tcqw
@@ -187,6 +195,7 @@ endif
 
 set cursorline
 set cursorcolumn
+set colorcolumn=81
 hi ExtraWhitespace ctermbg=1
 match ExtraWhitespace /\s\+$/
 match ExtraWhitespace /\s\+$\| \+\ze\t/
