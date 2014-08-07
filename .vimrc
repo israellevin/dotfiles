@@ -1,4 +1,4 @@
-set nocompatible
+" History
 set history=99999
 set viminfo='100,%
 set backup
@@ -6,49 +6,91 @@ set writebackup
 set backupdir=~/.vim/backups
 set undofile
 set undodir=~/.vim/undo
-set path+=.*
 set modeline
 
+" Buffers
 set hidden
 set autoread
 set autochdir
 set tabpagemax=32
 set switchbuf=usetab
 
+" Format
 set smarttab
 set expandtab
-set autoindent
-set smartindent
 set shiftround
 set shiftwidth=4
 set softtabstop=4
 set tabstop=4
-set list listchars=tab:»\ ,trail:•,extends:↜,precedes:↜,nbsp:°
-
+set autoindent
+set nosmartindent
+set indentkeys-=-<Return>
+set backspace=indent,eol,start
+set formatoptions=tcqnj
 set wrap
 set linebreak
-set scrolloff=999
-set formatoptions=tcqw
-set backspace=indent,eol,start
-set indentkeys-=-<Return>
 
+" UI
+set ignorecase
+set smartcase
+set wildmenu
+set wildmode=longest:full,full
+set completeopt=longest,menu
+set incsearch
+set hlsearch
 set ruler
 set relativenumber
 set number
 set showcmd
 set showmode
+set scrolloff=999
 set shortmess=aoTW
 set laststatus=1
+set list listchars=tab:»\ ,trail:•,extends:↜,precedes:↜,nbsp:°
 set mouse=
 
-set incsearch
-set hlsearch
-set ignorecase
-set smartcase
+"Maps, abrvs, commands
+nnoremap Y y$
+nnoremap <Space> <PageDown>
+nnoremap <Backspace> <PageUp>
+nnoremap <CR> :nohlsearch<CR><CR>
+nnoremap gf :e <cfile><CR>
+nnoremap <Leader>gf :split <cfile><CR>
+nnoremap <Leader>s :setlocal spell!<CR>
+nnoremap <Leader>b :b#<CR>
+nnoremap <Leader>f :set foldexpr=getline(v:lnum)!~@/<CR>:set foldmethod=expr<CR><Bar>zM
+nnoremap <Leader>F :execute 'vimgrep /'.@/.'/g *'<CR>:copen<CR>
+nnoremap <Leader>r :w<CR>:! <C-r>=expand("%:p")<CR><CR>
+nnoremap <expr> <Leader>h "hebrew" == &keymap ? ':Noheb<CR>' : ':Heb<CR>'
+nnoremap <expr> <Leader>n &nu == &rnu ? ':setlocal nu!<CR>' : ':setlocal rnu!<CR>'
+nnoremap <expr> <Leader>z 0 == &scrolloff ? ':setlocal scrolloff=999<CR>' : ':setlocal scrolloff=0<CR>'
+nnoremap ?? o<Esc>:.!howdoi <c-r>=expand(&filetype)<CR><Space>
 
-set wildmenu
-set wildmode=longest:full,full
-set completeopt=longest,menu
+inoremap jj <ESC>
+inoremap <expr> <Tab> pumvisible() ? "\<C-n>" : "\<C-g>u\<Tab>"
+inoremap <F5> <Esc>:w<CR>:! <C-r>=expand("%:p")<CR><CR>
+
+vnoremap <Right> >gv
+vnoremap <Left> <gv
+vnoremap . :normal .<CR>
+vnoremap ` :normal @a<CR>
+
+cnoremap <C-p> <Up>
+cnoremap <C-n> <Down>
+cnoremap %% <C-r>=expand("%:p:h") . '/' <CR>
+
+command! Q q
+command! Mks wa | mksession! ~/.vim/.session
+command! Lds source ~/.vim/.session
+command! Heb setlocal rightleft | setlocal rightleftcmd | setlocal keymap=hebrew | inoremap -- ־| inoremap --- –
+command! Noheb setlocal norightleft | setlocal rightleftcmd= | setlocal keymap=
+command! Lowtag %s/<\/\?\u\+/\L&/g
+
+" Enable arrows for visitors
+nnoremap <Up> gk
+nnoremap <Down> gj
+inoremap <Up> <C-o>gk
+inoremap <Down> <C-o>gj
 
 "Plugins
 filetype off
@@ -90,47 +132,6 @@ if 1 == firstrun
     :BundleInstall!
 endif
 
-"Maps, abrvs, commands
-nnoremap Y y$
-nnoremap <Space> <PageDown>
-nnoremap <Backspace> <PageUp>
-nnoremap <CR> :nohlsearch<CR><CR>
-nnoremap gf :e <cfile><CR>
-nnoremap <Leader>gf :split <cfile><CR>
-nnoremap <Leader>s :setlocal spell!<CR>
-nnoremap <Leader>b :b#<CR>
-nnoremap <expr> <Leader>h "hebrew" == &keymap ? ':Noheb<CR>' : ':Heb<CR>'
-nnoremap <expr> <Leader>n &nu == &rnu ? ':setlocal nu!<CR>' : ':setlocal rnu!<CR>'
-nnoremap <expr> <Leader>z 0 == &scrolloff ? ':setlocal scrolloff=999<CR>' : ':setlocal scrolloff=0<CR>'
-nnoremap ?? o<Esc>:.!howdoi <c-r>=expand(&filetype)<CR><Space>
-
-nnoremap <Up> gk
-nnoremap <Down> gj
-nnoremap <F5> :w<CR>:! <C-r>=expand("%:p")<CR><CR>
-
-inoremap jj <ESC>
-inoremap <expr> <Tab> pumvisible() ? "\<C-n>" : "\<C-g>u\<Tab>"
-inoremap <Up> <C-o>gk
-inoremap <Down> <C-o>gj
-inoremap <F5> <Esc>:w<CR>:! <C-r>=expand("%:p")<CR><CR>
-
-vnoremap <Right> >gv
-vnoremap <Left> <gv
-vnoremap . :normal .<CR>
-vnoremap ` :normal @a<CR>
-
-cnoremap <C-p> <Up>
-cnoremap <C-n> <Down>
-cnoremap %% <C-r>=expand("%:p:h") . '/' <CR>
-cnoremap ?? .!howdoi <c-r>=expand(&filetype)<CR><Space>
-
-command! Q q
-command! Mks wa | mksession! ~/.vim/.session
-command! Lds source ~/.vim/.session
-command! Heb setlocal rightleft | setlocal rightleftcmd | setlocal keymap=hebrew | inoremap -- ־| inoremap --- –
-command! Noheb setlocal norightleft | setlocal rightleftcmd= | setlocal keymap=
-command! Lowtag %s/<\/\?\u\+/\L&/g
-
 " autocommands
 au!
 filetype plugin indent on
@@ -144,7 +145,7 @@ au BufReadPost * set foldmethod=indent
 au BufReadPost * normal zR
 
 " Many ftplugins override formatoptions, so override them back
-au BufReadPost,BufNewFile * setlocal formatoptions=tcqw
+au BufReadPost,BufNewFile * setlocal formatoptions=tcqnj
 
 " Hebrew
 au BufReadPost,BufNewFile ~/heb/* silent Heb
@@ -171,11 +172,11 @@ au VimResized * wincmd =
 au WinEnter * setlocal cursorline | setlocal cursorcolumn
 au WinLeave * setlocal nocursorline | setlocal nocursorcolumn
 
-" Source vimrc when written
-au! BufWritePost $MYVIMRC source $MYVIMRC
-
 " Chmod +x shabanged files on save
 au BufWritePost * if getline(1) =~ "^#!" | silent !chmod u+x <afile>
+
+" Source vimrc when written
+au! BufWritePost $MYVIMRC source $MYVIMRC
 
 " Pretty
 set encoding=utf-8
