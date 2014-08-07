@@ -14,6 +14,7 @@ elif [ ! "$TMUX" ]; then
     ([ "$SSH_CONNECTION" ] && tmux -2 attach || tmux -2 new) &&
     [ ! -e /tmp/dontquit ] && exit 0
 fi
+[ "localhost:10.0" = "$DISPLAY" ] && export XAUTHORITY=~i/.Xauthority
 
 # Make nice
 renice -n -10 -p "$$" > /dev/null
@@ -24,6 +25,7 @@ mkdir -pm 0700 /sys/fs/cgroup/cpu/user/$$
 echo $$ > /sys/fs/cgroup/cpu/user/$$/tasks
 
 # Shell options
+shopt -s autocd
 shopt -s cdspell
 shopt -s dotglob
 shopt -s cmdhist
