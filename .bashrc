@@ -7,7 +7,6 @@ export LANG=C.UTF-8
 
 # Multiplex
 if [ "$SSH_CONNECTION" ] && [ 0 -ne "$UID" ]; then
-    su -c 'cp ~i/.Xauthority /root/.'
     su -c 'tmux list-ses' && su || su -
     exit 0
 elif [ ! "$TMUX" ]; then
@@ -16,13 +15,8 @@ elif [ ! "$TMUX" ]; then
 fi
 [ "localhost:10.0" = "$DISPLAY" ] && export XAUTHORITY=~i/.Xauthority
 
-# Make nice
-renice -n -10 -p "$$" > /dev/null
-ionice -c 2 -n 0 -p "$$" > /dev/null
-
-# Create a new cgroup for this session
-mkdir -pm 0700 /sys/fs/cgroup/cpu/user/$$
-echo $$ > /sys/fs/cgroup/cpu/user/$$/tasks
+# Transfer X credentials
+[ localhost:10.0 = "$DISPLAY" ] && export XAUTHORITY=~i/.Xauthority
 
 # Shell options
 shopt -s autocd
@@ -127,6 +121,7 @@ alias d1='DISPLAY="localhost:10.0"'
 alias feh='feh -ZF'
 alias mp='mpv'
 alias mpp='mpv --softvol=yes --softvol-max=600'
+alias mpt='mpv http://10.0.0.1:8888/'
 alias mpl='mpv -lavdopts lowres=1:fast:skiploopfilter=all'
 alias mpy='mpv -vf yadif'
 mplen() { wf `mpv -vo dummy -ao dummy -identify "$1" 2>/dev/null | grep ID_LENGTH | cut -c 11-` seconds to minutes; }
