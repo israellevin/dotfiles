@@ -93,48 +93,44 @@ inoremap <Up> <C-o>gk
 inoremap <Down> <C-o>gj
 
 "Plugins
-filetype off
-
 let firstrun=0
-if !filereadable(expand("~/.vim/bundle/vundle/README.md"))
-    let firstrun=1
-    silent !mkdir -p ~/.vim/{bundle,undo,backups}
-    silent !git clone http://github.com/gmarik/vundle ~/.vim/bundle/vundle
-endif
-set runtimepath+=~/.vim/bundle/vundle/
-call vundle#rc()
-Bundle 'gmarik/vundle'
+if !filereadable(expand("~/.vim/autoload/plug.vim"))
 
-Bundle 'maxbrunsfeld/vim-yankstack'
+    let firstrun=1
+    silent !mkdir -p ~/.vim/{autoload,undo,backups}
+    silent !curl -fLo ~/.vim/autoload/plug.vim
+        \ https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
+endif
+call plug#begin('~/.vim/plugged')
+
+Plug 'maxbrunsfeld/vim-yankstack'
+Plug 'AutoComplPop'
+Plug 'ctrlp.vim'
+Plug 'rainbow_parentheses.vim'
+Plug 'tommcdo/vim-exchange'
+Plug 'mmedvede/w3m.vim'
+Plug 'zweifisch/pipe2eval'
+Plug 'mattn/emmet-vim', { 'for': 'html' }
+Plug 'matchit.zip', { 'for': 'html' }
+Plug 'jellybeans.vim'
+
+call plug#end()
+if 1 == firstrun
+    :PlugInstall
+endif
+
 let g:yankstack_map_keys = 0
 call yankstack#setup()
 nmap <C-p> <Plug>yankstack_substitute_older_paste
 nmap <C-n> <Plug>yankstack_substitute_newer_paste
 nnoremap Y y$
-
-Bundle 'AutoComplPop'
 let g:acp_behaviorKeywordLength = 2
-
-Bundle 'ctrlp.vim'
 let g:ctrlp_map = '<F10>'
 nnoremap <Leader>B :CtrlPBuffer<CR>
-
-Bundle 'tommcdo/vim-exchange'
-Bundle 'mmedvede/w3m.vim'
-Bundle 'zweifisch/pipe2eval'
-Bundle 'mattn/emmet-vim'
-Bundle 'matchit.zip'
-
-Bundle 'jellybeans.vim'
-
-"Bundle 'rainbow_parentheses.vim'
-if 1 == firstrun
-    :BundleInstall!
-endif
+nnoremap <Leader>( :RainbowParenthesesToggleAll<CR>
 
 " autocommands
 au!
-filetype plugin indent on
 set omnifunc=syntaxcomplete#Complete
 
 " Return to last position
