@@ -1,14 +1,14 @@
 #!/bin/dash
 export DISPLAY=':0.0'
-mp=$(xwininfo -name mpv | grep 'Window id' | cut -d ' ' -f 4)
-if [ "$mp" ]; then
+mpwin=$(xwininfo -root -children | grep '"mpv ' | cut -c 6-13)
+if [ "$mpwin" ]; then
     case $1 in
-        'pause') xdotool key --window "$mp" space;;
-        'back') xdotool key --window "$mp" Left Left;;
-        'forward') xdotool key --window "$mp" Right Right;;
-        'mute') xdotool key --window "$mp" m;;
-        'volup') xdotool key --window "$mp" 0 0;;
-        'voldown') xdotool key --window "$mp" 9 9;;
+        'pause') xdotool key --window "$mpwin" space;;
+        'back') xdotool key --window "$mpwin" Left Left;;
+        'forward') xdotool key --window "$mpwin" Right Right;;
+        'mute') xdotool key --window "$mpwin" m;;
+        'volup') xdotool key --window "$mpwin" 0 0;;
+        'voldown') xdotool key --window "$mpwin" 9 9;;
     esac
 else
     case $1 in
