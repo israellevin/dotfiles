@@ -1,5 +1,5 @@
 " History
-set history=99999
+set history=10000
 set viminfo='100,%
 set backup
 set writebackup
