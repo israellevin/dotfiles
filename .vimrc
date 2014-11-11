@@ -106,12 +106,16 @@ call plug#begin('~/.vim/plugged')
 Plug 'maxbrunsfeld/vim-yankstack'
 Plug 'AutoComplPop'
 Plug 'ctrlp.vim'
-Plug 'rainbow_parentheses.vim'
 Plug 'tommcdo/vim-exchange'
 Plug 'mmedvede/w3m.vim'
 Plug 'zweifisch/pipe2eval'
 Plug 'mattn/emmet-vim', { 'for': 'html' }
 Plug 'matchit.zip', { 'for': 'html' }
+Plug 'Konfekt/FastFold'
+Plug 'junegunn/fzf'
+Plug 'junegunn/limelight.vim'
+Plug 'junegunn/goyo.vim'
+Plug 'junegunn/rainbow_parentheses.vim'
 Plug 'jellybeans.vim'
 
 call plug#end()
@@ -128,6 +132,7 @@ let g:acp_behaviorKeywordLength = 2
 let g:ctrlp_map = '<F10>'
 nnoremap <Leader>B :CtrlPBuffer<CR>
 nnoremap <Leader>( :RainbowParenthesesToggleAll<CR>
+let g:limelight_conceal_ctermfg = 240
 
 " autocommands
 au!
@@ -168,11 +173,11 @@ au VimResized * wincmd =
 au WinEnter * setlocal cursorline | setlocal cursorcolumn
 au WinLeave * setlocal nocursorline | setlocal nocursorcolumn
 
+" Source vimrc when written
+au! BufWritePost $MYVIMRC source %
+
 " Chmod +x shabanged files on save
 au BufWritePost * if getline(1) =~ "^#!" | silent !chmod u+x <afile>
-
-" Source vimrc when written
-au! BufWritePost $MYVIMRC source $MYVIMRC
 
 " Pretty
 set encoding=utf-8
