@@ -43,6 +43,7 @@ shopt -s histverify
 shopt -s checkwinsize
 shopt -u force_fignore
 shopt -s no_empty_cmd_completion
+stty -ixon
 
 # History
 HISTFILESIZE=999999
@@ -98,6 +99,7 @@ xs() {
 
 # Completion
 source /etc/bash_completion
+source /usr/share/bash-completion/completions/git
 complete -W "$(echo $(grep -a '^ssh ' "$HOME/.bash_history" | sort -u | sed 's/^ssh //'))" ssh
 _fasd_bash_hook_cmd_complete j v mp
 
@@ -117,6 +119,7 @@ alias lss="ls $LS_OPTIONS -Sr"
 
 # grep
 export GREP_OPTIONS='-i --color=auto'
+alias grepi='GREP_OPTIONS= grep'
 alias lg='ll | grep'
 alias fgg='find | grep'
 alias pg='ps -eo start_time,pid,command --sort=start_time | grep -v grep | grep'
