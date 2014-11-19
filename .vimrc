@@ -10,6 +10,7 @@ set modeline
 
 " Buffers
 set hidden
+set confirm
 set autoread
 set autochdir
 set tabpagemax=32
