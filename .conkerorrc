@@ -3,6 +3,7 @@ homepage = 'about:blank';
 can_kill_last_buffer = false;
 url_completion_use_history = true;
 isearch_keep_selection = true;
+isearch_scroll_center_vertically = true;
 editor_shell_command = 'urxvt -e vi ';
 view_source_use_external_editor = true;
 
@@ -138,6 +139,7 @@ for(var i = 0; i < maps.length; i++){
 }
 
 page_mode_deactivate(stackexchange_mode);
+page_mode_deactivate(google_calendar_mode);
 require('clicks-in-new-buffer.js');
 clicks_in_new_buffer_target = OPEN_NEW_BUFFER_BACKGROUND;
 
@@ -200,17 +202,9 @@ register_user_stylesheet(
 
 xkcd_add_title = true;
 //remove_hook('download_added_hook', open_download_buffer_automatically);
-dowload_buffer_automatic_open_target=OPEN_NEW_BUFFER_BACKGROUND;
-isearch_scroll_center_vertically = true;
+dowload_buffer_automatic_open_target=OPEN_CURRENT_BUFFER;
 
 // User agent.
-interactive('agent-toggle', 'pretend to be firefox', function(I){
-    session_pref(
-        'general.useragent.compatMode.firefox',
-        ! get_pref('general.useragent.compatMode.firefox')
-    );
-});
-
 var user_agents = {
     'conkeror': 'Mozilla/5.0 (X11; Linux i686; rv:29.0) Gecko/20100101 conkeror/1.0pre (Debian-1.0~~pre+git140428-1)',
     'firefox': 'Mozilla/5.0 (X11; Linux i686; rv:29.0) Gecko/20100101 Firefox/29.0 Iceweasel/29.0.1',
