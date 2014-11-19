@@ -1,6 +1,5 @@
 URxvt.perl-ext-common: default,matcher
 URxvt.urlLauncher: conkeror
-URxvt.colorUL: #86a2be
 
 URxvt.font: xft:DejaVu Sans Mono:autohint=true:antialias=true:size=20
 URxvt.keysym.C-9: command:\033]710;xft:DejaVu Sans Mono:autohint=true:antialias=true:size=5\007
@@ -10,14 +9,9 @@ URxvt.keysym.C-equal: command:\033]710;xft:DejaVu Sans Mono:autohint=true:antial
 URxvt.saveLines: 65535
 URxvt.scrollBar: false
 URxvt.visualBell: false
-URxvt.fading: 70
+URxvt.urgentOnBell: true
+URxvt.fading: 50
 URxvt.foreground: grey
 URxvt.background: black
-URxvt.colorIT: #ffff00
-URxvt.urgentOnBell: true
-# Transparency
-#URxvt.depth:32
-#URxvt.background:rgba:0000/0000/0000/0000
 URxvt.cursorColor: green
 URxvt.color12: white
-URxvt.iso14755_52: false
