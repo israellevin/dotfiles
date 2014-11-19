@@ -195,8 +195,6 @@ else
     hi Todo cterm=bold ctermfg=231 ctermbg=1
 endif
 
-set cursorline
-set cursorcolumn
 set colorcolumn=81
 hi ExtraWhitespace ctermbg=1
 match ExtraWhitespace /\s\+$/
