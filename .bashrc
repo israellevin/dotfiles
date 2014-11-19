@@ -18,24 +18,18 @@ fi
 # Transfer X credentials
 [ localhost:10.0 = "$DISPLAY" ] && export XAUTHORITY=~i/.Xauthority
 
-# Spawn / reuse ssh agent
-SSH_ENV="$HOME/.ssh/environment"
-function start_agent {
-    echo "Initialising new SSH agent..."
-    /usr/bin/ssh-agent | sed 's/^echo/#echo/' > "${SSH_ENV}"
-    echo succeeded
-    chmod 600 "${SSH_ENV}"
-    . "${SSH_ENV}" > /dev/null
-    /usr/bin/ssh-add;
-}
-if [ -f "${SSH_ENV}" ]; then
-    . "${SSH_ENV}" > /dev/null
-    ps -ef | grep ${SSH_AGENT_PID} | grep ssh-agent$ > /dev/null || {
-        start_agent;
-    }
+# Spawn / reuse gpg agent
+envf="$HOME/.gnupg/gpg-agent.env"
+if \
+    [ -e "$envf" ] &&\
+    kill -0 $(grep GPG_AGENT_INFO "$envf" | cut -d: -f 2) 2>/dev/null
+then
+    eval "$(cat "$envf")"
 else
-    start_agent;
+    eval "$(gpg-agent --daemon --enable-ssh-support --write-env-file "$envf")"
 fi
+export GPG_AGENT_INFO
+export SSH_AUTH_SOCK
 
 # Shell options
 shopt -s autocd
