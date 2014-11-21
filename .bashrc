@@ -91,6 +91,7 @@ xs() {
 source /etc/bash_completion
 source /usr/share/bash-completion/completions/git
 complete -W "$(echo $(grep -a '^ssh ' "$HOME/.bash_history" | sort -u | sed 's/^ssh //'))" ssh
+alias v=v
 _fasd_bash_hook_cmd_complete j v mp
 
 _w(){
@@ -122,11 +123,9 @@ pg() {
 }
 
 # vim
-alias v='fasd -e vim -b viminfo'
 vv() { [ -z $1 ] && vim -c "normal '0" || vim -p *$**; }
 vg() { vim -p $(grep -l "$*" *); }
 alias vf='find && vim -c "CtrlP"'
-alias vs='vim -c "set spell | set buftype=nofile"'
 
 # Media
 alias d0='DISPLAY=":0.0"'
