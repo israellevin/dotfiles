@@ -1,35 +1,28 @@
-#!/bin/dash
+#!/bin/bash
 
 # If input is not a pipe
 if [ -t 0 ]; then
-    # and there are no arguments
     if [ 0 = $# ]; then
-        # open a scratchpad
         vim -c "set buftype=nofile | set spell"
-    # if there are arguments
     else
-        # cat them to the script
         cat $@ | $0
     fi
-    # ciao
     exit 0
 fi
 
-# Otherwise, read the first 50 lines
-# (can I use head?)
-i=0
-lines=''
-while read l && [ $i -lt 50 ]; do
-    i=$((i+1))
-    lines="$lines\n$l"
+# Less than 50 lines go to more.
+lines=()
+while read line && [ ${#lines[@]} -lt 50 ]; do
+    lines+=("$line\n")
 done
-# append them to what's left in the pipe and push it to the proper pager
-# (can't I cat lines and stdin?)
-(echo $lines && while read l; do echo $l; done) |
-# if there was anything left in the pipe push it to vim
-(if [ "$l" ]; then
-    col -b | vim -c "set buftype=nofile ts=8 nolist nonumber" -c "map q <Esc>:qa!<CR>" -c "normal M" -
-# otherwise push it to more
-else
-    cut -c 1-$(tput cols) | more
-fi)
+[ ${#lines[@]} -lt 50 ] && echo -e "${lines[@]}" | more && exit 0
+
+# Less than 500 go to vim.
+while read line && [ ${#lines[@]} -lt 500 ]; do
+    lines+=("$line\n")
+done
+[ ${#lines[@]} -lt 500 ] && echo -e "${lines[@]}" | col -b | vim \
+    -c "set buftype=nofile" -c "map q <Esc>:qa!<CR>" -c "normal M" - && exit 0
+
+# Bigger stuff go to less.
+(echo -e "${lines[@]}" && while read line; do echo "$line"; done) | less
