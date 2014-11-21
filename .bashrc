@@ -6,30 +6,26 @@ export PATH="$HOME/bin:$PATH"
 export LANG=C.UTF-8
 
 # Multiplex
-if [ "$SSH_CONNECTION" ] && [ 0 -ne "$UID" ]; then
-    su -c 'tmux list-ses' && su || su -
-    exit 0
-elif [ ! "$TMUX" ]; then
-    ([ "$SSH_CONNECTION" ] && tmux -2 attach || tmux -2 new) &&
+if [ ! "$TMUX" ]; then
+    [ "$SSH_CONNECTION" ] && su -pc 'tmux -2 attach' || su -pc 'tmux -2 new'
     [ ! -e /tmp/dontquit ] && exit 0
 fi
-[ "localhost:10.0" = "$DISPLAY" ] && export XAUTHORITY=~i/.Xauthority
 
 # Transfer X credentials
 [ localhost:10.0 = "$DISPLAY" ] && export XAUTHORITY=~i/.Xauthority
 
-# Spawn / reuse gpg agent
-envf="$HOME/.gnupg/gpg-agent.env"
-if \
-    [ -e "$envf" ] &&\
-    kill -0 $(grep GPG_AGENT_INFO "$envf" | cut -d: -f 2) 2>/dev/null
-then
-    eval "$(cat "$envf")"
-else
-    eval "$(gpg-agent --daemon --enable-ssh-support --write-env-file "$envf")"
-fi
-export GPG_AGENT_INFO
-export SSH_AUTH_SOCK
+# Spawn / reuse ssh agent
+sshenv="$HOME/.ssh/env"
+usesshagent() {
+    if [ -f "$sshenv" ]; then
+        . "$sshenv"
+        pgrep ssh-agent | grep "^$SSH_AGENT_PID$" > /dev/null && return 0
+    fi
+    ssh-agent > "$sshenv"
+    usesshagent
+}
+usesshagent
+ssh-add
 
 # Shell options
 shopt -s autocd
@@ -58,8 +54,7 @@ cd() { [ -z "$1" ] && set -- ~; [ "$(pwd)" != "$(readlink -f "$1")" ] && pushd "
 ..() { if [ $1 -ge 0 2> /dev/null ]; then x=$1; else x=1; fi; for (( i = 0; i < $x; i++ )); do cd ..; done; }
 mkcd() { mkdir -p "$*"; cd "$*"; }
 alias b='popd'
-alias d='trash-put'
-alias dud='du -hxd 1 | sort -h'
+alias dud='du -hxd1 | sort -h'
 
 fasd_cache="$HOME/.fasd-init-bash"
 if [ "$(command -v fasd)" -nt "$fasd_cache" -o ! -s "$fasd_cache" ]; then
@@ -70,26 +65,21 @@ fasd_cd() { [ $# -gt 1 ] && cd "$(fasd -e echo "$@")" || fasd "$@"; }
 alias j='fasd_cd -d'
 alias f='fasd -f'
 
-xsfind() {
-    needle="$@"
-    reply=()
-    while read line ;do
-        reply+=("${line:2}")
-    done < <(find ./ -type d -iname "*${needle%% }*" 2>/dev/null)
-}
-
 xs() {
-    [ -d "$@" ] 2>/dev/null && cd "$@" && return
-    xsfind $@
-    case ${#reply[@]} in
+    [ -d "$@" ] 2>/dev/null && pushd "$@" && return
+    dirs=()
+    while read dir ;do
+        dirs+=("$dir")
+    done < <(find -type d -iname "*${@%% }*" 2>/dev/null)
+    case ${#dirs[@]} in
         0)
-            false
+            return 1
             ;;
         1)
-            pushd "${reply[@]}"
+            pushd "${dirs[@]}"
             ;;
         *)
-            select dir in "${reply[@]}" ; do
+            select dir in "${dirs[@]}" ; do
                 pushd "$dir"
                 break
             done
@@ -114,15 +104,22 @@ LS_OPTIONS='-lh --color=auto'
 alias l="ls $LS_OPTIONS"
 alias ll="ls $LS_OPTIONS -A"
 alias lt="ls $LS_OPTIONS -tr"
-alias ld="ls $LS_OPTIONS -A -d */"
+alias ld="ls $LS_OPTIONS -Ad */"
 alias lss="ls $LS_OPTIONS -Sr"
 
 # grep
 export GREP_OPTIONS='-i --color=auto'
 alias grepi='GREP_OPTIONS= grep'
-alias lg='ll | grep'
-alias fgg='find | grep'
-alias pg='ps -eo start_time,pid,command --sort=start_time | grep -v grep | grep'
+lg() { ll "${2:-.}" | grep "$1"; }
+fgg() { find "${2:-.}" | grep "$1"; }
+pg() {
+    if [ ! "$1" ]; then
+        ps --forest -eF
+    else
+        pids="$(pgrep $@)";
+        [ "$?" = 0 ] && ps -F --sort=start_time $pids | grep "$1" || return $?
+    fi
+}
 
 # vim
 alias v='fasd -e vim -b viminfo'
@@ -143,9 +140,8 @@ alias mpy='mpv -vf yadif'
 mplen() { wf `mpv -vo dummy -ao dummy -identify "$1" 2>/dev/null | grep ID_LENGTH | cut -c 11-` seconds to minutes; }
 
 # Web
-alias webshare='python -c "import SimpleHTTPServer;SimpleHTTPServer.test()"'
+alias webshare='python -m "SimpleHTTPServer"'
 alias wclip='curl -F "sprunge=<-" http://sprunge.us | xclip -f'
-wf() { w3m "http://m.wolframalpha.com/input/?i=$(perl -MURI::Escape -e "print uri_escape(\"$*\");")" -dump 2>/dev/null | grep -A 2 'Result:' | tail -n 1; }
 wf() { wget -O - "http://api.wolframalpha.com/v1/query?input=$*&appid=LAWJG2-J2GVW6WV9Q" 2>/dev/null | grep plaintext | sed -n 2,4p | cut -d '>' -f2 | cut -d '<' -f1; }
 wff() { while read r; do wf $r; done; }
 trans() {
