@@ -185,7 +185,7 @@ set encoding=utf-8
 set background=dark
 syntax enable
 
-if '' == $DISPLAY
+if 'no' == $DISPLAY
     set t_Co=8
     colorscheme desert
 else
