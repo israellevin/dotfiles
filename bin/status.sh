@@ -1,6 +1,6 @@
 #!/bin/dash
 
-pdate=$(date '+%a %d %b %Y - %H:%M')
+pdate="$(date '+%a %d %b %y - %H:%M')"
 
 psens=$(sensors | grep °C | cut -d+ -f2 | cut -d ' ' -f1 | awk '{if(""==max){max=$1}; if($1>max){max=$1};} END {printf "%.0f", max}') 2> /dev/null
 if [ "$psens" != "0" ]; then
@@ -9,9 +9,9 @@ else
     psens=''
 fi
 
-pvolm=$(amixer -c 0 get Master | grep % | cut -d [ -f4 | cut -d ] -f1) 2> /dev/null
+pvolm=$(amixer get Master | grep % | cut -d [ -f4 | cut -d ] -f1) 2> /dev/null
 if [ "$pvolm" != 'off' ]; then
-    pvolm="$(amixer -c 0 get Master | grep -m 1 % | cut -d [ -f2 | cut -d ] -f1) " 2> /dev/null
+    pvolm="$(amixer get Master | grep -m 1 % | cut -d [ -f2 | cut -d ] -f1) " 2> /dev/null
 else
     pvolm=''
 fi

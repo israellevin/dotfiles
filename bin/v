@@ -5,7 +5,6 @@ if [ -t 0 ]; then
     if [ 0 = $# ]; then
         vim -c "set buftype=nofile | set spell"
     else
-        echo 'here'
         fasd -e vim -b viminfo $@
     fi
     exit 0
