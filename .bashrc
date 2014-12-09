@@ -50,8 +50,16 @@ HISTIGNORE='&:exit'
 PROMPT_COMMAND='history -a; history -n'
 
 # Filesystem traversal
-cd() { [ -z "$1" ] && set -- ~; [ "$(pwd)" != "$(readlink -f "$1")" ] && pushd "$1"; }
-..() { if [ $1 -ge 0 2> /dev/null ]; then x=$1; else x=1; fi; for (( i = 0; i < $x; i++ )); do cd ..; done; }
+cd() {
+    [ -z "$1" ] && set -- ~
+    [ "$(pwd)" != "$(readlink -f "$1")" ] && pushd "$1";
+}
+..() {
+    newdir="${PWD/\/$1\/*/}/$1"
+    [ -d "$newdir" ] && cd "$newdir" && return 0
+    [ $1 -ge 0 2> /dev/null ] && x=$1 || x=1
+    for (( i = 0; i < $x; i++ )); do cd ..; done;
+}
 mkcd() { mkdir -p "$*"; cd "$*"; }
 alias b='popd'
 alias dud='du -hxd1 | sort -h'
@@ -99,6 +107,17 @@ _w(){
     return 0
 }
 complete -F _w w
+
+_..() {
+    local word=${COMP_WORDS[COMP_CWORD]}
+    local list=$(pwd | cut -c 2- | sed -e 's#/[^/]*$##g' -e 's/\([ ()]\)/\\\\\1/g')
+    IFS=/
+    list=$(compgen -W "$list" -- "$word")
+    IFS=$'\n'
+    COMPREPLY=($list)
+    return 0
+}
+complete -F _.. ..
 
 # ls
 LS_OPTIONS='-lh --color=auto'
