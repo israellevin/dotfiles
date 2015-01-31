@@ -3,15 +3,16 @@
 
 # Truisms
 export PATH="$HOME/bin:$PATH"
-export LANG=C.UTF-8
+export LANG=en_US.UTF-8
+export EDITOR=vim
 
 # Multiplex
 if [ ! "$TMUX" ]; then
-    [ "$SSH_CONNECTION" ] && su -pc 'tmux -2 attach' || su -pc 'tmux -2 new'
+    [ "$SSH_CONNECTION" ] && tmux -2 attach || tmux -2 new
     [ ! -e /tmp/dontquit ] && exit 0
 fi
 
-# Transfer X credentials
+# Transfer X credentials in SSH sessions
 [ localhost:10.0 = "$DISPLAY" ] && export XAUTHORITY=~i/.Xauthority
 
 # Spawn / reuse ssh agent
@@ -42,8 +43,8 @@ shopt -s no_empty_cmd_completion
 stty -ixon
 
 # History
-HISTFILESIZE=999999
-HISTSIZE=999999
+HISTFILESIZE=
+HISTSIZE=
 HISTCONTROL=erasedups,ignoreboth
 HISTTIMEFORMAT='%F %T '
 HISTIGNORE='&:exit'
@@ -57,7 +58,7 @@ cd() {
 ..() {
     newdir="${PWD/\/$1\/*/}/$1"
     [ -d "$newdir" ] && cd "$newdir" && return 0
-    [ $1 -ge 0 2> /dev/null ] && x=$1 || x=1
+    [ $1 -ge 0 ] 2> /dev/null && x=$1 || x=1
     for (( i = 0; i < $x; i++ )); do cd ..; done;
 }
 mkcd() { mkdir -p "$*"; cd "$*"; }
@@ -119,6 +120,14 @@ _..() {
 }
 complete -F _.. ..
 
+_pip_completion()
+{
+    COMPREPLY=( $( COMP_WORDS="${COMP_WORDS[*]}" \
+                   COMP_CWORD=$COMP_CWORD \
+                   PIP_AUTO_COMPLETE=1 $1 ) )
+}
+complete -o default -F _pip_completion pip
+
 # ls
 LS_OPTIONS='-lh --color=auto'
 alias l="ls $LS_OPTIONS"
@@ -179,10 +188,9 @@ say() {
 }
 
 # General aliases and functions
-alias x='TMUX="" startx &'
 log() { $@ 2>&1 | tee log.txt; }
 til() { sleep $(( $(date -d "$*" +%s) - $(date +%s) )); }
-
+alias x='TMUX="" startx &'
 # Steal all tmux windows into current session
 muxjoin() {
     [ ! "$TMUX" ] && echo 'tmux not running' 1>&2 && exit 1
