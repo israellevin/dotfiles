@@ -6,6 +6,7 @@ isearch_keep_selection = true;
 isearch_scroll_center_vertically = true;
 editor_shell_command = 'urxvt -e vi ';
 view_source_use_external_editor = true;
+url_remoting_fn = load_url_in_new_buffer;
 
 // Jumps
 webjumps.l = webjumps.lucky;
@@ -256,6 +257,10 @@ interactive('jquery', 'run a jquery command', function(I){
         $prompt = 'jq: ', $history = 'jquery-here'
     );
     doc.body.appendChild(script_el);
+});
+
+interactive('mpv', 'play media', function(I){
+    shell_command_with_argument_blind('/usr/bin/mpv {}', I.buffer.display_uri_string);
 });
 
 // vim:filetype=javascript
