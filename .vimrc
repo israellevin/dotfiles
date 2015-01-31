@@ -40,7 +40,6 @@ set completeopt=longest,menu
 set incsearch
 set hlsearch
 set ruler
-set relativenumber
 set number
 set showcmd
 set showmode
@@ -119,6 +118,10 @@ Plug 'junegunn/goyo.vim'
 Plug 'junegunn/rainbow_parentheses.vim'
 Plug 'jellybeans.vim'
 
+Plug 'MattesGroeger/vim-bookmarks'
+Plug 'airblade/vim-gitgutter'
+Plug 'scrooloose/syntastic'
+
 call plug#end()
 if 1 == firstrun
     :PlugInstall
@@ -134,6 +137,7 @@ let g:ctrlp_map = '<F10>'
 nnoremap <Leader>B :CtrlPBuffer<CR>
 nnoremap <Leader>( :RainbowParenthesesToggleAll<CR>
 let g:limelight_conceal_ctermfg = 240
+let g:syntastic_python_python_exec = '/usr/bin/python3'
 
 " autocommands
 au!
