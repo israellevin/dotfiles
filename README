@@ -2,11 +2,11 @@ Configuration files and some handy scripts
 
 .bashrc
 .inputrc
+.profile
 .tmux.conf
 .vimrc
 .Xdefaults
 .xinitrc
-.zshrc
 
 bash-define - bash front end to dict.org, with completion (not mine, source unknown)
 cmx - dmenu to launch comix
