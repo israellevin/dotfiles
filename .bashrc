@@ -16,17 +16,19 @@ fi
 [ localhost:10.0 = "$DISPLAY" ] && export XAUTHORITY=~i/.Xauthority
 
 # Spawn / reuse ssh agent
-sshenv="$HOME/.ssh/env"
-usesshagent() {
-    if [ -f "$sshenv" ]; then
-        . "$sshenv"
-        pgrep ssh-agent | grep "^$SSH_AGENT_PID$" > /dev/null && return 0
-    fi
-    ssh-agent > "$sshenv"
+if which ssh-agent; then
+    sshenv="$HOME/.ssh/env"
+    usesshagent() {
+        if [ -f "$sshenv" ]; then
+            . "$sshenv"
+            pgrep ssh-agent | grep "^$SSH_AGENT_PID$" > /dev/null && return 0
+        fi
+        ssh-agent > "$sshenv"
+        usesshagent
+    }
     usesshagent
-}
-usesshagent
-ssh-add
+    ssh-add
+fi
 
 # Shell options
 shopt -s autocd
