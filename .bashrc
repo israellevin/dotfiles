@@ -139,18 +139,10 @@ alias ld="ls $LS_OPTIONS -Ad */"
 alias lss="ls $LS_OPTIONS -Sr"
 
 # grep
-export GREP_OPTIONS='-i --color=auto'
-alias grepi='GREP_OPTIONS= grep'
-lg() { ll "${2:-.}" | grep "$1"; }
-fgg() { find "${2:-.}" | grep "$1"; }
-pg() {
-    if [ ! "$1" ]; then
-        ps --forest -eF
-    else
-        pids="$(pgrep $@)";
-        [ "$?" = 0 ] && ps -F --sort=start_time $pids | grep "$1" || return $?
-    fi
-}
+alias gp='grep --color=auto -i'
+lg() { ll "${2:-.}" | gp "$1"; }
+fgg() { find "${2:-.}" | gp "$1"; }
+pg() { gp "$@" <<< "$(ps -eF --sort=start_time)"; }
 
 # vim
 vv() { [ -z $1 ] && vim -c "normal '0" || vim -p *$**; }
