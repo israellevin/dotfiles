@@ -3,20 +3,30 @@
 
 # Truisms
 export PATH="$HOME/bin:$PATH"
-export LANG=C.UTF-8
+export LANG=en_US.UTF-8
+export EDITOR=vim
 
 # Multiplex
-if [ "$SSH_CONNECTION" ] && [ 0 -ne "$UID" ]; then
-    su -c 'tmux list-ses' && su || su -
-    exit 0
-elif [ ! "$TMUX" ]; then
-    ([ "$SSH_CONNECTION" ] && tmux -2 attach || tmux -2 new) &&
+if [ ! "$TMUX" ]; then
+    [ "$SSH_CONNECTION" ] && tmux -2 attach || tmux -2 new
     [ ! -e /tmp/dontquit ] && exit 0
 fi
-[ "localhost:10.0" = "$DISPLAY" ] && export XAUTHORITY=~i/.Xauthority
 
-# Transfer X credentials
+# Transfer X credentials in SSH sessions
 [ localhost:10.0 = "$DISPLAY" ] && export XAUTHORITY=~i/.Xauthority
+
+# Spawn / reuse ssh agent
+sshenv="$HOME/.ssh/env"
+usesshagent() {
+    mkdir -pm 700 "$(basename "$sshenv")"
+    if [ -f "$sshenv" ]; then
+        . "$sshenv"
+        ssh-add
+        pgrep ssh-agent | grep "^$SSH_AGENT_PID$" > /dev/null && return 0
+    fi
+    ssh-agent > "$sshenv"
+    usesshagent
+}
 
 # Shell options
 shopt -s autocd
@@ -30,22 +40,30 @@ shopt -s histverify
 shopt -s checkwinsize
 shopt -u force_fignore
 shopt -s no_empty_cmd_completion
+stty -ixon
 
 # History
-HISTFILESIZE=999999
-HISTSIZE=999999
+HISTFILESIZE=
+HISTSIZE=
 HISTCONTROL=erasedups,ignoreboth
 HISTTIMEFORMAT='%F %T '
 HISTIGNORE='&:exit'
 PROMPT_COMMAND='history -a; history -n'
 
 # Filesystem traversal
-cd() { [ -z "$1" ] && set -- ~; [ "$(pwd)" != "$(readlink -f "$1")" ] && pushd "$1"; }
-..() { if [ $1 -ge 0 2> /dev/null ]; then x=$1; else x=1; fi; for (( i = 0; i < $x; i++ )); do cd ..; done; }
+cd() {
+    [ -z "$1" ] && set -- ~
+    [ "$(pwd)" != "$(readlink -f "$1")" ] && pushd "$1";
+}
+..() {
+    newdir="${PWD/\/$1\/*/}/$1"
+    [ -d "$newdir" ] && cd "$newdir" && return 0
+    [ $1 -ge 0 ] 2> /dev/null && x=$1 || x=1
+    for (( i = 0; i < $x; i++ )); do cd ..; done;
+}
 mkcd() { mkdir -p "$*"; cd "$*"; }
 alias b='popd'
-alias d='trash-put'
-alias dud='du -hxd 1 | sort -h'
+alias dud='du -hxd1 | sort -h'
 
 fasd_cache="$HOME/.fasd-init-bash"
 if [ "$(command -v fasd)" -nt "$fasd_cache" -o ! -s "$fasd_cache" ]; then
@@ -56,26 +74,21 @@ fasd_cd() { [ $# -gt 1 ] && cd "$(fasd -e echo "$@")" || fasd "$@"; }
 alias j='fasd_cd -d'
 alias f='fasd -f'
 
-xsfind() {
-    needle="$@"
-    reply=()
-    while read line ;do
-        reply+=("${line:2}")
-    done < <(find ./ -type d -iname "*${needle%% }*" 2>/dev/null)
-}
-
 xs() {
-    [ -d "$@" ] 2>/dev/null && cd "$@" && return
-    xsfind $@
-    case ${#reply[@]} in
+    [ -d "$@" ] 2>/dev/null && pushd "$@" && return
+    dirs=()
+    while read dir ;do
+        dirs+=("$dir")
+    done < <(find -type d -iname "*${@%% }*" 2>/dev/null)
+    case ${#dirs[@]} in
         0)
-            false
+            return 1
             ;;
         1)
-            pushd "${reply[@]}"
+            pushd "${dirs[@]}"
             ;;
         *)
-            select dir in "${reply[@]}" ; do
+            select dir in "${dirs[@]}" ; do
                 pushd "$dir"
                 break
             done
@@ -85,7 +98,9 @@ xs() {
 
 # Completion
 source /etc/bash_completion
+source /usr/share/bash-completion/completions/git
 complete -W "$(echo $(grep -a '^ssh ' "$HOME/.bash_history" | sort -u | sed 's/^ssh //'))" ssh
+alias v=v
 _fasd_bash_hook_cmd_complete j v mp
 
 _w(){
@@ -94,26 +109,43 @@ _w(){
 }
 complete -F _w w
 
+_..() {
+    local word=${COMP_WORDS[COMP_CWORD]}
+    local list=$(pwd | cut -c 2- | sed -e 's#/[^/]*$##g' -e 's/\([ ()]\)/\\\\\1/g')
+    IFS=/
+    list=$(compgen -W "$list" -- "$word")
+    IFS=$'\n'
+    COMPREPLY=($list)
+    return 0
+}
+complete -F _.. ..
+
+_pip_completion()
+{
+    COMPREPLY=( $( COMP_WORDS="${COMP_WORDS[*]}" \
+                   COMP_CWORD=$COMP_CWORD \
+                   PIP_AUTO_COMPLETE=1 $1 ) )
+}
+complete -o default -F _pip_completion pip
+
 # ls
 LS_OPTIONS='-lh --color=auto'
 alias l="ls $LS_OPTIONS"
 alias ll="ls $LS_OPTIONS -A"
 alias lt="ls $LS_OPTIONS -tr"
-alias ld="ls $LS_OPTIONS -A -d */"
+alias ld="ls $LS_OPTIONS -Ad */"
 alias lss="ls $LS_OPTIONS -Sr"
 
 # grep
-export GREP_OPTIONS='-i --color=auto'
-alias lg='ll | grep'
-alias fgg='find | grep'
-alias pg='ps -eo start_time,pid,command --sort=start_time | grep -v grep | grep'
+alias gp='grep --color=auto -i'
+lg() { ll "${2:-.}" | gp "$1"; }
+fgg() { find "${2:-.}" | gp "$1"; }
+pg() { gp "$@" <<< "$(ps -eF --sort=start_time)"; }
 
 # vim
-alias v='fasd -e vim -b viminfo'
 vv() { [ -z $1 ] && vim -c "normal '0" || vim -p *$**; }
 vg() { vim -p $(grep -l "$*" *); }
 alias vf='find && vim -c "CtrlP"'
-alias vs='vim -c "set spell | set buftype=nofile"'
 
 # Media
 alias d0='DISPLAY=":0.0"'
@@ -127,9 +159,8 @@ alias mpy='mpv -vf yadif'
 mplen() { wf `mpv -vo dummy -ao dummy -identify "$1" 2>/dev/null | grep ID_LENGTH | cut -c 11-` seconds to minutes; }
 
 # Web
-alias webshare='python -c "import SimpleHTTPServer;SimpleHTTPServer.test()"'
+alias webshare='python -m "SimpleHTTPServer"'
 alias wclip='curl -F "sprunge=<-" http://sprunge.us | xclip -f'
-wf() { w3m "http://m.wolframalpha.com/input/?i=$(perl -MURI::Escape -e "print uri_escape(\"$*\");")" -dump 2>/dev/null | grep -A 2 'Result:' | tail -n 1; }
 wf() { wget -O - "http://api.wolframalpha.com/v1/query?input=$*&appid=LAWJG2-J2GVW6WV9Q" 2>/dev/null | grep plaintext | sed -n 2,4p | cut -d '>' -f2 | cut -d '<' -f1; }
 wff() { while read r; do wf $r; done; }
 trans() {
@@ -149,10 +180,9 @@ say() {
 }
 
 # General aliases and functions
-alias x='TMUX="" startx &'
 log() { $@ 2>&1 | tee log.txt; }
 til() { sleep $(( $(date -d "$*" +%s) - $(date +%s) )); }
-
+alias x='TMUX="" startx &'
 # Steal all tmux windows into current session
 muxjoin() {
     [ ! "$TMUX" ] && echo 'tmux not running' 1>&2 && exit 1

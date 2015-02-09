@@ -1,5 +1,5 @@
 " History
-set history=99999
+set history=10000
 set viminfo='100,%
 set backup
 set writebackup
@@ -10,6 +10,7 @@ set modeline
 
 " Buffers
 set hidden
+set confirm
 set autoread
 set autochdir
 set tabpagemax=32
@@ -39,7 +40,6 @@ set completeopt=longest,menu
 set incsearch
 set hlsearch
 set ruler
-set relativenumber
 set number
 set showcmd
 set showmode
@@ -93,48 +93,54 @@ inoremap <Up> <C-o>gk
 inoremap <Down> <C-o>gj
 
 "Plugins
-filetype off
-
 let firstrun=0
-if !filereadable(expand("~/.vim/bundle/vundle/README.md"))
-    let firstrun=1
-    silent !mkdir -p ~/.vim/{bundle,undo,backups}
-    silent !git clone http://github.com/gmarik/vundle ~/.vim/bundle/vundle
-endif
-set runtimepath+=~/.vim/bundle/vundle/
-call vundle#rc()
-Bundle 'gmarik/vundle'
+if !filereadable(expand("~/.vim/autoload/plug.vim"))
 
-Bundle 'maxbrunsfeld/vim-yankstack'
+    let firstrun=1
+    silent !mkdir -p ~/.vim/{autoload,undo,backups}
+    silent !curl -fLo ~/.vim/autoload/plug.vim
+        \ https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
+endif
+call plug#begin('~/.vim/plugged')
+
+Plug 'maxbrunsfeld/vim-yankstack'
+Plug 'AutoComplPop'
+Plug 'ctrlp.vim'
+Plug 'tommcdo/vim-exchange'
+Plug 'mmedvede/w3m.vim'
+Plug 'zweifisch/pipe2eval'
+Plug 'mattn/emmet-vim', { 'for': 'html' }
+Plug 'matchit.zip', { 'for': 'html' }
+Plug 'Konfekt/FastFold'
+Plug 'junegunn/fzf'
+Plug 'junegunn/limelight.vim'
+Plug 'junegunn/goyo.vim'
+Plug 'junegunn/rainbow_parentheses.vim'
+Plug 'jellybeans.vim'
+
+Plug 'MattesGroeger/vim-bookmarks'
+Plug 'airblade/vim-gitgutter'
+Plug 'scrooloose/syntastic'
+
+call plug#end()
+if 1 == firstrun
+    :PlugInstall
+endif
+
 let g:yankstack_map_keys = 0
 call yankstack#setup()
 nmap <C-p> <Plug>yankstack_substitute_older_paste
 nmap <C-n> <Plug>yankstack_substitute_newer_paste
 nnoremap Y y$
-
-Bundle 'AutoComplPop'
 let g:acp_behaviorKeywordLength = 2
-
-Bundle 'ctrlp.vim'
 let g:ctrlp_map = '<F10>'
 nnoremap <Leader>B :CtrlPBuffer<CR>
-
-Bundle 'tommcdo/vim-exchange'
-Bundle 'mmedvede/w3m.vim'
-Bundle 'zweifisch/pipe2eval'
-Bundle 'mattn/emmet-vim'
-Bundle 'matchit.zip'
-
-Bundle 'jellybeans.vim'
-
-"Bundle 'rainbow_parentheses.vim'
-if 1 == firstrun
-    :BundleInstall!
-endif
+nnoremap <Leader>( :RainbowParenthesesToggleAll<CR>
+let g:limelight_conceal_ctermfg = 240
+let g:syntastic_python_python_exec = '/usr/bin/python3'
 
 " autocommands
 au!
-filetype plugin indent on
 set omnifunc=syntaxcomplete#Complete
 
 " Return to last position
@@ -172,18 +178,18 @@ au VimResized * wincmd =
 au WinEnter * setlocal cursorline | setlocal cursorcolumn
 au WinLeave * setlocal nocursorline | setlocal nocursorcolumn
 
+" Source vimrc when written
+au! BufWritePost $MYVIMRC source %
+
 " Chmod +x shabanged files on save
 au BufWritePost * if getline(1) =~ "^#!" | silent !chmod u+x <afile>
-
-" Source vimrc when written
-au! BufWritePost $MYVIMRC source $MYVIMRC
 
 " Pretty
 set encoding=utf-8
 set background=dark
 syntax enable
 
-if '' == $DISPLAY
+if 'no' == $DISPLAY
     set t_Co=8
     colorscheme desert
 else
@@ -194,8 +200,6 @@ else
     hi Todo cterm=bold ctermfg=231 ctermbg=1
 endif
 
-set cursorline
-set cursorcolumn
 set colorcolumn=81
 hi ExtraWhitespace ctermbg=1
 match ExtraWhitespace /\s\+$/

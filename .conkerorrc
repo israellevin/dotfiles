@@ -3,14 +3,19 @@ homepage = 'about:blank';
 can_kill_last_buffer = false;
 url_completion_use_history = true;
 isearch_keep_selection = true;
+isearch_scroll_center_vertically = true;
 editor_shell_command = 'urxvt -e vi ';
 view_source_use_external_editor = true;
+url_remoting_fn = load_url_in_new_buffer;
 
 // Jumps
 webjumps.l = webjumps.lucky;
 webjumps.w = webjumps.wikipedia;
 define_webjump('v', 'http://www.google.com/search?q=%s&safe=off&tbs=li:1');
 define_webjump('alpha', 'http://www36.wolframalpha.com/input/?i=%s');
+function possibly_valid_url(str){
+    return /^\s*[^\/\s]*(\/|\s*$)/.test(str) && /[:\/\.]/.test(str);
+}
 read_url_handler_list = [
     function(input){
         var m = /^(\S+\|\S+)\s+(.*)/.exec(input);
@@ -24,40 +29,69 @@ read_url_handler_list = [
     },
     read_url_make_default_webjump_handler('google')
 ];
-function possibly_valid_url(str){return /^\s*[^\/\s]*(\/|\s*$)/.test(str) && /[:\/\.]/.test(str);}
 
 // Session
 require('session.js');
 session_auto_save_auto_load = 'prompt';
-var undos = [];
-var kill_buffer_orig = kill_buffer_orig || kill_buffer;
-kill_buffer = function(b, f){
-    b.display_uri_string && undos.push(b.display_uri_string);
-    kill_buffer_orig(b, f);
-}
-interactive('undo_close', 'Loads url from a previously killed buffer', function undo_close(I){
-    if(0 === undos.length){
-        I.window.minibuffer.message('No killed buffers');
-    }else{
-        load_url_in_new_buffer(
-            yield I.minibuffer.read(
+
+var kill_buffer_original = kill_buffer_original || kill_buffer;
+var killed_buffer_urls = [];
+var killed_buffer_histories = [];
+kill_buffer = function(buffer, force){
+    var hist = buffer.web_navigation.sessionHistory;
+    if(buffer.display_uri_string && hist) {
+        killed_buffer_histories.push(hist);
+        killed_buffer_urls.push(buffer.display_uri_string);
+    }
+    kill_buffer_original(buffer,force);
+};
+interactive(
+    'revive-buffer',
+    'Loads url from a previously killed buffer',
+    function restore_killed_buffer(I){
+        if(killed_buffer_urls.length !== 0){
+            var url = yield I.minibuffer.read(
                 $prompt = 'Restore killed url:',
-                $completer = all_word_completer($completions = undos),
-                $default_completion = undos[undos.length - 1],
+                $completer = new all_word_completer(
+                    $completions = killed_buffer_urls
+                ),
+                $default_completion = killed_buffer_urls[
+                    killed_buffer_urls.length - 1
+                ],
                 $auto_complete = 'url',
                 $auto_complete_initial = true,
                 $auto_complete_delay = 0,
-                $match_required
-            )
-        );
+                $require_match = true
+            );
+            var window = I.window;
+            var creator = buffer_creator(content_buffer);
+            var idx = killed_buffer_urls.indexOf(url);
+            var buf = creator(window, null);
+            buf.web_navigation.sessionHistory = killed_buffer_histories[idx];
+            var original_index = buf.web_navigation.sessionHistory.index;
+            buf.web_navigation.gotoIndex(original_index);
+            window.buffers.current = buf;
+            killed_buffer_urls.splice(idx,1);
+            killed_buffer_histories.splice(idx,1);
+        } else {
+            I.window.minibuffer.message('No killed buffer urls');
+        }
     }
-});
+);
 
 // Go modal
+require('block-content-focus-change.js');
 var insertmode = true;
 function modal(e){
-    if('keydown' === e.type && 27 === e.which) insertmode = false;
-    else if('keyup' === e.type && 73 === e.which) insertmode = true;
+    if('keydown' === e.type && 27 === e.which){
+        insertmode = false;
+        page_mode_activate(block_content_focus_change_mode);
+        page_mode_activate(quote-mode);
+    }else if('keyup' === e.type && 73 === e.which){
+        insertmode = true;
+        page_mode_deactivate(block_content_focus_change_mode);
+        page_mode_deactivate(quote-mode);
+    }
     if(false === insertmode) e.stopPropagation();
 }
 add_hook('create_buffer_late_hook', function(I){
@@ -65,47 +99,82 @@ add_hook('create_buffer_late_hook', function(I){
     I.browser.addEventListener('keyup', modal, true);
     I.browser.addEventListener('keypress', modal, true);
 });
-require('block-content-focus-change.js');
 
 // Keys
-var maps = [default_global_keymap, content_buffer_normal_keymap];
+var maps = [
+    default_global_keymap,
+    content_buffer_normal_keymap,
+    content_buffer_anchor_keymap
+];
 for(var i = 0; i < maps.length; i++){
     define_key(maps[i], 'i', 'quote-mode');
     define_key(maps[i], 'I', 'block-content-focus-change-mode');
+    define_key(maps[i], ':', 'execute-extended-command');
     define_key(maps[i], 'j', 'cmd_lineNext');
     define_key(maps[i], 'k', 'cmd_linePrevious');
+    define_key(maps[i], 'l', 'cmd_charNext');
+    define_key(maps[i], 'h', 'cmd_charPrevious');
     define_key(maps[i], 'J', 'buffer-next');
     define_key(maps[i], 'K', 'buffer-previous');
     define_key(maps[i], 'H', 'back');
     define_key(maps[i], 'L', 'forward');
+    define_key(maps[i], 'o', 'find-url');
     define_key(maps[i], 'O', 'find-url-new-buffer');
-    define_key(maps[i], 'G', 'cmd_moveTop');
+    define_key(maps[i], 'g', 'cmd_moveTop');
+    define_key(maps[i], 'G', 'cmd_moveBottom');
     define_key(maps[i], 'F', 'follow-new-buffer-background');
+    define_key(maps[i], 'd', 'kill-current-buffer');
+    define_key(maps[i], 'D', 'delete');
+    define_key(maps[i], '/', 'isearch-forward');
+    define_key(maps[i], '?', 'isearch-backward');
+    define_key(maps[i], 'n', 'isearch-continue-forward');
+    define_key(maps[i], 'N', 'isearch-continue-backward');
+    define_key(maps[i], 'U', 'revive-buffer');
 }
+maps = [content_buffer_text_keymap];
+for(var i = 0; i < maps.length; i++){
+    define_key(maps[i], 'C-i', 'quote-mode');
+    define_key(maps[i], 'C-I', 'block-content-focus-change-mode');
+    define_key(maps[i], 'C-j', 'cmd_lineNext');
+    define_key(maps[i], 'C-k', 'cmd_linePrevious');
+}
+
+page_mode_deactivate(stackexchange_mode);
+page_mode_deactivate(google_calendar_mode);
+require('clicks-in-new-buffer.js');
+clicks_in_new_buffer_target = OPEN_NEW_BUFFER_BACKGROUND;
 
 // Block plugins
 require('content-policy.js');
 var enableplugins = false;
-interactive('toggle-plugins', 'toggle plugins', function(I){enableplugins = !enableplugins;});
-function block_plugins (content_type, content_location){
-    var Y = content_policy_accept, N = content_policy_reject;
-    if(true === enableplugins) return Y;
-    return N;
+interactive('plugins-toggle', 'toggle plugins', function(I){
+    enableplugins = !enableplugins;
+});
+function auth_plugins(content_type, content_location){
+    return enableplugins ? content_policy_accept : content_policy_reject;
 }
-content_policy_bytype_table.object = block_plugins;
+content_policy_bytype_table.object = auth_plugins;
 add_hook('content_policy_hook', content_policy_bytype);
 
 // Good looks
 theme_load('gesso');
-register_user_stylesheet(make_css_data_uri(['.mode-line {background-color:white;}'], $namespace = XUL_NS));
+register_user_stylesheet(make_css_data_uri(
+    ['.mode-line {background-color:white;}'], $namespace = XUL_NS
+));
 add_hook('create_buffer_late_hook', function(I){
     browser_zoom_set(I, true, 150);
 });
 var minibuffer_autohide_timer = null;
-var hide_minibuffer = function(window){window.minibuffer.element.collapsed = true;}
-var show_minibuffer = function(window){window.minibuffer.element.collapsed = false;}
+var hide_minibuffer = function(window){
+    window.minibuffer.element.collapsed = true;
+};
+var show_minibuffer = function(window){
+    window.minibuffer.element.collapsed = false;
+};
 add_hook('window_initialize_hook', hide_minibuffer);
-var minibuffer_restore = minibuffer_restore || minibuffer.prototype._restore_state;
+var minibuffer_restore =
+    minibuffer_restore ||
+    minibuffer.prototype._restore_state;
 minibuffer.prototype._restore_state = function(){
     if(this.current_state) show_minibuffer(this.window);
     else hide_minibuffer(this.window);
@@ -133,37 +202,42 @@ register_user_stylesheet(
 );
 
 xkcd_add_title = true;
-remove_hook('download_added_hook', open_download_buffer_automatically);
+//remove_hook('download_added_hook', open_download_buffer_automatically);
+dowload_buffer_automatic_open_target=OPEN_CURRENT_BUFFER;
 
-// Dev
-interactive('agent-toggle', 'pretend to be firefox', function(I){
-    session_pref(
-        'general.useragent.compatMode.firefox',
-        ! get_pref('general.useragent.compatMode.firefox')
-    );
-});
-
+// User agent.
 var user_agents = {
     'conkeror': 'Mozilla/5.0 (X11; Linux i686; rv:29.0) Gecko/20100101 conkeror/1.0pre (Debian-1.0~~pre+git140428-1)',
     'firefox': 'Mozilla/5.0 (X11; Linux i686; rv:29.0) Gecko/20100101 Firefox/29.0 Iceweasel/29.0.1',
     'chromium': 'Mozilla/5.0 (X11; Linux i686) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/35.0.1916.114 Safari/537.36',
-    'android': 'Mozilla/5.0 (Linux; U; Android 2.2; en-us; Nexus One Build/FRF91) AppleWebKit/533.1 (KHTML, like Gecko) Version/4.0 Mobile Safari/533.1'
+    'android': 'Mozilla/5.0 (Linux; U; Android 2.2; en-us; Nexus One Build/FRF91) AppleWebKit/533.1 (KHTML, like Gecko) Version/4.0 Mobile Safari/533.1',
+    'googlebot': 'Googlebot/2.1 (+http://www.google.com/bot.html)'
 };
-var agent_completer = prefix_completer($completions = Object.keys(user_agents));
 interactive('agent-set', 'Pick an agent',
     function(I){
-        var ua = (yield I.window.minibuffer.read(
-            $prompt = 'Agent:',
-            $completer = agent_completer));
+        var ua = yield I.minibuffer.read(
+            $prompt = 'User Agent:',
+            $completer = new all_word_completer(
+                $completions = Object.keys(user_agents)
+            ),
+            $auto_complete = 'url',
+            $auto_complete_initial = true,
+            $auto_complete_delay = 0,
+            $require_match = true
+        );
         set_user_agent(user_agents[ua]);
     }
 );
 
+// Dev
 interactive('firebug', 'open firebug lite', function(I){
     var doc = I.buffer.document;
     var script = doc.createElement('script');
     script.setAttribute('type', 'text/javascript');
-    script.setAttribute('src', 'http://getfirebug.com/releases/lite/1.2/firebug-lite-compressed.js');
+    script.setAttribute(
+        'src',
+        'http://getfirebug.com/releases/lite/1.2/firebug-lite-compressed.js'
+    );
     script.setAttribute('onload', 'firebug.init();');
     doc.body.appendChild(script);
 });
@@ -173,12 +247,20 @@ interactive('jquery', 'run a jquery command', function(I){
     var script_el = doc.createElementNS(XHTML_NS, 'script');
     script_el.setAttribute('language', 'javascript');
     script_el.setAttribute('type', 'text/javascript');
-    script_el.setAttribute('src', 'http://code.jquery.com/jquery-latest.min.js');
+    script_el.setAttribute(
+        'src', 'http://code.jquery.com/jquery-latest.min.js'
+    );
     doc.body.appendChild(script_el);
 
     script_el = doc.createElementNS(XHTML_NS, 'script');
-    script_el.textContent = yield I.minibuffer.read($prompt = 'jq: ', $history = 'jquery-here');
+    script_el.textContent = yield I.minibuffer.read(
+        $prompt = 'jq: ', $history = 'jquery-here'
+    );
     doc.body.appendChild(script_el);
+});
+
+interactive('mpv', 'play media', function(I){
+    shell_command_with_argument_blind('/usr/bin/mpv {}', I.buffer.display_uri_string);
 });
 
 // vim:filetype=javascript

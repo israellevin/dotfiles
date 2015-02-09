@@ -1,17 +1,13 @@
 #!/bin/sh
 cd /etc/network/
 interface="$(find -maxdepth 1 -type f | dmenu)"
+[ "$interface" ] || exit 0
 if [ -f "$interface" ]; then
-    umount /root/torents/
-    umount /root/pub/
-    umount /root/ars/
     ifdown wlan0
     cp "$interface" interfaces
     ifup wlan0
-    if [ './home' = "$interface" ]; then
-        sshfs -o reconnect,allow_other i@10.0.0.1:/ /root/ars/
-        mount -B /root/ars/media/Tera/pub/ /root/pub/
-        mount -B /root/ars/root/torrents/ /root/torrents/
-    fi
+else
+    read -p "save current interface as $interface? (y/N) " q
+    [ "$q" = y ] && cp interfaces "$interface"
 fi
 exit 0
