@@ -1,22 +1,17 @@
 #!/bin/bash
-vidtypes='3g.\|asf\|asx\|avi\|bin\|divx\|dvx\|f4v\|flc\|flv\|gvi\|m4v\|mkv\|mov\|mp4\|mpeg\|mpg\|ogm\|qt\|rm\|swf\|vid\|wmv\|xvid'
 vids='/home/i/vids'
-tmp='/tmp/vids'
+paths="~/ars/media/deuce/pub/{audio,cinema,television,video,kids} ~/ars/root/torrents"
+vidtypes='3g\|asf\|asx\|avi\|bin\|divx\|dvx\|f4v\|flc\|flv\|gvi\|m4v\|mkv\|mov\|mp4\|mpeg\|mpg\|ogm\|qt\|rm\|swf\|vid\|wmv\|xvid'
 
-dolist() {
-    find ~/pub/{audio,cinema,TV,video,Xbu} ~/torrents ~/ars/media/old/pub/{cinema,TV,Xbu} -type f -iregex ".*\\.\\($vidtypes\\)"
-}
+(
+    eval "find $paths -type f -iregex \".*\\.\\($vidtypes\\)\"" | sort -h >> "$vids"
+    awk '!x[$0]++' "$vids" > "$vids.tmp" && mv "$vids.tmp" "$vids"
+)&
 
-[ -f "$vids" ] || dolist > "$vids"
-vid=$(cat "$vids" | dmenu)
-
+vid="$(slmenu -i -l 20 < "$vids")"
 if [ -f "$vid" ]; then
     TMUX='' tmux new-session -d "DISPLAY=:0 mpv \"$vid\"" &
-    echo "$vid" > "$tmp"
+    sed -i "1s#^#$vid\n#" "$vids"
 fi
-
-cat "$vids" >> "$tmp"
-dolist >> "$tmp"
-awk '!x[$0]++' "$tmp" > "$vids"
 
 exit 0
