@@ -1,6 +1,6 @@
 #!/bin/bash
 vids='/home/i/vids'
-paths="~/ars/media/deuce/pub/{audio,cinema,television,video,kids} ~/ars/root/torrents"
+paths='~/ars/media/deuce/pub/{audio,cinema,television,video,kids} ~/ars/root/torrents'
 vidtypes='3g\|asf\|asx\|avi\|bin\|divx\|dvx\|f4v\|flc\|flv\|gvi\|m4v\|mkv\|mov\|mp4\|mpeg\|mpg\|ogm\|qt\|rm\|swf\|vid\|wmv\|xvid'
 
 (
