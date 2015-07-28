@@ -33,6 +33,7 @@ read_url_handler_list = [
 // Session
 require('session.js');
 session_auto_save_auto_load = 'prompt';
+session_auto_save_auto_load_fn = session_auto_save_load_window_current;
 
 var kill_buffer_original = kill_buffer_original || kill_buffer;
 var killed_buffer_urls = [];
@@ -139,7 +140,6 @@ for(var i = 0; i < maps.length; i++){
     define_key(maps[i], 'C-k', 'cmd_linePrevious');
 }
 
-page_mode_deactivate(stackexchange_mode);
 page_mode_deactivate(google_calendar_mode);
 require('clicks-in-new-buffer.js');
 clicks_in_new_buffer_target = OPEN_NEW_BUFFER_BACKGROUND;
@@ -202,8 +202,7 @@ register_user_stylesheet(
 );
 
 xkcd_add_title = true;
-//remove_hook('download_added_hook', open_download_buffer_automatically);
-dowload_buffer_automatic_open_target=OPEN_CURRENT_BUFFER;
+download_buffer_automatic_open_target = OPEN_NEW_BUFFER;
 
 // User agent.
 var user_agents = {
