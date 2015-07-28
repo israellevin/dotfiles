@@ -10,7 +10,6 @@ set modeline
 
 " Buffers
 set hidden
-set confirm
 set autoread
 set autochdir
 set tabpagemax=32
@@ -95,32 +94,27 @@ inoremap <Down> <C-o>gj
 "Plugins
 let firstrun=0
 if !filereadable(expand("~/.vim/autoload/plug.vim"))
-
     let firstrun=1
     silent !mkdir -p ~/.vim/{autoload,undo,backups}
-    silent !curl -fLo ~/.vim/autoload/plug.vim
+    silent !wget -O ~/.vim/autoload/plug.vim
         \ https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
 endif
 call plug#begin('~/.vim/plugged')
 
 Plug 'maxbrunsfeld/vim-yankstack'
-Plug 'AutoComplPop'
-Plug 'ctrlp.vim'
+Plug 'vim-scripts/AutoComplPop'
 Plug 'tommcdo/vim-exchange'
-Plug 'mmedvede/w3m.vim'
-Plug 'zweifisch/pipe2eval'
-Plug 'mattn/emmet-vim', { 'for': 'html' }
-Plug 'matchit.zip', { 'for': 'html' }
 Plug 'Konfekt/FastFold'
-Plug 'junegunn/fzf'
+Plug 'scrooloose/syntastic'
+Plug 'zweifisch/pipe2eval'
+Plug 'tpope/vim-fugitive'
+Plug 'mattn/emmet-vim', { 'for': 'html' }
+Plug 'tmhedberg/matchit', { 'for': 'html' }
+Plug 'vasconcelloslf/vim-interestingwords'
 Plug 'junegunn/limelight.vim'
 Plug 'junegunn/goyo.vim'
 Plug 'junegunn/rainbow_parentheses.vim'
-Plug 'jellybeans.vim'
-
-Plug 'MattesGroeger/vim-bookmarks'
-Plug 'airblade/vim-gitgutter'
-Plug 'scrooloose/syntastic'
+Plug 'nanotech/jellybeans.vim'
 
 call plug#end()
 if 1 == firstrun
@@ -133,11 +127,8 @@ nmap <C-p> <Plug>yankstack_substitute_older_paste
 nmap <C-n> <Plug>yankstack_substitute_newer_paste
 nnoremap Y y$
 let g:acp_behaviorKeywordLength = 2
-let g:ctrlp_map = '<F10>'
-nnoremap <Leader>B :CtrlPBuffer<CR>
 nnoremap <Leader>( :RainbowParenthesesToggleAll<CR>
 let g:limelight_conceal_ctermfg = 240
-let g:syntastic_python_python_exec = '/usr/bin/python3'
 
 " autocommands
 au!
