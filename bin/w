@@ -1,9 +1,9 @@
 #!/bin/bash
 if [ "$1" ]; then
-    # Isolate dash (dump marker)
+    # Isolate dash (browse marker)
     a=$*
     q=${a%-}
-    dump=${a#$q}
+    browse=${a#$q}
     # Isolate ' h' (rtl marker)
     a=$q
     q=${q% h}
@@ -21,23 +21,20 @@ if [ "$1" ]; then
         g) req="${req}google.com/search?q=$q";;
         l) req="${req}google.com/search?q=$q&btnI=";;
         w) req="${req}en.wikipedia.org/w/index.php?title=Special:Search&search=$q&go=Go";;
-        d) req="${req}machaut.uchicago.edu/?resource=Webster%27s&word=$q&use1913=on&use1828=on";;
+        d) req="${req}dictionary.reference.com/browse/$q";;
+        dd) req="${req}machaut.uchicago.edu/?resource=Webster%27s&word=$q&use1913=on&use1828=on";;
         m) req="${req}morfix.co.il/$q";;
         h) req="${req}morfix.co.il/$q"; rtl=yes;;
         *) $0 l $engine $@; exit 0;;
     esac
 
-    if [ "$dump" ]; then
+    if [ "$browse" ]; then
+        w3m "$req"
+    else
         if [ "$rtl" ]; then
             w3m -dump "$req" | rev | more
         else
             w3m -dump "$req" | more
-        fi
-    else
-        if [ "$rtl" ]; then
-            vi "+W3m $req" "+set nonumber" "+map q <Esc>:qa!<CR>" "+silent Heb"
-        else
-            w3m "$req"
         fi
     fi
 else
