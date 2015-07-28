@@ -12,21 +12,29 @@ if [ ! "$TMUX" ]; then
     [ ! -e /tmp/dontquit ] && exit 0
 fi
 
+# Create a new group for this session
+if grep /sys/fs/cgroup <(mount); then
+    mkdir -pm 0700 /sys/fs/cgroup/cpu/user/$$
+    echo $$ > /sys/fs/cgroup/cpu/user/$$/tasks
+fi
+
 # Transfer X credentials in SSH sessions
 [ localhost:10.0 = "$DISPLAY" ] && export XAUTHORITY=~i/.Xauthority
 
 # Spawn / reuse ssh agent
-sshenv="$HOME/.ssh/env"
-usesshagent() {
-    mkdir -pm 700 "$(basename "$sshenv")"
-    if [ -f "$sshenv" ]; then
-        . "$sshenv"
-        ssh-add
-        pgrep ssh-agent | grep "^$SSH_AGENT_PID$" > /dev/null && return 0
-    fi
-    ssh-agent > "$sshenv"
+if which ssh-agent; then
+    sshenv="$HOME/.ssh/env"
+    usesshagent() {
+        if [ -f "$sshenv" ]; then
+            . "$sshenv"
+            pgrep ssh-agent | grep "^$SSH_AGENT_PID$" > /dev/null && return 0
+        fi
+        ssh-agent > "$sshenv"
+        usesshagent
+    }
     usesshagent
-}
+    ssh-add
+fi
 
 # Shell options
 shopt -s autocd
@@ -62,8 +70,8 @@ cd() {
     for (( i = 0; i < $x; i++ )); do cd ..; done;
 }
 mkcd() { mkdir -p "$*"; cd "$*"; }
+dud() { du -hxd1 $1 | sort -h; }
 alias b='popd'
-alias dud='du -hxd1 | sort -h'
 
 fasd_cache="$HOME/.fasd-init-bash"
 if [ "$(command -v fasd)" -nt "$fasd_cache" -o ! -s "$fasd_cache" ]; then
@@ -97,8 +105,6 @@ xs() {
 }
 
 # Completion
-source /etc/bash_completion
-source /usr/share/bash-completion/completions/git
 complete -W "$(echo $(grep -a '^ssh ' "$HOME/.bash_history" | sort -u | sed 's/^ssh //'))" ssh
 alias v=v
 _fasd_bash_hook_cmd_complete j v mp
@@ -145,44 +151,29 @@ pg() { gp "$@" <<< "$(ps -eF --sort=start_time)"; }
 # vim
 vv() { [ -z $1 ] && vim -c "normal '0" || vim -p *$**; }
 vg() { vim -p $(grep -l "$*" *); }
-alias vf='find && vim -c "CtrlP"'
+
+# Web
+alias webshare='python -m "SimpleHTTPServer"'
+alias wclip='curl -F "sprunge=<-" http://sprunge.us | xclip -f'
+exp() { curl -Gs "https://www.mankier.com/api/explain/?cols="$(tput cols) --data-urlencode "q=$*"; }
+wf() { wget -O - "http://api.wolframalpha.com/v1/query?input=$*&appid=LAWJG2-J2GVW6WV9Q" 2>/dev/null | grep plaintext | sed -n 2,4p | cut -d '>' -f2 | cut -d '<' -f1; }
+wff() { while read r; do wf $r; done; }
 
 # Media
 alias d0='DISPLAY=":0.0"'
 alias d1='DISPLAY="localhost:10.0"'
 alias feh='feh -ZF'
-alias mp='mpv'
-alias mpp='mpv --softvol=yes --softvol-max=600'
+alias mpp='mpv --softvol=yes --softvol-max=1000'
 alias mpt='mpv http://10.0.0.1:8888/'
 alias mpl='mpv -lavdopts lowres=1:fast:skiploopfilter=all'
 alias mpy='mpv -vf yadif'
 mplen() { wf `mpv -vo dummy -ao dummy -identify "$1" 2>/dev/null | grep ID_LENGTH | cut -c 11-` seconds to minutes; }
 
-# Web
-alias webshare='python -m "SimpleHTTPServer"'
-alias wclip='curl -F "sprunge=<-" http://sprunge.us | xclip -f'
-wf() { wget -O - "http://api.wolframalpha.com/v1/query?input=$*&appid=LAWJG2-J2GVW6WV9Q" 2>/dev/null | grep plaintext | sed -n 2,4p | cut -d '>' -f2 | cut -d '<' -f1; }
-wff() { while read r; do wf $r; done; }
-trans() {
-    local from="$1"
-    local to="$2"
-    shift 2
-    q="$*"
-    q=${q// /+}
-    curl -s -A "Mozilla/5.0" "http://translate.google.com.br/translate_a/t?client=t&text=$q&sl=$from&tl=$to" | awk -F'"' '{print $2}'
-}
-say() {
-    local lang="$1"
-    shift
-    q="$*"
-    q=${q// /+}
-    mpv "http://translate.google.com/translate_tts?ie=UTF-8&tl=$lang&q=$q"
-}
-
 # General aliases and functions
 log() { $@ 2>&1 | tee log.txt; }
 til() { sleep $(( $(date -d "$*" +%s) - $(date +%s) )); }
-alias x='TMUX="" startx &'
+alias x='TMUX="" TTYREC="" startx &'
+
 # Steal all tmux windows into current session
 muxjoin() {
     [ ! "$TMUX" ] && echo 'tmux not running' 1>&2 && exit 1
@@ -241,20 +232,4 @@ retcode(){
 }
 PS1='\n\e[31;40m\\\D{%d %b %y - %H:%M:%S}/\e[0m\n$(retcode)\n\e[31;40m\u@\h(\!):\e[0m\e[32;40m\w$(gitstat)\e[0m\n\$ '
 
-# Print some lines
-echo
-echo
-echo
-echo
-echo
-echo
-echo
-echo
-echo
-echo
-echo
-echo
-echo
-echo
-echo
 ls -lhtr --color=auto --group-directories-first
