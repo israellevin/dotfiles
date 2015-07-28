@@ -1,6 +1,7 @@
 Configuration files and some handy scripts
 
 .bashrc
+.conkerorrc
 .inputrc
 .profile
 .tmux.conf
@@ -9,20 +10,22 @@ Configuration files and some handy scripts
 .xinitrc
 
 bash-define - bash front end to dict.org, with completion (not mine, source unknown)
-cmx - dmenu to launch comix
-gmail.sh - periodically download gmail feed to a file
-img - tput images (not mine, from https://gist.github.com/heptal/6052573)
-lyrics.sh - dump lyrics according to search string
-m - mntnir, the CLI volume mounter (from http://github.com/israellevin/mntnir)
-mus - create and play MPD playlists according to a string or dmenu
-p - more for short files, vim for long ones
-red - shorthand redshift commands
-remote.sh - control mpv or mpd remotely, for the media keys
-status.sh - status line for tmux
-t - shorthand deluge-console commands
-vid - dmenu to list videos (with history) and play them
-vol - set the alsa master volume and update root window title with status
-w - simple web searches for the terminal (w3m powered)
-webvidplay.sh - from tube URI to running mpv (via dl-youtube)
-wifi - switch between network interfaces configurations and handle net mounts
-xchroot.sh - chroot with x auth, proc, sys, dev and dev/pts
+blight.sh   - set backlight brightness
+cmx         - dmenu to launch comix
+gmail.sh    - periodically download gmail feed to a file
+img         - tput images (not mine, from https://gist.github.com/heptal/6052573)
+lyrics.sh   - dump lyrics according to search string
+m           - mntnir, the CLI volume mounter (from http://github.com/israellevin/mntnir)
+mus         - create and play MPD playlists according to a string or dmenu
+net         - connect to networks
+v           - more for short files, vim for long ones
+slp         - sleep and reconnect
+red         - shorthand redshift commands
+remote.sh   - control mpv or mpd remotely, for the media keys
+status.sh   - status line for tmux
+t           - shorthand deluge-console commands
+torst       - search for magnet links and torrentstream them
+vid         - dmenu to list videos (with history) and play them
+vol         - set the alsa master volume and update root window title with status
+w           - simple web searches for the terminal (w3m powered)
+xchroot.sh  - chroot with x auth, proc, sys, dev and dev/pts
