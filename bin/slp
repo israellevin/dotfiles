@@ -1,0 +1,21 @@
+#!/bin/bash
+[ "$(cat /sys/class/net/enp3s0/operstate)" = 'up' ] && iface=enp3s0 || iface=wlp4s0
+if [ wlp4s0 = "$iface" ]; then
+    essid="$(iwgetid -r wlp4s0)"
+    connect() {
+        iwconfig wlp4s0 essid "$essid"
+    }
+else
+    connect() {
+        true
+    }
+fi
+
+blight 10
+echo mem > /sys/power/state
+
+pm-powersave true
+while :; do
+    connect
+    ping -c1 8.8.8.8 && blight 80 && exit 0
+done
