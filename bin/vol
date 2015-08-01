@@ -1,12 +1,10 @@
 #!/bin/dash
-if [ "$1" ]; then
-    amixer sset Master unmute
-    amixer sset Master "$1%"
-else
-    level="$(seq 0 10 100 | dmenu -p "$(amixer get Master | tail -1)")"
-    case "$level" in
-        '') exit 0;;
-        *[!0-9]*) amixer sset Master toggle;;
-        *) amixer sset Master "$level%";;
-    esac
-fi
+case "$1" in
+    '') $0 $(seq 0 10 100 | dmenu -p "$(amixer get Master | tail -1)") retry;;
+    'retry') exit 0;;
+    *[!0-9]*) amixer sset Master toggle;;
+    *)
+        amixer sset Master unmute
+        amixer sset Master "$1%"
+    ;;
+esac
