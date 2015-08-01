@@ -18,14 +18,14 @@ lyrics.sh   - dump lyrics according to search string
 m           - mntnir, the CLI volume mounter (from http://github.com/israellevin/mntnir)
 mus         - create and play MPD playlists according to a string or dmenu
 net         - connect to networks
-v           - more for short files, vim for long ones
-slp         - sleep and reconnect
 red         - shorthand redshift commands
 remote.sh   - control mpv or mpd remotely, for the media keys
+slp         - sleep and reconnect
 status.sh   - status line for tmux
-t           - shorthand deluge-console commands
 torst       - search for magnet links and torrentstream them
+t           - shorthand deluge-console commands
 vid         - dmenu to list videos (with history) and play them
+v           - size aware pager (more, vim, less)
 vol         - set the alsa master volume and update root window title with status
 w           - simple web searches for the terminal (w3m powered)
 xchroot.sh  - chroot with x auth, proc, sys, dev and dev/pts
