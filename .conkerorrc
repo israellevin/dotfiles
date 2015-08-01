@@ -132,6 +132,7 @@ for(var i = 0; i < maps.length; i++){
     define_key(maps[i], 'N', 'isearch-continue-backward');
     define_key(maps[i], 'U', 'revive-buffer');
 }
+
 maps = [content_buffer_text_keymap];
 for(var i = 0; i < maps.length; i++){
     define_key(maps[i], 'C-i', 'quote-mode');
@@ -261,5 +262,22 @@ interactive('jquery', 'run a jquery command', function(I){
 interactive('mpv', 'play media', function(I){
     shell_command_with_argument_blind('/usr/bin/mpv {}', I.buffer.display_uri_string);
 });
+
+// Patch
+
+// Override original function in modules/isearch.js
+// See http://bugs.conkeror.org/issue80
+function isearch_continue_noninteractively (window, direction) {
+    var s = new isearch_session(window.minibuffer, direction);
+    if (window.isearch_last_search) {
+        s.find(window.isearch_last_search, direction, s.top.point);
+        window.minibuffer.push_state(s);
+        s.restore_state();
+        isearch_continue (window, direction);
+    }
+    else
+        throw "No previous isearch";
+    isearch_done(window, true);
+}
 
 // vim:filetype=javascript
