@@ -1,21 +1,28 @@
 #!/bin/bash
-[ "$(cat /sys/class/net/enp3s0/operstate)" = 'up' ] && iface=enp3s0 || iface=wlp4s0
-if [ wlp4s0 = "$iface" ]; then
-    essid="$(iwgetid -r wlp4s0)"
-    connect() {
-        iwconfig wlp4s0 essid "$essid"
-    }
-else
-    connect() {
-        true
-    }
+testcon() { timeout 1 ping -c1 8.8.8.8; }
+
+if ! testcon; then
+    echo mem > /sys/power/state
+    exit
 fi
 
-blight 10
+pushd /sys/class/net
+for iface in *; do
+    if iwconfig "$iface" && [ up = "$(cat "$iface/operstate")" ]; then
+        essid="$(iwgetid -r $iface)"
+        connect() {
+            [ "$(iwgetid -r $iface)" ] || iwconfig $iface essid "$essid"
+        }
+    fi
+done
+popd
+
+blight.sh 10
+
 echo mem > /sys/power/state
 
 pm-powersave true
-while :; do
-    connect
-    ping -c1 8.8.8.8 && blight 80 && exit 0
-done
+
+type connect && while ! testcon; do connect; done
+
+blight.sh 70
