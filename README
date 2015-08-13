@@ -9,6 +9,8 @@ Configuration files and some handy scripts
 .Xdefaults
 .xinitrc
 
+.config/user-dirs.dirs
+
 bash-define - bash front end to dict.org, with completion (not mine, source unknown)
 blight.sh   - set backlight brightness
 cmx         - dmenu to launch comix
