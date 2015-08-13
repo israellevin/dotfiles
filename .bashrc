@@ -22,7 +22,7 @@ fi
 [ localhost:10.0 = "$DISPLAY" ] && export XAUTHORITY=~i/.Xauthority
 
 # Spawn / reuse ssh agent
-if which ssh-agent; then
+if which ssh-agent && [ -d "$HOME/.ssh" ]; then
     sshenv="$HOME/.ssh/env"
     usesshagent() {
         if [ -f "$sshenv" ]; then
