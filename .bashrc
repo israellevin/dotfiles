@@ -6,6 +6,12 @@ export PATH="$HOME/bin:$PATH"
 export LANG=en_US.UTF-8
 export EDITOR=vim
 
+# Record
+if [ ! "$TTYREC" ]; then
+    find /var/log/shells/ -maxdepth 1 -type f -mtime +60 -regex ".*/*-$USER" -delete
+    TTYREC=$$ ttyrec "/var/log/shells/$(date +%F_%H%M%S)-$USER" && exit $?
+fi
+
 # Multiplex
 if [ ! "$TMUX" ]; then
     [ "$SSH_CONNECTION" ] && tmux -2 attach || tmux -2 new
@@ -13,7 +19,7 @@ if [ ! "$TMUX" ]; then
 fi
 
 # Create a new group for this session
-if grep /sys/fs/cgroup <(mount); then
+if grep /sys/fs/cgroup/cpu/user <(mount); then
     mkdir -pm 0700 /sys/fs/cgroup/cpu/user/$$
     echo $$ > /sys/fs/cgroup/cpu/user/$$/tasks
 fi
@@ -151,6 +157,12 @@ pg() { gp "$@" <<< "$(ps -eF --sort=start_time)"; }
 # vim
 vv() { [ -z $1 ] && vim -c "normal '0" || vim -p *$**; }
 vg() { vim -p $(grep -l "$*" *); }
+vz() {
+    bind '"\C-z":" \C-u fg\C-j"'
+    trap "stty susp '^z'" DEBUG
+    PROMPT_COMMAND="$PROMPT_COMMAND; stty susp ''"
+    vi "$@"
+}
 
 # Web
 alias webshare='python -m "SimpleHTTPServer"'
@@ -195,13 +207,16 @@ muxsplit() {
 
 alias muxheist='muxjoin && muxsplit'
 
-# Colors
-eval "`dircolors`"
-LESS='-MR'
-LESS_TERMCAP_us=$'\e[32m'
-LESS_TERMCAP_ue=$'\e[0m'
-LESS_TERMCAP_md=$'\e[1;31m'
-LESS_TERMCAP_me=$'\e[0m'
+# Easy view
+which dircolors && eval "`dircolors`"
+which lesspipe && eval "`lesspipe`"
+alias pyg='pygmentize -f terminal256 -O style=monokai'
+alias pygl='LESSOPEN="| pygmentize -f terminal256 -O style=monokai %s" less'
+export LESS=' -MR '
+export LESS_TERMCAP_us=$'\e[32m'
+export LESS_TERMCAP_ue=$'\e[0m'
+export LESS_TERMCAP_md=$'\e[1;31m'
+export LESS_TERMCAP_me=$'\e[0m'
 export MANPAGER='sh -c "col -b | vim -c \"set buftype=nofile ft=man ts=8 nolist nonumber norelativenumber\" -c \"map q <Esc>:qa!<CR>\" -c \"normal M\" -"'
 
 # Preprompt

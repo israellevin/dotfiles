@@ -48,6 +48,7 @@ if [ "$addr" ]; then
     echo "nameserver ${nameserver:-8.8.8.8}" > /etc/resolv.conf
 else
     dhcpcd $iface
+    cat /run/dhcpcd/resolv.conf/$iface.dhcp > /etc/resolv.conf
 fi
 
 exit 0

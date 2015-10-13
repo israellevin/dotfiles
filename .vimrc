@@ -101,6 +101,7 @@ if !filereadable(expand("~/.vim/autoload/plug.vim"))
 endif
 call plug#begin('~/.vim/plugged')
 
+Plug 'vim-utils/vim-husk'
 Plug 'maxbrunsfeld/vim-yankstack'
 Plug 'vim-scripts/AutoComplPop'
 Plug 'tommcdo/vim-exchange'
@@ -140,6 +141,9 @@ au BufReadPost * normal `"
 " Folding
 au BufReadPost * set foldmethod=indent
 au BufReadPost * normal zR
+au InsertEnter * if !exists('w:last_fdm') | let w:last_fdm=&foldmethod | setlocal foldmethod=manual | endif
+au InsertLeave,WinLeave * if exists('w:last_fdm') | let &l:foldmethod=w:last_fdm | unlet w:last_fdm | endif
+
 
 " Many ftplugins override formatoptions, so override them back
 au BufReadPost,BufNewFile * setlocal formatoptions=tcqnj
