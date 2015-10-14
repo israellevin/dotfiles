@@ -57,6 +57,7 @@ nnoremap gf :e <cfile><CR>
 nnoremap <Leader>gf :split <cfile><CR>
 nnoremap <Leader>s :setlocal spell!<CR>
 nnoremap <Leader>b :b#<CR>
+nnoremap <Leader>B :Buffers<CR>
 nnoremap <Leader>f :set foldexpr=getline(v:lnum)!~@/<CR>:set foldmethod=expr<CR><Bar>zM
 nnoremap <Leader>F :execute 'vimgrep /'.@/.'/g *'<CR>:copen<CR>
 nnoremap <Leader>r :w<CR>:! <C-r>=expand("%:p")<CR><CR>
@@ -116,7 +117,6 @@ Plug 'junegunn/limelight.vim'
 Plug 'junegunn/goyo.vim'
 Plug 'junegunn/rainbow_parentheses.vim'
 Plug 'nanotech/jellybeans.vim'
-Plug 'christoomey/vim-tmux-navigator'
 Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': 'yes \| ./install' }
 Plug 'junegunn/fzf.vim'
 
