@@ -82,8 +82,8 @@ cnoremap %% <C-r>=expand("%:p:h") . '/' <CR>
 command! Q q
 command! Mks wa | mksession! ~/.vim/.session
 command! Lds source ~/.vim/.session
-command! Heb setlocal rightleft | setlocal rightleftcmd | setlocal keymap=hebrew | inoremap -- ־| inoremap --- –
-command! Noheb setlocal norightleft | setlocal rightleftcmd= | setlocal keymap=
+command! Heb setlocal rightleft | setlocal rightleftcmd | setlocal keymap=hebrew | inoremap -- ־| inoremap --- –| call matchdelete(nonansi)
+command! Noheb setlocal norightleft | setlocal rightleftcmd= | setlocal keymap= | let nonansi = matchadd('Error', '[^\d0-\d127]')
 command! Lowtag %s/<\/\?\u\+/\L&/g
 
 " Enable arrows for visitors

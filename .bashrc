@@ -59,7 +59,7 @@ stty -ixon
 # History
 HISTFILESIZE=
 HISTSIZE=
-HISTCONTROL=erasedups,ignoreboth
+HISTCONTROL=ignoreboth
 HISTTIMEFORMAT='%F %T '
 HISTIGNORE='&:exit'
 PROMPT_COMMAND='history -a; history -n'
@@ -161,7 +161,7 @@ vz() {
     bind '"\C-z":" \C-u fg\C-j"'
     trap "stty susp '^z'" DEBUG
     PROMPT_COMMAND="$PROMPT_COMMAND; stty susp ''"
-    vi "$@"
+    [ "$1" ] && vi "$@"
 }
 
 # Web
