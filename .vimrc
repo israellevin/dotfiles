@@ -29,6 +29,8 @@ set backspace=indent,eol,start
 set formatoptions=tcqnj
 set wrap
 set linebreak
+set showbreak=↳
+set breakindent
 
 " UI
 set ignorecase
@@ -36,6 +38,7 @@ set smartcase
 set wildmenu
 set wildmode=longest:full,full
 set completeopt=longest,menu
+set omnifunc=syntaxcomplete#Complete
 set incsearch
 set hlsearch
 set ruler
@@ -117,8 +120,11 @@ Plug 'junegunn/limelight.vim'
 Plug 'junegunn/goyo.vim'
 Plug 'junegunn/rainbow_parentheses.vim'
 Plug 'nanotech/jellybeans.vim'
+Plug 'unblevable/quick-scope'
 Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': 'yes \| ./install' }
 Plug 'junegunn/fzf.vim'
+"Plug 'klen/python-mode'
+Plug 'wellle/targets.vim'
 
 call plug#end()
 if 1 == firstrun
@@ -133,60 +139,82 @@ nnoremap Y y$
 let g:acp_behaviorKeywordLength = 2
 nnoremap <Leader>( :RainbowParenthesesToggleAll<CR>
 let g:limelight_conceal_ctermfg = 240
+function! Quick_scope_selective(movement)
+    let needs_disabling = 0
+    if !g:qs_enable
+        QuickScopeToggle
+        redraw
+        let needs_disabling = 1
+    endif
+
+    let letter = nr2char(getchar())
+
+    if needs_disabling
+        QuickScopeToggle
+    endif
+
+    return a:movement . letter
+endfunction
+let g:qs_enable = 0
+nnoremap <expr> <silent> f Quick_scope_selective('f')
+nnoremap <expr> <silent> F Quick_scope_selective('F')
+nnoremap <expr> <silent> t Quick_scope_selective('t')
+nnoremap <expr> <silent> T Quick_scope_selective('T')
+vnoremap <expr> <silent> f Quick_scope_selective('f')
+vnoremap <expr> <silent> F Quick_scope_selective('F')
+vnoremap <expr> <silent> t Quick_scope_selective('t')
+vnoremap <expr> <silent> T Quick_scope_selective('T')
 
 " autocommands
-au!
-set omnifunc=syntaxcomplete#Complete
+augroup mine
+    au!
 
-" Return to last position
-au BufReadPost * normal `"
+    " Return to last position
+    au BufReadPost * normal `"
 
-" Folding
-au BufReadPost * set foldmethod=indent
-au BufReadPost * normal zR
-au InsertEnter * if !exists('w:last_fdm') | let w:last_fdm=&foldmethod | setlocal foldmethod=manual | endif
-au InsertLeave,WinLeave * if exists('w:last_fdm') | let &l:foldmethod=w:last_fdm | unlet w:last_fdm | endif
+    " Folding
+    au BufReadPost * set foldmethod=indent
+    au BufReadPost * normal zR
+    au InsertEnter * if !exists('w:last_fdm') | let w:last_fdm=&foldmethod | setlocal foldmethod=manual | endif
+    au InsertLeave,WinLeave * if exists('w:last_fdm') | let &l:foldmethod=w:last_fdm | unlet w:last_fdm | endif
 
 
-" Many ftplugins override formatoptions, so override them back
-au BufReadPost,BufNewFile * setlocal formatoptions=tcqnj
+    " Many ftplugins override formatoptions, so override them back
+    au BufReadPost,BufNewFile * setlocal formatoptions=tcqnj
 
-" Hebrew
-au BufReadPost,BufNewFile ~/heb/* silent Heb
+    " Hebrew
+    au BufReadPost,BufNewFile ~/heb/* silent Heb
 
-" Convert certain filetypes and open in read only
-au BufReadPre *.doc silent set ro
-au BufReadPost *.doc silent %!catdoc "%"
-au BufReadPre *.odt,*.odp silent set ro
-au BufReadPost *.odt,*.odp silent %!odt2txt "%"
-au BufReadPre *.sxw silent set ro
-au BufReadPost *.sxw silent %!sxw2txt "%"
-au BufReadPre *.pdf silent set ro
-au BufReadPost *.pdf silent %!pdftotext -nopgbrk -layout -q -eol unix "%" - | fmt -w78
-au BufReadPre *.rtf silent set ro
-au BufReadPost *.rtf silent %!unrtf --text "%"
+    " Convert certain filetypes and open in read only
+    au BufReadPre *.doc silent set ro
+    au BufReadPost *.doc silent %!catdoc "%"
+    au BufReadPre *.odt,*.odp silent set ro
+    au BufReadPost *.odt,*.odp silent %!odt2txt "%"
+    au BufReadPre *.sxw silent set ro
+    au BufReadPost *.sxw silent %!sxw2txt "%"
+    au BufReadPre *.pdf silent set ro
+    au BufReadPost *.pdf silent %!pdftotext -nopgbrk -layout -q -eol unix "%" - | fmt -w78
+    au BufReadPre *.rtf silent set ro
+    au BufReadPost *.rtf silent %!unrtf --text "%"
 
-" Diff view
-au FilterWritePre * if &diff | windo set wrap | windo set virtualedit=all
+    " Diff view
+    au FilterWritePre * if &diff | windo set wrap | windo set virtualedit=all
 
-" Equal size windows upon resize
-au VimResized * wincmd =
+    " Equal size windows upon resize
+    au VimResized * wincmd =
 
-" cursor line and column for focused windows only
-au WinEnter * setlocal cursorline | setlocal cursorcolumn
-au WinLeave * setlocal nocursorline | setlocal nocursorcolumn
+    " cursor line and column for focused windows only
+    au WinEnter * setlocal cursorline | setlocal cursorcolumn
+    au WinLeave * setlocal nocursorline | setlocal nocursorcolumn
 
-" Source vimrc when written
-au! BufWritePost $MYVIMRC source %
+    " Source vimrc when written
+    au BufWritePost $MYVIMRC nested source %
 
-" Chmod +x shabanged files on save
-au BufWritePost * if getline(1) =~ "^#!" | silent !chmod u+x <afile>
+    " Chmod +x shabanged files on save
+    "au BufWritePost * if getline(1) =~ "^#!" | silent !chmod u+x <afile>
+augroup END
 
 " Pretty
-set encoding=utf-8
-set background=dark
-syntax enable
-
 if 'no' == $DISPLAY
     set t_Co=8
     colorscheme desert
@@ -198,7 +226,9 @@ else
     hi Todo cterm=bold ctermfg=231 ctermbg=1
 endif
 
+set encoding=utf-8
 set colorcolumn=81
 hi ExtraWhitespace ctermbg=1
-match ExtraWhitespace /\s\+$/
-match ExtraWhitespace /\s\+$\| \+\ze\t/
+call matchadd('Error', '\s\+$\| \+\ze\t')
+let nonansi = matchadd('Error', '[^\d0-\d127]')
+syntax enable
