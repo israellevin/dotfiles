@@ -83,7 +83,7 @@ fasd_cache="$HOME/.fasd-init-bash"
 if [ "$(command -v fasd)" -nt "$fasd_cache" -o ! -s "$fasd_cache" ]; then
     fasd --init bash-hook bash-ccomp bash-ccomp-install >| "$fasd_cache"
 fi
-source "$fasd_cache"
+. "$fasd_cache"
 fasd_cd() { [ $# -gt 1 ] && cd "$(fasd -e echo "$@")" || fasd "$@"; }
 alias j='fasd_cd -d'
 alias f='fasd -f'
@@ -166,9 +166,9 @@ vz() {
 
 # Web
 alias webshare='python -m "SimpleHTTPServer"'
-alias wclip='curl -F "sprunge=<-" http://sprunge.us | xclip -f'
+alias wclip='curl -F "sprunge=<-" http://sprunge.us | tee >(xsel -i)'
 exp() { curl -Gs "https://www.mankier.com/api/explain/?cols="$(tput cols) --data-urlencode "q=$*"; }
-wf() { wget -O - "http://api.wolframalpha.com/v1/query?input=$*&appid=LAWJG2-J2GVW6WV9Q" 2>/dev/null | grep plaintext | sed -n 2,4p | cut -d '>' -f2 | cut -d '<' -f1; }
+wf() { curl "http://api.wolframalpha.com/v1/query?input=$*&appid=LAWJG2-J2GVW6WV9Q" 2>/dev/null | grep plaintext | sed -n 2,4p | cut -d '>' -f2 | cut -d '<' -f1; }
 wff() { while read r; do wf $r; done; }
 
 # Media
@@ -184,6 +184,7 @@ mplen() { wf `mpv -vo dummy -ao dummy -identify "$1" 2>/dev/null | grep ID_LENGT
 # General aliases and functions
 log() { $@ 2>&1 | tee log.txt; }
 til() { sleep $(( $(date -d "$*" +%s) - $(date +%s) )); }
+sume() { [ "$EUID" -ne 0 ] && sudo -E su -p && [ ! -e "$HOME/dontquit" ] && exit; }
 alias x='TMUX="" TTYREC="" startx &'
 
 # Steal all tmux windows into current session
