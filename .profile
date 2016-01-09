@@ -1,4 +1,7 @@
-[ $UID = 0 ] || sudo -E $0 && exit 0
+if [ ! $UID = 0 ]; then
+    sudo -E $0
+    exit 0
+fi
 
 apt-get --no-install-recommends install git \
     cgroup-bin flashplugin-nonfree gawk locales ntpdate wamerican-insane
