@@ -3,14 +3,7 @@ if [ ! $UID = 0 ]; then
     exit 0
 fi
 
-apt-get --no-install-recommends install git \
-    cgroup-bin flashplugin-nonfree gawk locales ntpdate wamerican-insane
-
-cd
-[ -d dotfiles ] || git clone https://israellevin@github.com/israellevin/dotfiles
-cp dotfiles/.* .
-cp -r dotfiles/bin .
-cp -r dotfiles/.config .
+apt-get --no-install-recommends install git cgroup-bin gawk locales ntpdate wamerican-insane
 
 echo en_US.UTF-8 UTF-8 >> /etc/locale.gen
 locale-gen
@@ -23,6 +16,11 @@ rm -r fasd
 wget git.io/trans
 mv trans bin/.
 
+cd
+[ -d dotfiles ] || git clone https://israellevin@github.com/israellevin/dotfiles
+cp dotfiles/.* .
+cp -r dotfiles/bin .
+cp -r dotfiles/.config .
 echo '[ "$BASH" ] && . ~/.bashrc' > .profile
 
 . .bashrc
