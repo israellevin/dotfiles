@@ -6,8 +6,8 @@ export PATH="$HOME/bin:$PATH"
 export LANG=en_US.UTF-8
 export EDITOR=vim
 
-# Record
-if [ ! "$TTYREC" ]; then
+## Record
+if which ttyrec && [ ! "$TTYREC" ]; then
     find /var/log/shells/ -maxdepth 1 -type f -mtime +60 -regex ".*/*-$USER" -delete
     TTYREC=$$ ttyrec "/var/log/shells/$(date +%F_%H%M%S)-$USER" && exit $?
 fi
@@ -66,7 +66,7 @@ PROMPT_COMMAND='history -a; history -n'
 
 # Filesystem traversal
 cd() {
-    [ -z "$1" ] && set -- ~
+    [ -z "$1" ] && set -- "$HOME"
     [ "$(pwd)" != "$(readlink -f "$1")" ] && pushd "$1";
 }
 ..() {
@@ -142,6 +142,7 @@ complete -o default -F _pip_completion pip
 
 # ls
 LS_OPTIONS='-lh --color=auto'
+#LS_OPTIONS='-lh --color=auto --quoting-style=shell'
 alias l="ls $LS_OPTIONS"
 alias ll="ls $LS_OPTIONS -A"
 alias lt="ls $LS_OPTIONS -tr"
@@ -211,8 +212,8 @@ alias muxheist='muxjoin && muxsplit'
 # Easy view
 which dircolors && eval "`dircolors`"
 which lesspipe && eval "`lesspipe`"
-alias pyg='pygmentize -f terminal256 -O style=monokai'
-alias pygl='LESSOPEN="| pygmentize -f terminal256 -O style=monokai %s" less'
+alias pyg='pygmentize -g -f terminal256 -O style=monokai'
+alias pygl='LESSOPEN="| pygmentize -g -f terminal256 -O style=monokai %s" less'
 export LESS=' -MR '
 export LESS_TERMCAP_us=$'\e[32m'
 export LESS_TERMCAP_ue=$'\e[0m'
@@ -242,10 +243,14 @@ gitstat() {
     [ 0 = "$ahead" ] || echo -ne "\e[32;40m $ahead\e[0m"
     echo -n ')'
 }
+hasjobs(){
+    pids=($(jobs -p))
+    [ "${#pids[@]}" -gt 1 ] && echo -e "\e[30;41m!\e[0m"
+}
 retcode(){
     orig="$?"
     [ 0 != "$orig" ] && echo -e "\e[30;41m$orig\e[0m"
 }
-PS1='\n\e[31;40m\\\D{%d %b %y - %H:%M:%S}/\e[0m\n$(retcode)\n\e[31;40m\u@\h(\!):\e[0m\e[32;40m\w$(gitstat)\e[0m\n\$ '
+PS1='\n\e[31;40m\\\D{%d %b %y - %H:%M:%S}/\e[0m\n$(retcode)\n\e[31;40m\u@\h(\!):\e[0m\e[32;40m\w$(gitstat)$(hasjobs)\e[0m\n\$ '
 
-ls -lhtr --color=auto --group-directories-first
+lt --group-directories-first
