@@ -1,17 +1,25 @@
 #!/bin/bash
-vids='/home/i/vids'
-paths='~/ars/media/deuce/pub/{audio,cinema,television,video,kids} ~/ars/root/torrents'
+paths="$(echo /pub/{audio,cinema,television,video,kids})"
 vidtypes='3g\|asf\|asx\|avi\|bin\|divx\|dvx\|f4v\|flc\|flv\|gvi\|m4v\|mkv\|mov\|mp4\|mpeg\|mpg\|ogm\|qt\|rm\|swf\|vid\|wmv\|xvid'
+vidfile=/home/i/vids
 
 (
-    eval "find $paths -type f -iregex \".*\\.\\($vidtypes\\)\"" | sort -h >> "$vids"
-    awk '!x[$0]++' "$vids" > "$vids.tmp" && mv "$vids.tmp" "$vids"
+    find $(echo $paths) -type f -iregex ".*$1.*\($vidtypes\)" | sort -h >> $vidfile
+    awk '!x[$0]++' "$vidfile" > "$vidfile.tmp" && mv "$vidfile.tmp" "$vidfile"
 )&
 
-vid="$(slmenu -i -l 20 < "$vids")"
-if [ -f "$vid" ]; then
-    TMUX='' tmux new-session -d "DISPLAY=:0 mpv \"$vid\"" &
-    sed -i "1s#^#$vid\n#" "$vids"
+if [ "$1" = '--' ]; then
+    shift
+   vid="$(find /pub/torrents -type f -iregex ".*$1.*\($vidtypes\)" -printf "%A@ - %p\n" | sort -rn | cut -d' ' -f3- | fzf-tmux)"
+elif [ "$1" = '-' ]; then
+    vid=http://10.0.0.1:8888/
+else
+    vid="$(fzf-tmux $([ "$1" ] && echo "-q $1") < "$vidfile")"
 fi
 
+if [ -f "$vid" ]; then
+    sed -i "1s#^#$vid\n#" "$vidfile"
+fi
+
+TMUX='' tmux new-session -d "DISPLAY=:0 mpv --softvol-max=1000 \"$vid\"" &
 exit 0
