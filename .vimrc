@@ -31,6 +31,7 @@ set wrap
 set linebreak
 set showbreak=↳
 set breakindent
+set isfname-=\=
 
 " UI
 set ignorecase
