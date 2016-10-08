@@ -15,7 +15,7 @@ fi
 # Multiplex
 if [ ! "$TMUX" ]; then
     [ "$SSH_CONNECTION" ] && tmux -2 attach || tmux -2 new
-    [ ! -e /tmp/dontquit ] && exit 0
+    [ ! -e "$HOME/dontquit" ] && exit 0
 fi
 
 # Create a new group for this session
@@ -141,8 +141,7 @@ _pip_completion()
 complete -o default -F _pip_completion pip
 
 # ls
-LS_OPTIONS='-lh --color=auto'
-#LS_OPTIONS='-lh --color=auto --quoting-style=shell'
+LS_OPTIONS='-lh --color=auto --quoting-style=shell'
 alias l="ls $LS_OPTIONS"
 alias ll="ls $LS_OPTIONS -A"
 alias lt="ls $LS_OPTIONS -tr"
@@ -176,7 +175,7 @@ wff() { while read r; do wf $r; done; }
 alias d0='DISPLAY=":0.0"'
 alias d1='DISPLAY="localhost:10.0"'
 alias feh='feh -ZF'
-alias mpp='mpv --softvol=yes --softvol-max=1000'
+alias mpv='mpv --softvol=yes --softvol-max=1000'
 alias mpt='mpv http://10.0.0.1:8888/'
 alias mpl='mpv -lavdopts lowres=1:fast:skiploopfilter=all'
 alias mpy='mpv -vf yadif'
@@ -187,6 +186,8 @@ log() { $@ 2>&1 | tee log.txt; }
 til() { sleep $(( $(date -d "$*" +%s) - $(date +%s) )); }
 sume() { [ "$EUID" -ne 0 ] && sudo -E su -p && [ ! -e "$HOME/dontquit" ] && exit; }
 alias x='TMUX="" TTYREC="" startx &'
+alias gl='git log --graph --all --decorate --oneline'
+alias gll='git log --graph --all --decorate --oneline --simplify-by-decoration'
 
 # Steal all tmux windows into current session
 muxjoin() {
