@@ -1,18 +1,20 @@
 #!/bin/bash
-paths="$(echo /pub/{audio,cinema,television,video,kids})"
+paths="$(echo "$HOME"/pub/{audio,cinema,television,video,kids})"
 vidtypes='3g\|asf\|asx\|avi\|bin\|divx\|dvx\|f4v\|flc\|flv\|gvi\|m4v\|mkv\|mov\|mp4\|mpeg\|mpg\|ogm\|qt\|rm\|swf\|vid\|wmv\|xvid'
-vidfile=/home/i/vids
+vidfile="$HOME/vidlist"
 
 (
     find $(echo $paths) -type f -iregex ".*$1.*\($vidtypes\)" | sort -h >> $vidfile
     awk '!x[$0]++' "$vidfile" > "$vidfile.tmp" && mv "$vidfile.tmp" "$vidfile"
 )&
 
-if [ "$1" = '--' ]; then
+if [ "$1" = '-' ]; then
     shift
-   vid="$(find /pub/torrents -type f -iregex ".*$1.*\($vidtypes\)" -printf "%A@ - %p\n" | sort -rn | cut -d' ' -f3- | fzf-tmux)"
-elif [ "$1" = '-' ]; then
-    vid=http://10.0.0.1:8888/
+    if [ "$1" ]; then
+        vid="$(find "$HOME/torrents" -type f -iregex ".*$1.*\($vidtypes\)" -printf "%A@ - %p\n" | sort -rn | cut -d' ' -f3- | fzf-tmux)"
+    else
+        vid=http://10.0.0.1:8888/
+    fi
 else
     vid="$(fzf-tmux $([ "$1" ] && echo "-q $1") < "$vidfile")"
 fi
