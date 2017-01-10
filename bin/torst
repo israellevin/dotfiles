@@ -6,5 +6,5 @@ echo "$magnets" | grep -Po '(?<=&dn=)[^&]*' | nl
 read -p '> ' q
 [ q = "$q" ] && exit 1
 magnet="$(echo "$magnets" | head -n $q | tail -n 1)"
-TMPDIR=~/torrents nodejs ~/peerflix/app.js "$magnet"
+TMPDIR=$HOME/torrents nodejs ~/src/peerflix/app.js --mpv -n "$magnet" -- --volume-max=1000
 exit 0
