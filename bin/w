@@ -30,12 +30,12 @@ if [ "$1" ]; then
     esac
 
     if [ "$browse" ]; then
-        w3m "$req"
+        w3m -no-cookie "$req"
     else
         if [ "$rtl" ]; then
-            w3m -dump "$req" | rev | more
+            w3m -no-cookie -dump "$req" | rev | more
         else
-            w3m -dump "$req" | more
+            w3m -no-cookie -dump "$req" | more
         fi
     fi
 else
