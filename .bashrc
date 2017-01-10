@@ -6,22 +6,22 @@ export PATH="$HOME/bin:$PATH"
 export LANG=en_US.UTF-8
 export EDITOR=vim
 
-## Record
+# Record
 if which ttyrec && [ ! "$TTYREC" ]; then
     find /var/log/shells/ -maxdepth 1 -type f -mtime +60 -regex ".*/*-$USER" -delete
     TTYREC=$$ ttyrec "/var/log/shells/$(date +%F_%H%M%S)-$USER" && exit $?
-fi
-
-# Multiplex
-if [ ! "$TMUX" ]; then
-    [ "$SSH_CONNECTION" ] && tmux -2 attach || tmux -2 new
-    [ ! -e "$HOME/dontquit" ] && exit 0
 fi
 
 # Create a new group for this session
 if grep /sys/fs/cgroup/cpu/user <(mount); then
     mkdir -pm 0700 /sys/fs/cgroup/cpu/user/$$
     echo $$ > /sys/fs/cgroup/cpu/user/$$/tasks
+fi
+
+# Multiplex
+if [ ! "$TMUX" ]; then
+    [ "$SSH_CONNECTION" ] && tmux -2 attach || tmux -2 new
+    [ ! -e "$HOME/dontquit" ] && exit 0
 fi
 
 # Transfer X credentials in SSH sessions
@@ -175,8 +175,8 @@ wff() { while read r; do wf $r; done; }
 alias d0='DISPLAY=":0.0"'
 alias d1='DISPLAY="localhost:10.0"'
 alias feh='feh -ZF'
-alias mpv='mpv --softvol=yes --softvol-max=1000'
-alias mpt='mpv http://10.0.0.1:8888/'
+alias mpv='mpv --volume-max=1000'
+alias mpt='mpv http://localhost:8888/'
 alias mpl='mpv -lavdopts lowres=1:fast:skiploopfilter=all'
 alias mpy='mpv -vf yadif'
 mplen() { wf `mpv -vo dummy -ao dummy -identify "$1" 2>/dev/null | grep ID_LENGTH | cut -c 11-` seconds to minutes; }
@@ -252,6 +252,8 @@ retcode(){
     orig="$?"
     [ 0 != "$orig" ] && echo -e "\e[30;41m$orig\e[0m"
 }
+# Single line version
+PS1='$(retcode)\e[31;40m\u@\h:\e[0m\e[32;40m\W$(gitstat)$(hasjobs)\e[0m\$ '
 PS1='\n\e[31;40m\\\D{%d %b %y - %H:%M:%S}/\e[0m\n$(retcode)\n\e[31;40m\u@\h(\!):\e[0m\e[32;40m\w$(gitstat)$(hasjobs)\e[0m\n\$ '
 
 lt --group-directories-first
