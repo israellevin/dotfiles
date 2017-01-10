@@ -1,7 +1,7 @@
 URxvt.perl-ext: default,matcher
 URxvt.matcher.button: 1
 URxvt.matcher.pattern.1: \\bwww\\.[\\w-]+\\.[\\w./?&@#-]*[\\w/-]
-URxvt.url-launcher: /usr/bin/conkeror
+URxvt.url-launcher: /usr/bin/firefox
 URxvt.keysym.M-u: perl:matcher:list
 URxvt.font: xft:DejaVu Sans Mono:autohint=true:antialias=true:size=15,xft:Symbola:autohint=true:antialias=true:size=10\007
 URxvt.keysym.C-9: command:\033]710;xft:DejaVu Sans Mono:autohint=true:antialias=true:size=5,xft:Symbola:autohint=true:antialias=true:size=3\007
