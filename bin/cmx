@@ -8,7 +8,7 @@ cmxtypes='zip\|rar\|cbz\|cbr'
     awk '!x[$0]++' "$cmxs" > "$cmxs.tmp" && mv "$cmxs.tmp" "$cmxs"
 )&
 
-cmx=$(slmenu -i -l 20 < "$cmxs")
+cmx=$(menu < "$cmxs")
 
 if [ -f "$cmx" ]; then
     comix -f "$cmx"
