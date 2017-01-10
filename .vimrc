@@ -63,7 +63,7 @@ nnoremap <Leader>s :setlocal spell!<CR>
 nnoremap <Leader>b :b#<CR>
 nnoremap <Leader>B :Buffers<CR>
 nnoremap <Leader>f :set foldexpr=getline(v:lnum)!~@/<CR>:set foldmethod=expr<CR><Bar>zM
-nnoremap <Leader>F :execute 'vimgrep /'.@/.'/g *'<CR>:copen<CR>
+nnoremap <Leader>F :grep! "\b<C-R><C-W>\b"<CR>:copen<CR>
 nnoremap <Leader>r :w<CR>:! <C-r>=expand("%:p")<CR><CR>
 nnoremap <expr> <Leader>h "hebrew" == &keymap ? ':Noheb<CR>' : ':Heb<CR>'
 nnoremap <expr> <Leader>n &nu == &rnu ? ':setlocal nu!<CR>' : ':setlocal rnu!<CR>'
@@ -166,6 +166,10 @@ vnoremap <expr> <silent> F Quick_scope_selective('F')
 vnoremap <expr> <silent> t Quick_scope_selective('t')
 vnoremap <expr> <silent> T Quick_scope_selective('T')
 
+if executable('ag')
+    set grepprg=ag\ --vimgrep
+endif
+
 " autocommands
 augroup mine
     au!
@@ -212,7 +216,7 @@ augroup mine
     au BufWritePost $MYVIMRC nested source %
 
     " Chmod +x shabanged files on save
-    "au BufWritePost * if getline(1) =~ "^#!" | silent !chmod u+x <afile>
+    au BufWritePost * if getline(1) =~ "^#!" | silent !chmod u+x <afile>
 augroup END
 
 " Pretty
