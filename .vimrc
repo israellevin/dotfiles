@@ -126,6 +126,7 @@ Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': 'yes \| ./install' }
 Plug 'junegunn/fzf.vim'
 "Plug 'klen/python-mode'
 Plug 'wellle/targets.vim'
+Plug 'PeterRincker/vim-argumentative'
 
 call plug#end()
 if 1 == firstrun
