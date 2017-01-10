@@ -33,7 +33,7 @@ done
 ip route flush root 0/0
 pkill wpa_supplicant
 pkill dhcpcd
-ip addr show up | grep -Po '(?<=\d: )[^:]*' | while read i; do
+ip addr show up | grep -Po '(?<=^\d: )[^:]*' | while read i; do
     [ lo = $i ] && continue
     ip addr flush $i
     ip link set $i down
