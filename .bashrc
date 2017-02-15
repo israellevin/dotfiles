@@ -66,8 +66,9 @@ PROMPT_COMMAND='history -a; history -n'
 
 # Filesystem traversal
 cd() {
-    [ -z "$1" ] && set -- "$HOME"
-    [ "$(pwd)" != "$(readlink -f "$1")" ] && pushd "$1";
+    [ "$1" = '--' ] && shift
+    dest="${1:-$HOME}"
+    [ "$(pwd)" != "$(readlink -f "$dest")" ] && pushd "$dest";
 }
 ..() {
     newdir="${PWD/\/$1\/*/}/$1"
