@@ -217,7 +217,7 @@ augroup mine
     au BufWritePost $MYVIMRC nested source %
 
     " Chmod +x shabanged files on save
-    au BufWritePost * if getline(1) =~ "^#!" | silent !chmod u+x <afile>
+    au BufWritePost * SyntasticCheck | if getline(1) =~ "^#!" | silent !chmod u+x <afile>
 augroup END
 
 " Pretty
