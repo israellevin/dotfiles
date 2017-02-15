@@ -80,15 +80,6 @@ mkcd() { mkdir -p "$*"; cd "$*"; }
 dud() { du -hxd1 $1 | sort -h; }
 alias b='popd'
 
-fasd_cache="$HOME/.fasd-init-bash"
-if [ "$(command -v fasd)" -nt "$fasd_cache" -o ! -s "$fasd_cache" ]; then
-    fasd --init bash-hook bash-ccomp bash-ccomp-install >| "$fasd_cache"
-fi
-. "$fasd_cache"
-fasd_cd() { [ $# -gt 1 ] && cd "$(fasd -e echo "$@")" || fasd "$@"; }
-alias j='fasd_cd -d'
-alias f='fasd -f'
-
 xs() {
     [ -d "$@" ] 2>/dev/null && pushd "$@" && return
     dirs=()
@@ -111,10 +102,17 @@ xs() {
     esac
 }
 
+fasd_cache="$HOME/.fasd-init-bash"
+if [ "$(command -v fasd)" -nt "$fasd_cache" -o ! -s "$fasd_cache" ]; then
+    fasd --init bash-hook bash-ccomp bash-ccomp-install >| "$fasd_cache"
+fi
+. "$fasd_cache"
+fasd_cd() { [ $# -gt 1 ] && cd "$(fasd -e echo "$@")" || fasd "$@"; }
+alias j='fasd_cd -d'
+alias f='fasd -f'
+
 # Completion
 complete -W "$(echo $(grep -a '^ssh ' "$HOME/.bash_history" | sort -u | sed 's/^ssh //'))" ssh
-alias v=v
-_fasd_bash_hook_cmd_complete j v mp
 
 _w(){
     COMPREPLY=($(grep -h "^${COMP_WORDS[COMP_CWORD]}" /usr/share/dict/words))
@@ -140,6 +138,13 @@ _pip_completion()
                    PIP_AUTO_COMPLETE=1 $1 ) )
 }
 complete -o default -F _pip_completion pip
+
+alias v=v
+_fasd_bash_hook_cmd_complete j v mp
+
+export FZF_DEFAULT_OPTS='-m --bind=ctrl-u:page-up,ctrl-d:page-down,ctrl-j:print-query'
+export FZF_DEFAULT_COMMAND='ag -g ""'
+[ -f ~/.fzf.bash ] && . ~/.fzf.bash
 
 # ls
 LS_OPTIONS='-lh --color=auto --quoting-style=shell'
