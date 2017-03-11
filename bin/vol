@@ -1,4 +1,4 @@
-#!/bin/dash
+#!/bin/sh
 case "$1" in
     '') $0 $(seq 0 10 100 | dmenu -p "$(amixer get Master | tail -1)") retry;;
     'retry') exit 0;;

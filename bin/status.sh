@@ -1,4 +1,4 @@
-#!/bin/dash
+#!/bin/sh
 (
     pdate="$(date '+%a %H:%M %F')"
     pmail=$(grep -Po '(?<=<fullcount>).*(?=\</fullcount>)' ~/ars/root/unreadgmail.xml)

@@ -1,4 +1,4 @@
-#!/bin/dash
+#!/bin/sh
 
 [ "$1" ] && t="$1" || t='.'
 shift

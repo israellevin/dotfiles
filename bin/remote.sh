@@ -1,4 +1,4 @@
-#!/bin/dash
+#!/bin/sh
 export DISPLAY=':0.0'
 mpwin=$(xwininfo -root -children | grep '"mpv ' | cut -c 6-13)
 if [ "$mpwin" ]; then

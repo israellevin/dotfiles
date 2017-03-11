@@ -1,4 +1,4 @@
-#!/bin/dash
+#!/bin/sh
 gmail_login=""
 gmail_password=""
 while true

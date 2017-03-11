@@ -1,4 +1,4 @@
-#!/bin/dash
+#!/bin/sh
 if [ "$1" ]; then
     list="$(mpc listall | fzf -f "$*")"
 else
