@@ -9,7 +9,7 @@ fi
 
 [ "$(mpc status | grep "\[playing\]")" ] || mpc clear
 
-echo "$list" | mpc add
+echo "$list" | sort -h | mpc add
 [ 0 = "$?" ] && mpc play && mpc playlist -f '%position% [[%title%[ - %album%][ (%artist%)]]|[%file%]]' || $0 $list
 
 exit 0
