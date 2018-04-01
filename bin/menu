@@ -1,6 +1,6 @@
 #!/bin/sh
 if [ "$TMUX" ]; then
-    fzf-tmux
+    fzf-tmux --no-sort "$@"
 else
-    dmenu
+    dmenu "$@"
 fi
