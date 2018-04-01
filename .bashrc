@@ -142,7 +142,7 @@ complete -o default -F _pip_completion pip
 alias v=v
 _fasd_bash_hook_cmd_complete j v mp
 
-export FZF_DEFAULT_OPTS='-m --bind=ctrl-u:page-up,ctrl-d:page-down,ctrl-j:print-query'
+export FZF_DEFAULT_OPTS='-e -m --bind=ctrl-u:page-up,ctrl-d:page-down,alt-o:print-query'
 export FZF_DEFAULT_COMMAND='ag -g ""'
 [ -f ~/.fzf.bash ] && . ~/.fzf.bash
 
