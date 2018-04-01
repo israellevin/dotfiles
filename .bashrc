@@ -194,6 +194,7 @@ sume() { [ "$EUID" -ne 0 ] && sudo -E su -p && [ ! -e "$HOME/dontquit" ] && exit
 alias x='TMUX="" TTYREC="" startx &'
 alias gl='git log --graph --all --decorate --oneline'
 alias gll='git log --graph --all --decorate --oneline --simplify-by-decoration'
+alias pyx="python -m trace --ignore-dir \$(python -c 'import os, sys; print(os.pathsep.join(sys.path[1:]))') -t"
 
 # Steal all tmux windows into current session
 muxjoin() {
