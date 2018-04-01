@@ -77,7 +77,7 @@ cd() {
     for (( i = 0; i < $x; i++ )); do cd ..; done;
 }
 mkcd() { mkdir -p "$*"; cd "$*"; }
-dud() { du -hxd1 $1 | sort -h; }
+dud() { du -hxd1 "${1:-.}" | sort -h; }
 alias b='popd'
 
 xs() {
