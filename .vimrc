@@ -1,3 +1,10 @@
+" Buffers
+set hidden
+set autoread
+set autochdir
+set tabpagemax=32
+set switchbuf=usetab
+
 " History
 set history=10000
 set viminfo='100,%
@@ -7,13 +14,6 @@ set backupdir=~/.vim/backups
 set undofile
 set undodir=~/.vim/undo
 set modeline
-
-" Buffers
-set hidden
-set autoread
-set autochdir
-set tabpagemax=32
-set switchbuf=usetab
 
 " Format
 set smarttab
