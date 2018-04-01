@@ -133,6 +133,9 @@ if 1 == firstrun
     :PlugInstall
 endif
 
+let g:syntastic_javascript_checkers = ['jshint']
+let g:syntastic_html_checkers = ['jshint']
+let g:syntastic_html_validator_api='http://validator.nu/'
 let g:yankstack_map_keys = 0
 call yankstack#setup()
 nmap <C-p> <Plug>yankstack_substitute_older_paste
