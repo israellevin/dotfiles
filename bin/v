@@ -1,28 +1,34 @@
 #!/bin/bash
 
-# If input is not a pipe
-if [ -t 0 ]; then
+# If output is not a terminal, run a terminal with vim and exit.
+if [ ! -t 1 ]; then
+    TMUX='' urxvt -e tmux new-session vim "$@"
+# If input is from terminal (pipe).
+elif [ -t 0 ]; then
     if [ 0 = $# ]; then
         vim -c "set buftype=nofile | set spell"
+    # With readable file as first arg.
+    elif [ -r "$1" ]; then
+        vim "$@"
     else
         fasd -e vim -b viminfo "$@"
     fi
-    exit 0
+# If output is a terminal but input isn't, it's probably a pipe.
+else
+    # Less than 50 lines go to more.
+    lines=()
+    while IFS='' read line && [ ${#lines[@]} -lt 50 ]; do
+        lines+=("$line")
+    done
+    [ ${#lines[@]} -lt 50 ] && printf '%s\n' "${lines[@]}" | more && exit 0
+
+    # Less than 500 go to vim.
+    while IFS='' read line && [ ${#lines[@]} -lt 500 ]; do
+        lines+=("$line")
+    done
+    [ ${#lines[@]} -lt 500 ] && printf '%s\n' "${lines[@]}" | col -bx | vim \
+        -c "set buftype=nofile" -c "map q <Esc>:qa!<CR>" -c "normal M" - && exit 0
+
+    # Bigger stuff go to less.
+    (printf '%s\n' "${lines[@]}" && while read line; do echo "$line"; done) | less
 fi
-
-# Less than 50 lines go to more.
-lines=()
-while read line && [ ${#lines[@]} -lt 50 ]; do
-    lines+=("$line\n")
-done
-[ ${#lines[@]} -lt 50 ] && echo -e "${lines[@]}" | more && exit 0
-
-# Less than 500 go to vim.
-while read line && [ ${#lines[@]} -lt 500 ]; do
-    lines+=("$line\n")
-done
-[ ${#lines[@]} -lt 500 ] && echo -e "${lines[@]}" | col -b | vim \
-    -c "set buftype=nofile" -c "map q <Esc>:qa!<CR>" -c "normal M" - && exit 0
-
-# Bigger stuff go to less.
-(echo -e "${lines[@]}" && while read line; do echo "$line"; done) | less
