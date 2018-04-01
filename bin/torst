@@ -1,10 +1,13 @@
 #!/bin/bash
-q="$*"
-q=${q// /+}
-magnets="$(curl -s "https://thepiratebay.org/search/$q" | grep -Pom10 '(?<= href=")magnet:[^"]*(?=")')"
-echo "$magnets" | grep -Po '(?<=&dn=)[^&]*' | nl
-read -p '> ' q
-[ q = "$q" ] && exit 1
-magnet="$(echo "$magnets" | head -n $q | tail -n 1)"
-TMPDIR=$HOME/torrents nodejs ~/src/peerflix/app.js --mpv -n "$magnet" -- --volume-max=1000
+if [[ "$1" == magnet:* ]]; then
+    magnet="$1"
+else
+    magnets="$(curl -s "https://thepiratebay.org/search/$*/0/99/0" | grep -Pom10 '(?<= href=")magnet:[^"]*(?=")')"
+    echo "$magnets" | grep -Po '(?<=&dn=)[^&]*' | nl
+    read -p '> ' q
+    [ q = "$q" ] && exit 1
+    magnet="$(echo "$magnets" | head -n $q | tail -n 1)"
+fi
+echo "$magnet"
+TMPDIR=$HOME/torrents peerflix -ln "$magnet" --mpv -- --volume-max=1000
 exit 0
