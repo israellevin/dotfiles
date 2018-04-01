@@ -197,20 +197,22 @@ alias gll='git log --graph --all --decorate --oneline --simplify-by-decoration'
 
 # Steal all tmux windows into current session
 muxjoin() {
-    [ ! "$TMUX" ] && echo 'tmux not running' 1>&2 && exit 1
-    tmux set status on
-    for win in $(tmux list-windows -a | cut -d : -f 1-2); do
-        tmux move-window -d -s "$win"
+    for win in $(tmux list-windows -aF "#{session_name}:#{window_index}"); do
+        [ $win = $(tmux display-message -p '#{session_name}:#{window_index}') ] && continue
+        tmux move-window -ds "$win"
     done
 }
 
-# Split current tmux session to multiple X terminals
+# Break a tmux window to a new terminal window
+muxbreak() {
+    TMUX='' urxvtcd -e dash -c "tmux new-session \\; move-window -ds $1 \\; swap-window -t2 \\; kill-window";
+}
+
+# Split current tmux session to multiple terminal windows
 muxsplit() {
-    [ ! "$TMUX" ] && echo 'tmux not running' 1>&2 && exit 1
-    tmux rename-session split
-    [ ! "$?" ] && echo 'split session exists' 1>&2 && exit 1
-    for win in $(tmux list-windows -t split | cut -d : -f 1); do
-        TMUX='' urxvtcd -e dash -c "tmux new-session \\; move-window -k -s 'split:$win' -t 0"
+    for win in $(tmux list-windows -F "#{session_name}:#{window_index}"); do
+        [ $win = $(tmux display-message -p '#{session_name}:#{window_index}') ] && continue
+        muxbreak $win
     done
 }
 
