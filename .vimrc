@@ -52,6 +52,15 @@ set laststatus=1
 set list listchars=tab:»\ ,trail:•,extends:↜,precedes:↜,nbsp:°
 set mouse=
 
+" Tags
+silent !ctags -Ro ~/src/ctags ~/src &> /dev/null &
+set tags=~/src/ctags
+
+" Use ag if available
+if executable('ag')
+    set grepprg=ag\ --vimgrep
+endif
+
 "Maps, abrvs, commands
 nnoremap Y y$
 nnoremap <Space> <PageDown>
@@ -97,6 +106,8 @@ inoremap <Up> <C-o>gk
 inoremap <Down> <C-o>gj
 
 "Plugins
+
+" Prep things on first run.
 let firstrun=0
 if !filereadable(expand("~/.vim/autoload/plug.vim"))
     let firstrun=1
@@ -119,31 +130,40 @@ Plug 'tmhedberg/matchit', { 'for': 'html' }
 Plug 'vasconcelloslf/vim-interestingwords'
 Plug 'junegunn/limelight.vim'
 Plug 'junegunn/goyo.vim'
-Plug 'junegunn/rainbow_parentheses.vim'
+Plug 'kien/rainbow_parentheses.vim'
 Plug 'nanotech/jellybeans.vim'
 Plug 'unblevable/quick-scope'
 Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': 'yes \| ./install' }
 Plug 'junegunn/fzf.vim'
-"Plug 'klen/python-mode'
 Plug 'wellle/targets.vim'
 Plug 'PeterRincker/vim-argumentative'
 
+" Auto install plugins on first run
 call plug#end()
 if 1 == firstrun
     :PlugInstall
 endif
 
-let g:syntastic_javascript_checkers = ['jshint']
-let g:syntastic_html_checkers = ['jshint']
-let g:syntastic_html_validator_api='http://validator.nu/'
-let g:yankstack_map_keys = 0
+" Plugin configurations
 call yankstack#setup()
 nmap <C-p> <Plug>yankstack_substitute_older_paste
 nmap <C-n> <Plug>yankstack_substitute_newer_paste
 nnoremap Y y$
+
 let g:acp_behaviorKeywordLength = 2
-nnoremap <Leader>( :RainbowParenthesesToggleAll<CR>
+
+let g:syntastic_javascript_checkers = ['jshint']
+let g:syntastic_html_checkers = ['jshint']
+let g:syntastic_html_validator_api='http://validator.nu/'
+let g:yankstack_map_keys = 0
+
 let g:limelight_conceal_ctermfg = 240
+
+nnoremap <Leader>( :RainbowParenthesesToggleAll<CR>
+
+" quickscope fix: https://gist.github.com/cszentkiralyi/dc61ee28ab81d23a67aa
+let g:qs_enable = 0
+let g:qs_enable_char_list = [ 'f', 'F', 't', 'T' ]
 function! Quick_scope_selective(movement)
     let needs_disabling = 0
     if !g:qs_enable
@@ -151,28 +171,15 @@ function! Quick_scope_selective(movement)
         redraw
         let needs_disabling = 1
     endif
-
     let letter = nr2char(getchar())
-
     if needs_disabling
         QuickScopeToggle
     endif
-
     return a:movement . letter
 endfunction
-let g:qs_enable = 0
-nnoremap <expr> <silent> f Quick_scope_selective('f')
-nnoremap <expr> <silent> F Quick_scope_selective('F')
-nnoremap <expr> <silent> t Quick_scope_selective('t')
-nnoremap <expr> <silent> T Quick_scope_selective('T')
-vnoremap <expr> <silent> f Quick_scope_selective('f')
-vnoremap <expr> <silent> F Quick_scope_selective('F')
-vnoremap <expr> <silent> t Quick_scope_selective('t')
-vnoremap <expr> <silent> T Quick_scope_selective('T')
-
-if executable('ag')
-    set grepprg=ag\ --vimgrep
-endif
+for i in g:qs_enable_char_list
+	execute 'noremap <expr> <silent>' . i . " Quick_scope_selective('". i . "')"
+endfor
 
 " autocommands
 augroup mine
