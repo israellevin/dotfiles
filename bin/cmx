@@ -1,6 +1,6 @@
 #!/bin/sh
-cmxs='/home/i/comix'
-paths='~/ars/media/deuce/pub/comics ~/ars/root/torrents'
+cmxs="$HOME/comix"
+paths="/media/pub/comics $HOME/torrents"
 cmxtypes='zip\|rar\|cbz\|cbr'
 
 (
