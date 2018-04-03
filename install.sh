@@ -1,3 +1,4 @@
+#!/bin/bash
 if [ ! $UID = 0 ]; then
     sudo -E $0
     exit 0
