@@ -265,4 +265,4 @@ retcode(){
 PS1='$(retcode)\e[31;40m\u@\h:\e[0m\e[32;40m\W$(gitstat)$(hasjobs)\e[0m\$ '
 PS1='\n\e[31;40m\\\D{%d %b %y - %H:%M:%S}/\e[0m\n$(retcode)\n\e[31;40m\u@\h(\!):\e[0m\e[32;40m\w$(gitstat)$(hasjobs)\e[0m\n\$ '
 
-lt --group-directories-first
+ls -lhtr --color=auto --quoting-style=shell --group-directories-first
