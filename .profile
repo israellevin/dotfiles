@@ -1,1 +1,1 @@
-[ "$BASH" ] && . ~/.bashrc'
+[ "$BASH" ] && . ~/.bashrc
