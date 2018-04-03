@@ -2,17 +2,17 @@
 (
     pdate="$(date '+%H:%M %F %a')"
     pmail=$(grep -Po '(?<=<fullcount>).*(?=\</fullcount>)' ~/ars/root/unreadgmail.xml)
-    if acpi; then
+    if acpi > /dev/null; then
         pbatt=$(acpi | grep -Po '[[:digit:]]{2}:[[:digit:]]{2}(?=.*remaining)')
         [ "$pbatt" ] && pbatt="⌁$pbatt" || pbatt=⌁$(acpi | grep -o '[[:digit:]]*%')
     fi
-    if sensors; then
+    if sensors > /dev/null; then
         psens=$(sensors | grep -o '[[:digit:]]\{2\}\.[[:digit:]]' | sort -n | tail -1)°
     fi
-    if amixer; then
+    if amixer > /dev/null; then
         pvolm=$(amixer get Master | grep -om1 '[[:digit:]]*%')
     fi
-    if mpc; then
+    if mpc > /dev/null; then
         mpc status | grep "\[playing\]" > /dev/null && pplay="$(mpc current -f '[%title%]|[%file%]')"
     fi
     for item in "$pdate" $pmail $pbatt $psens $pvolm $pplay; do
