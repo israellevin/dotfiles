@@ -219,16 +219,26 @@ muxsplit() {
 
 alias muxheist='muxjoin && muxsplit'
 
+# Some escape sequences for colors.
+RED="$(tput setaf 1)"
+GREEN="$(tput setaf 2)"
+YELLOW="$(tput setaf 3)"
+BLUE="$(tput setaf 4)"
+MAGENTA="$(tput setaf 5)"
+CYAN="$(tput setaf 6)"
+REVERSE="$(tput rev)"
+CLEAR="\e[m"
+
 # Easy view
 which dircolors && eval "`dircolors`"
 which lesspipe && eval "`lesspipe`"
 alias pyg='pygmentize -g -f terminal256 -O style=monokai'
 alias pygl='LESSOPEN="| pygmentize -g -f terminal256 -O style=monokai %s" less'
 export LESS=' -MR '
-export LESS_TERMCAP_us=$'\e[32m'
-export LESS_TERMCAP_ue=$'\e[0m'
-export LESS_TERMCAP_md=$'\e[1;31m'
-export LESS_TERMCAP_me=$'\e[0m'
+export LESS_TERMCAP_us=$GREEN
+export LESS_TERMCAP_ue=$CLEAR
+export LESS_TERMCAP_md=$RED
+export LESS_TERMCAP_me=$CLEAR
 export MANPAGER='sh -c "col -b | vim -c \"set buftype=nofile ft=man ts=8 nolist nonumber norelativenumber\" -c \"map q <Esc>:qa!<CR>\" -c \"normal M\" -"'
 
 # Preprompt
@@ -236,33 +246,40 @@ PROMPT_COMMAND="$PROMPT_COMMAND; t=yes"
 preex () {
     if [ "$t" ]; then
         unset t;
-        echo -e "\n\e[31;40m/$(date '+%d %b %y - %H:%M:%S')\\ \e[0m"
+        echo -e "\n$BLUE/$(date '+%d %b %y - %H:%M:%S')\\ $CLEAR"
     fi
 }
-trap 'preex' DEBUG
 
 # Prompt
 gitstat() {
-    branch=$(git symbolic-ref HEAD 2> /dev/null) || exit 0
+    orig_retcode=$?
+    branch=$(git symbolic-ref HEAD 2> /dev/null) || return $orig_retcode
     branch=${branch:11}
     dirty=$(git status --porcelain 2> /dev/null | grep -v '^??' | wc -l)
     ahead=$(git log origin/$branch..HEAD 2> /dev/null | grep '^commit' | wc -l)
-
     echo -n "($branch"
-    [ 0 = "$dirty" ] || echo -ne "\e[31;40m $dirty\e[0m"
-    [ 0 = "$ahead" ] || echo -ne "\e[32;40m $ahead\e[0m"
+    [ 0 = "$dirty" ] || echo -ne "${RED} ${dirty}${CLEAR}"
+    [ 0 = "$ahead" ] || echo -ne "${GREEN} ${ahead}${CLEAR}"
     echo -n ')'
+    return $orig_retcode
 }
 hasjobs(){
+    orig_retcode=$?
     pids=($(jobs -p))
-    [ "${#pids[@]}" -gt 1 ] && echo -e "\e[30;41m!\e[0m"
+    num_pids=${#pids[@]}
+    let num_pids--
+    [ $num_pids -gt 0 ] && echo $num_pids
+    return $orig_retcode
 }
 retcode(){
-    orig="$?"
-    [ 0 != "$orig" ] && echo -e "\e[30;41m$orig\e[0m"
+    orig_retcode=$?
+    [ 0 != "$orig_retcode" ] && echo $orig_retcode
+    return $orig_retcode
 }
 # Single line version
-PS1='$(retcode)\e[31;40m\u@\h:\e[0m\e[32;40m\W$(gitstat)$(hasjobs)\e[0m\$ '
-PS1='\n\e[31;40m\\\D{%d %b %y - %H:%M:%S}/\e[0m\n$(retcode)\n\e[31;40m\u@\h(\!):\e[0m\e[32;40m\w$(gitstat)$(hasjobs)\e[0m\n\$ '
+PS1="\[${RED}${REVERSE}\]\$(retcode)\[${CLEAR}${RED}\]\u@\h:\[${CLEAR}${GREEN}\]\W\[${CLEAR}${YELLOW}\]\$(gitstat)\[${CLEAR}${CYAN}${REVERSE}\]\$(hasjobs)\[${CLEAR}\]\$ "
+# Multiline version
+trap 'preex' DEBUG
+PS1="\n\[${BLUE}\]\\\\\D{%d %b %y - %H:%M:%S}/ \[${CLEAR}\]\n\[${RED}\]\u@\h(\!):\[${CLEAR}${GREEN}\]\w\[${CLEAR}${YELLOW}\]\$(gitstat)\[${CLEAR}\]\n\[${RED}${REVERSE}\]\$(retcode)\[${CLEAR}${CYAN}${REVERSE}\]\$(hasjobs)\[${CLEAR}\]\$ "
 
 ls -lhtr --color=auto --quoting-style=shell --group-directories-first
