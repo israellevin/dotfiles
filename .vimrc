@@ -105,8 +105,6 @@ nnoremap <Down> gj
 inoremap <Up> <C-o>gk
 inoremap <Down> <C-o>gj
 
-"Plugins
-
 " Prep things on first run.
 let firstrun=0
 if !filereadable(expand("~/.vim/autoload/plug.vim"))
@@ -115,28 +113,29 @@ if !filereadable(expand("~/.vim/autoload/plug.vim"))
     silent !wget -O ~/.vim/autoload/plug.vim
         \ https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
 endif
-call plug#begin('~/.vim/plugged')
 
-Plug 'vim-utils/vim-husk'
-Plug 'maxbrunsfeld/vim-yankstack'
-Plug 'vim-scripts/AutoComplPop'
-Plug 'tommcdo/vim-exchange'
-Plug 'Konfekt/FastFold'
-Plug 'scrooloose/syntastic'
-Plug 'zweifisch/pipe2eval'
-Plug 'tpope/vim-fugitive'
-Plug 'mattn/emmet-vim', { 'for': 'html' }
-Plug 'tmhedberg/matchit', { 'for': 'html' }
-Plug 'vasconcelloslf/vim-interestingwords'
-Plug 'junegunn/limelight.vim'
-Plug 'junegunn/goyo.vim'
-Plug 'kien/rainbow_parentheses.vim'
-Plug 'nanotech/jellybeans.vim'
-Plug 'unblevable/quick-scope'
+"Plugins
+call plug#begin('~/.vim/plugged')
 Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': 'yes \| ./install' }
 Plug 'junegunn/fzf.vim'
-Plug 'wellle/targets.vim'
+Plug 'junegunn/goyo.vim'
+Plug 'junegunn/limelight.vim'
+Plug 'kien/rainbow_parentheses.vim'
+Plug 'Konfekt/FastFold'
+Plug 'mattn/emmet-vim', { 'for': 'html' }
+Plug 'maxbrunsfeld/vim-yankstack'
+Plug 'nanotech/jellybeans.vim'
 Plug 'PeterRincker/vim-argumentative'
+Plug 'scrooloose/syntastic'
+Plug 'tmhedberg/matchit', { 'for': 'html' }
+Plug 'tommcdo/vim-exchange'
+Plug 'tpope/vim-fugitive'
+Plug 'unblevable/quick-scope'
+Plug 'vasconcelloslf/vim-interestingwords'
+Plug 'vim-scripts/AutoComplPop'
+Plug 'vim-utils/vim-husk'
+Plug 'wellle/targets.vim'
+Plug 'zweifisch/pipe2eval'
 
 " Auto install plugins on first run
 call plug#end()
@@ -145,21 +144,19 @@ if 1 == firstrun
 endif
 
 " Plugin configurations
+let g:limelight_conceal_ctermfg = 240
+nnoremap <Leader>( :RainbowParenthesesToggleAll<CR>
+let g:acp_behaviorKeywordLength = 2
+
 call yankstack#setup()
 nmap <C-p> <Plug>yankstack_substitute_older_paste
 nmap <C-n> <Plug>yankstack_substitute_newer_paste
 nnoremap Y y$
 
-let g:acp_behaviorKeywordLength = 2
-
 let g:syntastic_javascript_checkers = ['jshint']
 let g:syntastic_html_checkers = ['jshint']
 let g:syntastic_html_validator_api='http://validator.nu/'
 let g:yankstack_map_keys = 0
-
-let g:limelight_conceal_ctermfg = 240
-
-nnoremap <Leader>( :RainbowParenthesesToggleAll<CR>
 
 " quickscope fix: https://gist.github.com/cszentkiralyi/dc61ee28ab81d23a67aa
 let g:qs_enable = 0
