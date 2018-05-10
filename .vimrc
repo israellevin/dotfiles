@@ -50,7 +50,7 @@ set scrolloff=999
 set shortmess=aoTW
 set laststatus=1
 set list listchars=tab:»\ ,trail:•,extends:↜,precedes:↜,nbsp:°
-set mouse=
+set mouse=a
 
 " Tags
 silent !ctags -Ro ~/src/ctags ~/src &> /dev/null &
@@ -98,6 +98,7 @@ command! Lds source ~/.vim/.session
 command! Heb setlocal rightleft | setlocal rightleftcmd | setlocal keymap=hebrew | inoremap -- ־| inoremap --- –| call matchdelete(nonansi)
 command! Noheb setlocal norightleft | setlocal rightleftcmd= | setlocal keymap= | let nonansi = matchadd('Error', '[^\d0-\d127]')
 command! Lowtag %s/<\/\?\u\+/\L&/g
+command! DiffOrig vert new | set bt=nofile | r ++edit # | 0d_ | diffthis | wincmd p | diffthis
 
 " Enable arrows for visitors
 nnoremap <Up> gk
@@ -153,6 +154,8 @@ nmap <C-p> <Plug>yankstack_substitute_older_paste
 nmap <C-n> <Plug>yankstack_substitute_newer_paste
 nnoremap Y y$
 
+let g:syntastic_python_checkers = ['pylint', 'pycodestyle']
+let g:syntastic_python_pycodestyle_post_args="--max-line-length=120"
 let g:syntastic_javascript_checkers = ['jshint']
 let g:syntastic_html_checkers = ['jshint']
 let g:syntastic_html_validator_api='http://validator.nu/'
@@ -179,6 +182,7 @@ for i in g:qs_enable_char_list
 endfor
 
 " autocommands
+filetype plugin indent on
 augroup mine
     au!
 
@@ -228,15 +232,14 @@ augroup mine
 augroup END
 
 " Pretty
-if 'no' == $DISPLAY
-    set t_Co=8
-    colorscheme desert
-else
+if has("gui_running") || $DISPLAY != 'no'
     set t_Co=256
     colorscheme jellybeans
     hi CursorLine ctermbg=234
     hi CursorColumn ctermbg=234
     hi Todo cterm=bold ctermfg=231 ctermbg=1
+else
+    colorscheme desert
 endif
 
 set encoding=utf-8
