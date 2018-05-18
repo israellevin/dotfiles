@@ -50,7 +50,7 @@ set scrolloff=999
 set shortmess=aoTW
 set laststatus=1
 set list listchars=tab:»\ ,trail:•,extends:↜,precedes:↜,nbsp:°
-set mouse=a
+set mouse=
 
 " Tags
 silent !ctags -Ro ~/src/ctags ~/src &> /dev/null &
