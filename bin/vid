@@ -27,7 +27,7 @@ elif [ "$1" = '--' ]; then
         vid=http://10.0.0.1:8888/
     fi
 else
-    vid="$(menu $([ "$1" ] && echo "-q $1") < "$vidfile")"
+    vid="$(menu -q "$*" < "$vidfile")"
 fi
 
 if [ -f "$vid" ]; then
