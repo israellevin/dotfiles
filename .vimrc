@@ -155,6 +155,7 @@ nmap <C-n> <Plug>yankstack_substitute_newer_paste
 nnoremap Y y$
 
 let g:syntastic_python_checkers = ['pylint', 'pycodestyle']
+let g:syntastic_python_pylint_post_args="--max-line-length=120"
 let g:syntastic_python_pycodestyle_post_args="--max-line-length=120"
 let g:syntastic_javascript_checkers = ['jshint']
 let g:syntastic_html_checkers = ['jshint']
@@ -215,7 +216,7 @@ augroup mine
     au BufReadPost *.rtf silent %!unrtf --text "%"
 
     " Diff view
-    au FilterWritePre * if &diff | windo set wrap | windo set virtualedit=all
+    au FilterWritePre * if &diff | setlocal wrap< | setlocal virtualedit=all | endif
 
     " Equal size windows upon resize
     au VimResized * wincmd =
