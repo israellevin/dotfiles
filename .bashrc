@@ -191,6 +191,7 @@ mplen() { wf `mpv -vo dummy -ao dummy -identify "$1" 2>/dev/null | grep ID_LENGT
 log() { $@ 2>&1 | tee log.txt; }
 til() { sleep $(( $(date -d "$*" +%s) - $(date +%s) )); }
 sume() { [ "$EUID" -ne 0 ] && sudo -E su -p; }
+genpas() { tr -cd "[:alpha:][:alpha:][:alpha:][:digit:][:digit:][:print:]" < /dev/urandom | head -c ${1:-8} ; echo; }
 alias x='TMUX="" TTYREC="" startx &'
 alias gl='git log --graph --all --decorate --oneline'
 alias gll='git log --graph --all --decorate --oneline --simplify-by-decoration'
