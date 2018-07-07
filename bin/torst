@@ -2,7 +2,7 @@
 if [[ "$1" == magnet:* ]]; then
     magnet="$1"
 else
-    magnets="$(curl -s "https://thepiratebay.org/search/$*/0/99/0" | grep -Pom10 '(?<= href=")magnet:[^"]*(?=")')"
+    magnets="$(curl -s "https://thepiratebay.org/search/$*/0/9/0" | grep -Pom10 '(?<= href=")magnet:[^"]*(?=")')"
     echo "$magnets" | grep -Po '(?<=&dn=)[^&]*' | nl
     read -p '> ' q
     [ q = "$q" ] && exit 1
