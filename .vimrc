@@ -53,7 +53,7 @@ set list listchars=tab:»\ ,trail:•,extends:↜,precedes:↜,nbsp:°
 set mouse=
 
 " Tags
-silent !ctags -Ro ~/src/ctags ~/src &> /dev/null &
+silent !ctags -Ro ~/src/ctags --exclude=.git --exclude=venv ~/src &> /dev/null &
 set tags=~/src/ctags
 
 " Use ag if available
