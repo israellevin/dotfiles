@@ -158,7 +158,7 @@ alias lss="ls $LS_OPTIONS -Sr"
 alias gp='grep --color=auto -i'
 lg() { ll "${2:-.}" | gp "$1"; }
 fgg() { find "${2:-.}" | gp "$1"; }
-pg() { gp "$@" <<< "$(ps -eF --sort=start_time)"; }
+pg() { gp "$@" <<< "$(ps -eF --forest --sort=start_time)"; }
 
 # vim
 vv() { [ -z $1 ] && vim -c "normal '0" || vim -p *$**; }
