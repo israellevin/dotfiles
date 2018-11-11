@@ -1,5 +1,21 @@
 #!/bin/sh
 (
+    if expr "$pbatt" : '⌁00:0'; then
+        tmux set -g status-fg red
+    elif ! pgrep ^pulseaudio; then
+        tmux set -g status-fg white
+    else
+        tmux set -g status-fg green
+    fi
+
+    if ! timeout 2 ping -w1 google.com >/dev/null 2>&1; then
+        tmux set -g status-bg '#555555'
+    else
+        tmux set -g status-bg default
+    fi
+) 2>&1 > /dev/null &
+
+(
     pdate="$(date '+%H:%M %F %a')"
     pmail=$(grep -Po '(?<=<fullcount>).*(?=\</fullcount>)' ~/ars/root/unreadgmail.xml)
     if acpi > /dev/null; then
@@ -18,18 +34,6 @@
     for item in "$pdate" $pmail $pbatt $psens $pvolm $pplay; do
         echo -n "$item "
     done
-
-    if ! pgrep ^pulseaudio > /dev/null; then
-        tmux set -g status-fg '#555555' > /dev/null
-    else
-        tmux set -g status-fg green > /dev/null
-    fi
-    if expr "$pbatt" : '⌁00:0'; then
-        tmux set -g status-bg red
-    elif ! ping -w1 -c1 google.com > /dev/null; then
-        tmux set -g status-bg '#555555' > /dev/null
-    else
-        tmux set -g status-bg default > /dev/null
-    fi
 ) 2> /dev/null | awk '{if (length($0) > 60) print substr($0, 1, 59) "…"; else{sub(/.$/, ""); print;}}'
+
 exit 0
