@@ -17,4 +17,4 @@ URxvt.foreground: grey
 URxvt.background: black
 URxvt.cursorColor: green
 URxvt.color12: white
-URxvt.iso14755: False
+URxvt.iso14755: True
