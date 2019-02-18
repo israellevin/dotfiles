@@ -65,22 +65,22 @@ HISTIGNORE='&:exit'
 PROMPT_COMMAND='history -a; history -n'
 
 # Filesystem traversal
-cd() {
+cd(){
     [ "$1" = '--' ] && shift
     dest="${1:-$HOME}"
     [ "$(pwd)" != "$(readlink -f "$dest")" ] && pushd "$dest";
 }
-..() {
+..(){
     newdir="${PWD/\/$1\/*/}/$1"
     [ -d "$newdir" ] && cd "$newdir" && return 0
     [ $1 -ge 0 ] 2> /dev/null && x=$1 || x=1
-    for (( i = 0; i < $x; i++ )); do cd ..; done;
+    for(( i = 0; i < $x; i++ )); do cd ..; done;
 }
-mkcd() { mkdir -p "$*"; cd "$*"; }
-dud() { du -hxd1 "${1:-.}" | sort -h; }
+mkcd(){ mkdir -p "$*"; cd "$*"; }
+dud(){ du -hxd1 "${1:-.}" | sort -h; }
 alias b='popd'
 
-xs() {
+xs(){
     [ -d "$@" ] 2>/dev/null && pushd "$@" && return
     dirs=()
     while read dir ;do
@@ -107,7 +107,7 @@ if [ "$(command -v fasd)" -nt "$fasd_cache" -o ! -s "$fasd_cache" ]; then
     fasd --init bash-hook bash-ccomp bash-ccomp-install >| "$fasd_cache"
 fi
 . "$fasd_cache"
-fasd_cd() { [ $# -gt 1 ] && cd "$(fasd -e echo "$@")" || fasd "$@"; }
+fasd_cd(){ [ $# -gt 1 ] && cd "$(fasd -e echo "$@")" || fasd "$@"; }
 alias j='fasd_cd -d'
 alias f='fasd -f'
 
@@ -120,7 +120,7 @@ _w(){
 }
 complete -F _w w
 
-_..() {
+_..(){
     local word=${COMP_WORDS[COMP_CWORD]}
     local list=$(pwd | cut -c 2- | sed -e 's#/[^/]*$##g' -e 's/\([ ()]\)/\\\\\1/g')
     IFS=/
@@ -144,6 +144,7 @@ _fasd_bash_hook_cmd_complete j v mp
 
 export FZF_DEFAULT_OPTS='-e -m --bind=ctrl-u:page-up,ctrl-d:page-down,alt-o:print-query'
 export FZF_DEFAULT_COMMAND='ag -g ""'
+export FZF_TMUX=1
 [ -f ~/.fzf.bash ] && . ~/.fzf.bash
 
 # ls
@@ -156,14 +157,14 @@ alias lss="ls $LS_OPTIONS -Sr"
 
 # grep
 alias gp='grep --color=auto -i'
-lg() { ll "${2:-.}" | gp "$1"; }
-fgg() { find "${2:-.}" | gp "$1"; }
-pg() { gp "$@" <<< "$(ps -eF --forest --sort=start_time)"; }
+lg(){ ll "${2:-.}" | gp "$1"; }
+fgg(){ find "${2:-.}" | gp "$1"; }
+pg(){ gp "$@" <<< "$(ps -eF --forest --sort=start_time)"; }
 
 # vim
-vv() { [ -z $1 ] && vim -c "normal '0" || vim -p *$**; }
-vg() { vim -p $(grep -l "$*" *); }
-vz() {
+vv(){ [ -z $1 ] && vim -c "normal '0" || vim -p *$**; }
+vg(){ vim -p $(grep -l "$*" *); }
+vz(){
     bind '"\C-z":" \C-u fg\C-j"'
     trap "stty susp '^z'" DEBUG
     PROMPT_COMMAND="$PROMPT_COMMAND; stty susp ''"
@@ -173,9 +174,9 @@ vz() {
 # Web
 alias webshare='python -m "SimpleHTTPServer"'
 alias wclip='curl -F "sprunge=<-" http://sprunge.us | tee >(xsel -i)'
-exp() { curl -Gs "https://www.mankier.com/api/explain/?cols="$(tput cols) --data-urlencode "q=$*"; }
-wf() { curl "http://api.wolframalpha.com/v1/query?input=$*&appid=LAWJG2-J2GVW6WV9Q" 2>/dev/null | grep plaintext | sed -n 2,4p | cut -d '>' -f2 | cut -d '<' -f1; }
-wff() { while read r; do wf $r; done; }
+exp(){ curl -Gs "https://www.mankier.com/api/explain/?cols="$(tput cols) --data-urlencode "q=$*"; }
+wf(){ curl "http://api.wolframalpha.com/v1/query?input=$*&appid=LAWJG2-J2GVW6WV9Q" 2>/dev/null | grep plaintext | sed -n 2,4p | cut -d '>' -f2 | cut -d '<' -f1; }
+wff(){ while read r; do wf $r; done; }
 
 # Media
 alias d0='DISPLAY=":0.0"'
@@ -185,20 +186,20 @@ alias mpv='mpv --volume-max=1000'
 alias mpt='mpv http://localhost:8888/'
 alias mpl='mpv -lavdopts lowres=1:fast:skiploopfilter=all'
 alias mpy='mpv -vf yadif'
-mplen() { wf `mpv -vo dummy -ao dummy -identify "$1" 2>/dev/null | grep ID_LENGTH | cut -c 11-` seconds to minutes; }
+mplen(){ wf `mpv -vo dummy -ao dummy -identify "$1" 2>/dev/null | grep ID_LENGTH | cut -c 11-` seconds to minutes; }
 
 # General aliases and functions
-log() { $@ 2>&1 | tee log.txt; }
-til() { sleep $(( $(date -d "$*" +%s) - $(date +%s) )); }
-sume() { [ "$EUID" -ne 0 ] && sudo -E su -p; }
-genpas() { shuf -zern${1:-8} ':' ';' '<' '=' '>' '?' '@' '[' ']' '^' '_' '`' '{' '|' '}' '~' {0..9} {A..Z} {a..z} {a..z} {a..z}; echo; }
+log(){ $@ 2>&1 | tee log.txt; }
+til(){ sleep $(( $(date -d "$*" +%s) - $(date +%s) )); }
+sume(){ [ "$EUID" -ne 0 ] && sudo -E su -p; }
+genpas(){ shuf -zern${1:-8} ':' ';' '<' '=' '>' '?' '@' '[' ']' '^' '_' '`' '{' '|' '}' '~' {0..9} {A..Z} {a..z} {a..z} {a..z}; echo; }
 alias x='TMUX="" TTYREC="" startx &'
 alias gl='git log --graph --all --decorate --oneline'
 alias gll='git log --graph --all --decorate --oneline --simplify-by-decoration'
 alias pyx="python -m trace --ignore-dir \$(python -c 'import os, sys; print(os.pathsep.join(sys.path[1:]))') -t"
 
 # Steal all tmux windows into current session
-muxjoin() {
+muxjoin(){
     for win in $(tmux list-windows -aF "#{session_name}:#{window_index}"); do
         [ $win = $(tmux display-message -p '#{session_name}:#{window_index}') ] && continue
         tmux move-window -ds "$win"
@@ -206,12 +207,12 @@ muxjoin() {
 }
 
 # Break a tmux window to a new terminal window
-muxbreak() {
+muxbreak(){
     TMUX='' urxvtcd -e dash -c "tmux new-session \\; move-window -ds $1 \\; swap-window -t2 \\; kill-window";
 }
 
 # Split current tmux session to multiple terminal windows
-muxsplit() {
+muxsplit(){
     for win in $(tmux list-windows -F "#{session_name}:#{window_index}"); do
         [ $win = $(tmux display-message -p '#{session_name}:#{window_index}') ] && continue
         muxbreak $win
@@ -244,13 +245,13 @@ export MANPAGER='sh -c "col -b | vim -c \"set buftype=nofile ft=man ts=8 nolist 
 
 # Prompt
 PROMPT_COMMAND="$PROMPT_COMMAND; t=yes"
-preex () {
+preex(){
     if [ "$t" ]; then
         unset t;
         echo -e "$BLUE/$(date '+%d %b %y - %H:%M:%S')\\ $CLEAR"
     fi
 }
-gitstat() {
+gitstat(){
     orig_retcode=$?
     branch=$(git symbolic-ref HEAD 2> /dev/null) || return $orig_retcode
     branch=${branch:11}
