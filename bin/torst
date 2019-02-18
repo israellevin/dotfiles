@@ -1,7 +1,10 @@
 #!/bin/bash
 if [ "$1" == clean ]; then
     set -e
-    for f in ~/torrents/torrent-stream/*/; do
+    sorted="$(for f in ~/torrents/torrent-stream/*/; do
+        echo -e "$(ls "$f")\t$f"
+    done | sort | cut -f2-)"
+    for f in $sorted; do
         ls "$f"
         read q
         [ "$q" = d ] && rm -r "$f"
@@ -10,7 +13,7 @@ if [ "$1" == clean ]; then
 elif [[ "$1" == magnet:* ]]; then
     magnet="$1"
 else
-    magnets="$(curl -s "https://thepiratebay.org/search/$*/0/9/0" | grep -Pom10 '(?<= href=")magnet:[^"]*(?=")')"
+    magnets="$(curl -s "https://thepiratebay10.org/search/$*" | grep -Pom10 '(?<= href=")magnet:[^"]*(?=")')"
     echo "$magnets" | grep -Po '(?<=&dn=)[^&]*' | nl
     read -p '> ' q
     [ q = "$q" ] && exit 1
