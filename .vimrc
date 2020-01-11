@@ -9,26 +9,24 @@ endif
 
 "Plugins
 call plug#begin('~/.vim/plugged')
+Plug 'dense-analysis/ale'
+Plug 'neoclide/coc.nvim', {'branch': 'release'}
+Plug 'mattn/emmet-vim', { 'for': 'html' }
 Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': 'yes \| ./install' }
 Plug 'junegunn/fzf.vim'
-Plug 'junegunn/goyo.vim'
-Plug 'junegunn/limelight.vim'
-Plug 'kien/rainbow_parentheses.vim'
-Plug 'Konfekt/FastFold'
-Plug 'mattn/emmet-vim', { 'for': 'html' }
-Plug 'maxbrunsfeld/vim-yankstack'
 Plug 'nanotech/jellybeans.vim'
+Plug 'zweifisch/pipe2eval'
+Plug 'unblevable/quick-scope'
+Plug 'junegunn/rainbow_parentheses.vim'
 Plug 'PeterRincker/vim-argumentative'
-Plug 'scrooloose/syntastic'
-Plug 'tmhedberg/matchit', { 'for': 'html' }
 Plug 'tommcdo/vim-exchange'
 Plug 'tpope/vim-fugitive'
-Plug 'unblevable/quick-scope'
-Plug 'vasconcelloslf/vim-interestingwords'
-Plug 'vim-scripts/AutoComplPop'
 Plug 'vim-utils/vim-husk'
-Plug 'wellle/targets.vim'
-Plug 'zweifisch/pipe2eval'
+Plug 'vasconcelloslf/vim-interestingwords'
+Plug 'andymass/vim-matchup'
+Plug 'junegunn/vim-peekaboo'
+Plug 'maxbrunsfeld/vim-yankstack'
+
 
 " Auto install plugins on first run
 call plug#end()
@@ -37,42 +35,23 @@ if 1 == firstrun
 endif
 
 " Plugin configurations
-let g:limelight_conceal_ctermfg = 240
-nnoremap <Leader>( :RainbowParenthesesToggleAll<CR>
+let g:ale_linters = {'python': ['pycodestyle', 'flake8', 'mypy', 'pylint']}
+let g:ale_python_pycodestyle_options = '--max-line-length=120'
+let g:ale_python_pylint_options = '--max-line-length=120'
+nmap <silent> <C-j> <Plug>(ale_next_wrap)
+nmap <silent> <C-k> <Plug>(ale_previous_wrap)
+
+inoremap <silent><expr> <cr> pumvisible() ? coc#_select_confirm() : "\<C-g>u\<CR>\<c-r>=coc#on_enter()\<CR>"
+
+let g:qs_highlight_on_keys = ['f', 'F', 't', 'T']
+
+nnoremap <Leader>( :RainbowParentheses!!<CR>
 let g:acp_behaviorKeywordLength = 2
 
+let g:yankstack_map_keys = 0
 call yankstack#setup()
 nmap <C-p> <Plug>yankstack_substitute_older_paste
 nmap <C-n> <Plug>yankstack_substitute_newer_paste
-nnoremap Y y$
-
-let g:syntastic_python_checkers = ['pylint', 'pycodestyle']
-let g:syntastic_python_pylint_post_args="--max-line-length=120"
-let g:syntastic_python_pycodestyle_post_args="--max-line-length=120"
-let g:syntastic_javascript_checkers = ['jshint']
-let g:syntastic_html_checkers = ['jshint']
-let g:syntastic_html_validator_api='http://validator.nu/'
-let g:yankstack_map_keys = 0
-
-" quickscope fix: https://gist.github.com/cszentkiralyi/dc61ee28ab81d23a67aa
-let g:qs_enable = 0
-let g:qs_enable_char_list = [ 'f', 'F', 't', 'T' ]
-function! Quick_scope_selective(movement)
-    let needs_disabling = 0
-    if !g:qs_enable
-        QuickScopeToggle
-        redraw
-        let needs_disabling = 1
-    endif
-    let letter = nr2char(getchar())
-    if needs_disabling
-        QuickScopeToggle
-    endif
-    return a:movement . letter
-endfunction
-for i in g:qs_enable_char_list
-	execute 'noremap <expr> <silent>' . i . " Quick_scope_selective('". i . "')"
-endfor
 
 " Buffers
 set hidden
@@ -228,9 +207,6 @@ augroup mine
 
     " Source vimrc when written
     au BufWritePost $MYVIMRC nested source %
-
-    " Chmod +x shabanged files on save
-    au BufWritePost * SyntasticCheck | if getline(1) =~ "^#!" | silent !chmod u+x <afile>
 augroup END
 
 " Pretty
