@@ -33,7 +33,7 @@ fi
 if [ -f "$vid" ]; then
     sed -i "1s#^#$vid\n#" "$vidfile"
     echo "Playing '$vid'"
-    TMUX='' tmux new-session -d "DISPLAY=:0 mpv --softvol-max=1000 \"$vid\"" &
+    mpv "$vid"
 fi
 
 exit 0
