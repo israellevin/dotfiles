@@ -14,11 +14,16 @@ elif [[ "$1" == magnet:* ]]; then
     magnet="$1"
 else
     magnets="$(curl -s "https://thepiratebay10.org/search/$*" | grep -Pom10 '(?<= href=")magnet:[^"]*(?=")')"
-    echo "$magnets" | grep -Po '(?<=&dn=)[^&]*' | nl
+    echo "$magnets" | grep -Po '(?<=&dn=)[^&]*' | nl -v0
     read -p '> ' q
     [ q = "$q" ] && exit 1
-    magnet="$(echo "$magnets" | head -n $q | tail -n 1)"
+    magnet="$(echo "$magnets" | head -n $(($q + 1)) | tail -n 1)"
 fi
 echo "$magnet"
-TMPDIR=$HOME/torrents peerflix -ln "$magnet" --mpv -- --volume-max=1000
+
+peerflix -l "$magnet" | sed -r "s:\x1B\[[0-9;]*[mK]::g" | grep '^[[:digit:]]'
+read -p '> ' q
+[ q = "$q" ] && exit 1
+tmux split "read; vid - $*"
+peerflix -i"$q" "$magnet"
 exit 0
