@@ -1,5 +1,82 @@
+" Prep things on first run.
+let firstrun=0
+if !filereadable(expand("~/.vim/autoload/plug.vim"))
+    let firstrun=1
+    silent !mkdir -p ~/.vim/{autoload,undo,backups}
+    silent !wget -O ~/.vim/autoload/plug.vim
+        \ https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
+endif
+
+"Plugins
+call plug#begin('~/.vim/plugged')
+Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': 'yes \| ./install' }
+Plug 'junegunn/fzf.vim'
+Plug 'junegunn/goyo.vim'
+Plug 'junegunn/limelight.vim'
+Plug 'kien/rainbow_parentheses.vim'
+Plug 'Konfekt/FastFold'
+Plug 'mattn/emmet-vim', { 'for': 'html' }
+Plug 'maxbrunsfeld/vim-yankstack'
+Plug 'nanotech/jellybeans.vim'
+Plug 'PeterRincker/vim-argumentative'
+Plug 'scrooloose/syntastic'
+Plug 'tmhedberg/matchit', { 'for': 'html' }
+Plug 'tommcdo/vim-exchange'
+Plug 'tpope/vim-fugitive'
+Plug 'unblevable/quick-scope'
+Plug 'vasconcelloslf/vim-interestingwords'
+Plug 'vim-scripts/AutoComplPop'
+Plug 'vim-utils/vim-husk'
+Plug 'wellle/targets.vim'
+Plug 'zweifisch/pipe2eval'
+
+" Auto install plugins on first run
+call plug#end()
+if 1 == firstrun
+    :PlugInstall
+endif
+
+" Plugin configurations
+let g:limelight_conceal_ctermfg = 240
+nnoremap <Leader>( :RainbowParenthesesToggleAll<CR>
+let g:acp_behaviorKeywordLength = 2
+
+call yankstack#setup()
+nmap <C-p> <Plug>yankstack_substitute_older_paste
+nmap <C-n> <Plug>yankstack_substitute_newer_paste
+nnoremap Y y$
+
+let g:syntastic_python_checkers = ['pylint', 'pycodestyle']
+let g:syntastic_python_pylint_post_args="--max-line-length=120"
+let g:syntastic_python_pycodestyle_post_args="--max-line-length=120"
+let g:syntastic_javascript_checkers = ['jshint']
+let g:syntastic_html_checkers = ['jshint']
+let g:syntastic_html_validator_api='http://validator.nu/'
+let g:yankstack_map_keys = 0
+
+" quickscope fix: https://gist.github.com/cszentkiralyi/dc61ee28ab81d23a67aa
+let g:qs_enable = 0
+let g:qs_enable_char_list = [ 'f', 'F', 't', 'T' ]
+function! Quick_scope_selective(movement)
+    let needs_disabling = 0
+    if !g:qs_enable
+        QuickScopeToggle
+        redraw
+        let needs_disabling = 1
+    endif
+    let letter = nr2char(getchar())
+    if needs_disabling
+        QuickScopeToggle
+    endif
+    return a:movement . letter
+endfunction
+for i in g:qs_enable_char_list
+	execute 'noremap <expr> <silent>' . i . " Quick_scope_selective('". i . "')"
+endfor
+
 " Buffers
 set hidden
+set path+=**
 set autoread
 set autochdir
 set tabpagemax=32
@@ -106,82 +183,6 @@ nnoremap <Down> gj
 inoremap <Up> <C-o>gk
 inoremap <Down> <C-o>gj
 
-" Prep things on first run.
-let firstrun=0
-if !filereadable(expand("~/.vim/autoload/plug.vim"))
-    let firstrun=1
-    silent !mkdir -p ~/.vim/{autoload,undo,backups}
-    silent !wget -O ~/.vim/autoload/plug.vim
-        \ https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
-endif
-
-"Plugins
-call plug#begin('~/.vim/plugged')
-Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': 'yes \| ./install' }
-Plug 'junegunn/fzf.vim'
-Plug 'junegunn/goyo.vim'
-Plug 'junegunn/limelight.vim'
-Plug 'kien/rainbow_parentheses.vim'
-Plug 'Konfekt/FastFold'
-Plug 'mattn/emmet-vim', { 'for': 'html' }
-Plug 'maxbrunsfeld/vim-yankstack'
-Plug 'nanotech/jellybeans.vim'
-Plug 'PeterRincker/vim-argumentative'
-Plug 'scrooloose/syntastic'
-Plug 'tmhedberg/matchit', { 'for': 'html' }
-Plug 'tommcdo/vim-exchange'
-Plug 'tpope/vim-fugitive'
-Plug 'unblevable/quick-scope'
-Plug 'vasconcelloslf/vim-interestingwords'
-Plug 'vim-scripts/AutoComplPop'
-Plug 'vim-utils/vim-husk'
-Plug 'wellle/targets.vim'
-Plug 'zweifisch/pipe2eval'
-
-" Auto install plugins on first run
-call plug#end()
-if 1 == firstrun
-    :PlugInstall
-endif
-
-" Plugin configurations
-let g:limelight_conceal_ctermfg = 240
-nnoremap <Leader>( :RainbowParenthesesToggleAll<CR>
-let g:acp_behaviorKeywordLength = 2
-
-call yankstack#setup()
-nmap <C-p> <Plug>yankstack_substitute_older_paste
-nmap <C-n> <Plug>yankstack_substitute_newer_paste
-nnoremap Y y$
-
-let g:syntastic_python_checkers = ['pylint', 'pycodestyle']
-let g:syntastic_python_pylint_post_args="--max-line-length=120"
-let g:syntastic_python_pycodestyle_post_args="--max-line-length=120"
-let g:syntastic_javascript_checkers = ['jshint']
-let g:syntastic_html_checkers = ['jshint']
-let g:syntastic_html_validator_api='http://validator.nu/'
-let g:yankstack_map_keys = 0
-
-" quickscope fix: https://gist.github.com/cszentkiralyi/dc61ee28ab81d23a67aa
-let g:qs_enable = 0
-let g:qs_enable_char_list = [ 'f', 'F', 't', 'T' ]
-function! Quick_scope_selective(movement)
-    let needs_disabling = 0
-    if !g:qs_enable
-        QuickScopeToggle
-        redraw
-        let needs_disabling = 1
-    endif
-    let letter = nr2char(getchar())
-    if needs_disabling
-        QuickScopeToggle
-    endif
-    return a:movement . letter
-endfunction
-for i in g:qs_enable_char_list
-	execute 'noremap <expr> <silent>' . i . " Quick_scope_selective('". i . "')"
-endfor
-
 " autocommands
 filetype plugin indent on
 augroup mine
@@ -244,7 +245,7 @@ else
 endif
 
 set encoding=utf-8
-set colorcolumn=81
+set colorcolumn=121
 hi ExtraWhitespace ctermbg=1
 call matchadd('Error', '\s\+$\| \+\ze\t')
 let nonansi = matchadd('Error', '[^\d0-\d127]')
