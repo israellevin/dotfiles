@@ -265,7 +265,7 @@ gitstat(){
 }
 hasjobs(){
     orig_retcode=$?
-    pids=($(jobs -p))
+    pids=($(jobs -rp))
     num_pids=${#pids[@]}
     let num_pids--
     [ $num_pids -gt 0 ] && echo $num_pids
