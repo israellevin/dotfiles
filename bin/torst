@@ -1,15 +1,30 @@
 #!/bin/bash
 if [ "$1" == clean ]; then
     set -e
-    sorted="$(for f in ~/torrents/torrent-stream/*/; do
-        echo -e "$(ls "$f")\t$f"
-    done | sort | cut -f2-)"
-    for f in $sorted; do
-        ls "$f"
-        read q
-        [ "$q" = d ] && rm -r "$f"
+    cd ~/torrents/torrent-stream
+
+    # Clean loose torrent files.
+    find . -maxdepth 1 -type f | while IFS=/ read file; do
+        if ! ls "${file%.torrent}" >/dev/null 2>&1; then
+            ls -l "$file"
+            q=n
+            read q < /dev/tty
+            [ "$q" = d ] && rm "$file" && echo deleted
+        fi
     done
-    exit
+
+    # Clean torrents with data dirs.
+    find . -mindepth 2 -maxdepth 2 -type d | while IFS=/ read -a patharray; do
+        echo ${patharray[2]}/${patharray[1]}
+    done | sort -h | while IFS=/ read name UUID; do
+        cd "$UUID"
+        find .
+        cd ..
+        q=n
+        read q < /dev/tty
+        [ "$q" = d ] && rm -r "$UUID.torrent" && rm -r "$UUID" && echo deleted
+    done
+    exit 0
 elif [[ "$1" == magnet:* ]]; then
     magnet="$1"
 else
