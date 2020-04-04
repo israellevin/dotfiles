@@ -88,6 +88,8 @@ set linebreak
 set showbreak=↳
 set breakindent
 set isfname-=\=
+set cursorline
+set cursorcolumn
 
 " UI
 set ignorecase
@@ -106,7 +108,6 @@ set scrolloff=999
 set shortmess=aoTW
 set laststatus=1
 set list listchars=tab:»\ ,trail:•,extends:↜,precedes:↜,nbsp:°
-set mouse=
 
 " Tags
 silent !ctags -Ro ~/src/ctags --exclude=.git --exclude=venv ~/src &> /dev/null &
@@ -128,7 +129,7 @@ nnoremap <Leader>s :setlocal spell!<CR>
 nnoremap <Leader>b :b#<CR>
 nnoremap <Leader>B :Buffers<CR>
 nnoremap <Leader>f :set foldexpr=getline(v:lnum)!~@/<CR>:set foldmethod=expr<CR><Bar>zM
-nnoremap <Leader>F :grep! "\b<C-R><C-W>\b"<CR>:copen<CR>
+nnoremap <Leader>F :grep! <C-r>=substitute("<C-r>/", "[><]", "", "g")<CR><CR>:copen<CR>
 nnoremap <Leader>r :w<CR>:! <C-r>=expand("%:p")<CR><CR>
 nnoremap <expr> <Leader>h "hebrew" == &keymap ? ':Noheb<CR>' : ':Heb<CR>'
 nnoremap <expr> <Leader>n &nu == &rnu ? ':setlocal nu!<CR>' : ':setlocal rnu!<CR>'
@@ -213,9 +214,6 @@ augroup END
 if has("gui_running") || $DISPLAY != 'no'
     set t_Co=256
     colorscheme jellybeans
-    hi CursorLine ctermbg=234
-    hi CursorColumn ctermbg=234
-    hi Todo cterm=bold ctermfg=231 ctermbg=1
 else
     colorscheme desert
 endif
