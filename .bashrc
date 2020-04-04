@@ -5,6 +5,7 @@
 export PATH="$HOME/bin:$PATH"
 export LANG=en_US.UTF-8
 export EDITOR=vim
+export BROWSER=w3m
 
 # Record
 if which ttyrec && [ ! "$TTYREC" ]; then
@@ -244,13 +245,6 @@ export LESS_TERMCAP_me=$CLEAR
 export MANPAGER='sh -c "col -b | vim -c \"set buftype=nofile ft=man ts=8 nolist nonumber norelativenumber\" -c \"map q <Esc>:qa!<CR>\" -c \"normal M\" -"'
 
 # Prompt
-PROMPT_COMMAND="$PROMPT_COMMAND; t=yes"
-preex(){
-    if [ "$t" ]; then
-        unset t;
-        echo -e "$BLUE/$(date '+%d %b %y - %H:%M:%S')\\ $CLEAR"
-    fi
-}
 gitstat(){
     orig_retcode=$?
     branch=$(git symbolic-ref HEAD 2> /dev/null) || return $orig_retcode
@@ -278,8 +272,9 @@ retcode(){
 }
 # Single line version
 PS1="\[${RED}${REVERSE}\]\$(retcode)\[${CLEAR}${RED}\]\u@\h:\[${CLEAR}${GREEN}\]\W\[${CLEAR}${YELLOW}\]\$(gitstat)\[${CLEAR}${CYAN}${REVERSE}\]\$(hasjobs)\[${CLEAR}\]\$ "
+
 # Multiline version
-trap 'preex' DEBUG
+PS0="$BLUE/$(date '+%d %b %y - %H:%M:%S')\\ $CLEAR\n"
 PS1="\[${BLUE}\]\\\\\D{%d %b %y - %H:%M:%S}/ \[${CLEAR}\]\n\[${RED}\]\u@\h(\!):\[${CLEAR}${GREEN}\]\w\[${CLEAR}${YELLOW}\]\$(gitstat)\[${CLEAR}\]\n\[${RED}${REVERSE}\]\$(retcode)\[${CLEAR}${CYAN}${REVERSE}\]\$(hasjobs)\[${CLEAR}\]\$ "
 
-ls -lhtr --color=auto --quoting-style=shell --group-directories-first
+lt
