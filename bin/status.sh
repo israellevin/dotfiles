@@ -36,17 +36,17 @@ pdate="$(date '+%H:%M %F %a')"
 pmail=$(grep -Po '(?<=<fullcount>).*(?=\</fullcount>)' ~/ars/root/unreadgmail.xml)
 if acpi; then
     if acpi | grep Discharging; then
-        pbatt=$(acpi | grep -Po '[[:digit:]]{2}:[[:digit:]]{2}')
+        pbatt=$(acpi | grep -Po '[[:digit:]]{2}:[[:digit:]]{2}')🔋
         if expr "$pbatt" : '00:0'; then
             tmux set -g status-bg red
         else
             tmux set -g status-bg black
         fi
     else
-        pbatt=$(acpi | grep -Po '[[:digit:]]{1,3}%')
+        pbatt=$(acpi | grep -Po '[[:digit:]]{1,3}%')⌁
         tmux set -g status-bg black
     fi
-    pbatt="$pbatt⌁"
+    pbatt="$pbatt"
 fi
 if sensors; then
     psens=$(sensors | grep -o '[[:digit:]]\{2\}\.[[:digit:]]' | sort -n | tail -1)°
