@@ -38,8 +38,8 @@ endif
 let g:ale_linters = {'python': ['pycodestyle', 'flake8', 'mypy', 'pylint']}
 let g:ale_python_pycodestyle_options = '--max-line-length=120'
 let g:ale_python_pylint_options = '--max-line-length=120'
-nmap <silent> <C-j> <Plug>(ale_next_wrap)
-nmap <silent> <C-k> <Plug>(ale_previous_wrap)
+nmap <expr> <C-j> &diff ? ']c' : ':ALENext<cr>'
+nmap <expr> <C-k> &diff ? '[c' : ':ALEPrevious<cr>'
 
 inoremap <silent><expr> <cr> pumvisible() ? coc#_select_confirm() : "\<C-g>u\<CR>\<c-r>=coc#on_enter()\<CR>"
 
