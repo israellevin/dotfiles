@@ -33,7 +33,6 @@ fi
 
 # Gather status line data.
 pdate="$(date '+%H:%M %F %a')"
-pmail=$(grep -Po '(?<=<fullcount>).*(?=\</fullcount>)' ~/ars/root/unreadgmail.xml)
 if acpi; then
     if acpi | grep Discharging; then
         pbatt=$(acpi | grep -Po '[[:digit:]]{2}:[[:digit:]]{2}')🔋
@@ -47,19 +46,23 @@ if acpi; then
         tmux set -g status-bg black
     fi
     pbatt="$pbatt"
+else
+    base=/sys/class/power_supply/BAT0
+    capacity=$(cat $base/capacity)
+    [ $capacity -lt 09 ] && tmux set -g status-bg red || tmux set -g status-bg black
+    grep 'Discharging' $base/status && pbatt="$capacity%🔋" || pbatt="$capacity%⌁"
 fi
+
 if sensors; then
     psens=$(sensors | grep -o '[[:digit:]]\{2\}\.[[:digit:]]' | sort -n | tail -1)°
 fi
+
 if amixer; then
     pvolm=$(amixer get Master | grep -om1 '[[:digit:]]*%')
 fi
-if mpc; then
-    mpc status | grep "\[playing\]" && pplay="$(mpc current -f '[%title%]|[%file%]')"
-fi
 
 # Write status line to stdout and to file.
-for item in "$pdate" $pmail $pbatt $psens $pvolm $pplay; do
+for item in "$pdate" $pvolm $psens $pbatt; do
     echo -n "$item "
 done | awk '{if (length($0) > 60) print substr($0, 1, 59) "…"; else{sub(/.$/, ""); print;}}' | tee "$statusfile" 1>&4
 
