@@ -12,22 +12,22 @@ Configuration files and some handy scripts
 .config/user-dirs.dirs
 
 bash-define - bash front end to dict.org, with completion (not mine, source unknown)
-blight.sh   - set backlight brightness
-cmx         - dmenu to launch comix
+blight.sh   - set and toggle backlight brightness
+cmx         - menu to launch comix
 gmail.sh    - periodically download gmail feed to a file
-img         - tput images (not mine, from https://gist.github.com/heptal/6052573)
-lyrics.sh   - dump lyrics according to search string
 m           - mntnir, the CLI volume mounter (from http://github.com/israellevin/mntnir)
-mus         - create and play MPD playlists according to a string or dmenu
+menu        - a menu proxy (fzf if we are running tmux, dmenu otherwise)
+mus         - create and play MPD playlists according to a string or menu
 net         - connect to networks
 red         - shorthand redshift commands
 remote.sh   - control mpv or mpd remotely, for the media keys
 slp         - sleep and reconnect
 status.sh   - status line for tmux
-torst       - search for magnet links and torrentstream them
 t           - shorthand deluge-console commands
-vid         - dmenu to list videos (with history) and play them
+torst       - search for magnet links and torrentstream them
 v           - size aware pager (more, vim, less)
+vid         - menu to list videos (with history) and play them
 vol         - set the alsa master volume and update root window title with status
 w           - simple web searches for the terminal (w3m powered)
 xchroot.sh  - chroot with x auth, proc, sys, dev and dev/pts
+zebra.sh    - alternate line colors

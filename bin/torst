@@ -27,16 +27,17 @@ if [ "$1" == clean ]; then
     exit 0
 elif [[ "$1" == magnet:* ]]; then
     magnet="$1"
+    set -- '.'
 else
     magnets="$(curl -s "https://thepiratebay10.org/search/$*" | grep -Pom10 '(?<= href=")magnet:[^"]*(?=")')"
-    echo "$magnets" | grep -Po '(?<=&dn=)[^&]*' | nl -v0
+    echo "$magnets" | grep -Po '(?<=&dn=)[^&]*' | nl -v0 -s'   ' | zebra.sh
     read -p '> ' q
     [ q = "$q" ] && exit 1
     magnet="$(echo "$magnets" | head -n $(($q + 1)) | tail -n 1)"
 fi
 echo "$magnet"
 
-peerflix -l "$magnet" | sed -r "s:\x1B\[[0-9;]*[mK]::g" | grep '^[[:digit:]]'
+peerflix -l "$magnet" | sed -r "s:\x1B\[[0-9;]*[mK]::g" | grep '^[[:digit:]]' | zebra.sh
 read -p '> ' q
 [ q = "$q" ] && exit 1
 tmux split "read; vid - $*"
