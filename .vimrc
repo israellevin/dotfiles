@@ -9,24 +9,26 @@ endif
 
 "Plugins
 call plug#begin('~/.vim/plugged')
+Plug 'PeterRincker/vim-argumentative'
 Plug 'dense-analysis/ale'
 Plug 'neoclide/coc.nvim', {'branch': 'release'}
 Plug 'mattn/emmet-vim', { 'for': 'html' }
+Plug 'tommcdo/vim-exchange'
+Plug 'tpope/vim-fugitive'
 Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': 'yes \| ./install' }
 Plug 'junegunn/fzf.vim'
+Plug 'junegunn/goyo.vim'
+Plug 'vim-utils/vim-husk'
+Plug 'michaeljsmith/vim-indent-object'
+Plug 'vasconcelloslf/vim-interestingwords'
 Plug 'nanotech/jellybeans.vim'
+Plug 'junegunn/limelight.vim'
+Plug 'andymass/vim-matchup'
+Plug 'junegunn/vim-peekaboo'
 Plug 'zweifisch/pipe2eval'
 Plug 'unblevable/quick-scope'
 Plug 'junegunn/rainbow_parentheses.vim'
-Plug 'PeterRincker/vim-argumentative'
-Plug 'tommcdo/vim-exchange'
-Plug 'tpope/vim-fugitive'
-Plug 'vim-utils/vim-husk'
-Plug 'vasconcelloslf/vim-interestingwords'
-Plug 'andymass/vim-matchup'
-Plug 'junegunn/vim-peekaboo'
 Plug 'maxbrunsfeld/vim-yankstack'
-
 
 " Auto install plugins on first run
 call plug#end()
@@ -108,10 +110,6 @@ set scrolloff=999
 set shortmess=aoTW
 set laststatus=1
 set list listchars=tab:»\ ,trail:•,extends:↜,precedes:↜,nbsp:°
-
-" Tags
-silent !ctags -Ro ~/src/ctags --exclude=.git --exclude=venv ~/src &> /dev/null &
-set tags=~/src/ctags
 
 " Use ag if available
 if executable('ag')
@@ -212,6 +210,7 @@ augroup END
 
 " Pretty
 if has("gui_running") || $DISPLAY != 'no'
+    set termguicolors
     set t_Co=256
     colorscheme jellybeans
 else
