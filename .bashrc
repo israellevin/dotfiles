@@ -187,7 +187,7 @@ alias mpv='mpv --volume-max=1000'
 alias mpt='mpv http://localhost:8888/'
 alias mpl='mpv -lavdopts lowres=1:fast:skiploopfilter=all'
 alias mpy='mpv -vf yadif'
-mplen(){ wf `mpv -vo dummy -ao dummy -identify "$1" 2>/dev/null | grep ID_LENGTH | cut -c 11-` seconds to minutes; }
+mplen(){ ffmpeg -i "$1" 2>&1 | ag duration; }
 
 # General aliases and functions
 log(){ $@ 2>&1 | tee log.txt; }
@@ -242,7 +242,7 @@ export LESS_TERMCAP_us=$GREEN
 export LESS_TERMCAP_ue=$CLEAR
 export LESS_TERMCAP_md=$RED
 export LESS_TERMCAP_me=$CLEAR
-export MANPAGER='sh -c "col -b | vim -c \"set buftype=nofile ft=man ts=8 nolist nonumber norelativenumber\" -c \"map q <Esc>:qa!<CR>\" -c \"normal M\" -"'
+export MANPAGER="vim -M +MANPAGER -c 'set nonumber' -"
 
 # Prompt
 gitstat(){
