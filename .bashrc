@@ -194,6 +194,8 @@ log(){ $@ 2>&1 | tee log.txt; }
 til(){ sleep $(( $(date -d "$*" +%s) - $(date +%s) )); }
 sume(){ [ "$EUID" -ne 0 ] && sudo -E su -p; }
 genpas(){ shuf -zern${1:-8} ':' ';' '<' '=' '>' '?' '@' '[' ']' '^' '_' '`' '{' '|' '}' '~' {0..9} {A..Z} {a..z} {a..z} {a..z}; echo; }
+gsl() { git fetch; git checkout "$(git branch -r | fzf | sed -e 's/^[[:space:]]*//')"; }
+gmb() { git merge-base "$(git branch --show-current)" "${1:-master}"; }
 alias x='TMUX="" TTYREC="" startx &'
 alias gl='git log --graph --all --decorate --oneline'
 alias gll='git log --graph --all --decorate --oneline --simplify-by-decoration'
