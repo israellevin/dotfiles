@@ -1,3 +1,4 @@
+set enable-bracketed-paste on
 set completion-ignore-case on
 set completion-map-case on
 set revert-all-at-newline on
