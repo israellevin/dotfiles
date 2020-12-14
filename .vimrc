@@ -29,6 +29,8 @@ Plug 'zweifisch/pipe2eval'
 Plug 'unblevable/quick-scope'
 Plug 'junegunn/rainbow_parentheses.vim'
 Plug 'maxbrunsfeld/vim-yankstack'
+Plug 'tomlion/vim-solidity'
+
 
 " Auto install plugins on first run
 call plug#end()
@@ -37,9 +39,12 @@ if 1 == firstrun
 endif
 
 " Plugin configurations
-let g:ale_linters = {'python': ['pycodestyle', 'flake8', 'mypy', 'pylint']}
+" let g:ale_linters = {'python': ['pycodestyle', 'flake8', 'mypy', 'pylint']}
+let g:ale_linters = {'python': ['pycodestyle', 'pylint']}
 let g:ale_python_pycodestyle_options = '--max-line-length=120'
 let g:ale_python_pylint_options = '--max-line-length=120'
+"nmap <expr> <C-j> &diff ? ']c' : ':call CocAction("diagnosticNext")<CR>'
+"nmap <expr> <C-k> &diff ? '[c' : ':call CocAction("diagnosticPrevious")<CR>'
 nmap <expr> <C-j> &diff ? ']c' : ':ALENext<cr>'
 nmap <expr> <C-k> &diff ? '[c' : ':ALEPrevious<cr>'
 
@@ -110,6 +115,10 @@ set scrolloff=999
 set shortmess=aoTW
 set laststatus=1
 set list listchars=tab:»\ ,trail:•,extends:↜,precedes:↜,nbsp:°
+
+" Tags
+silent !ctags -Ro ~/src/ctags --languages=python ~/cleavage &> /dev/null &
+set tags=~/src/ctags
 
 " Use ag if available
 if executable('ag')
@@ -210,7 +219,6 @@ augroup END
 
 " Pretty
 if has("gui_running") || $DISPLAY != 'no'
-    set termguicolors
     set t_Co=256
     colorscheme jellybeans
 else

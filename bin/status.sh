@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 statusfile=~/.status.txt
 
 # Supress ordinary output.
@@ -16,24 +16,14 @@ fi
 (
     if ! timeout 2 curl google.com; then
         tmux set -g status-fg '#555555'
-    elif ! pgrep ^pulseaudio; then
-        tmux set -g status-fg white
-        pulseaudio -D
-    elif ! /etc/init.d/bluetooth status; then
-        tmux set -g status-fg white
-    elif echo 'info 00:12:6F:AC:37:88' | bluetoothctl | grep 'Connected: yes'; then
-        tmux set -g status-fg green
-    elif echo 'info 99:B7:CA:AB:85:72' | bluetoothctl | grep 'Connected: yes'; then
-        tmux set -g status-fg cyan
     else
-        tmux set -g status-fg yellow
-        echo 'connect 00:00:00:00:00:00' | bluetoothctl
+        tmux set -g status-fg green
     fi
 )&
 
 # Gather status line data.
 pdate="$(date '+%H:%M %F %a')"
-if acpi; then
+if dont-use-acpi; then
     if acpi | grep Discharging; then
         pbatt=$(acpi | grep -Po '[[:digit:]]{2}:[[:digit:]]{2}')🔋
         if expr "$pbatt" : '00:0'; then
@@ -47,10 +37,16 @@ if acpi; then
     fi
     pbatt="$pbatt"
 else
-    base=/sys/class/power_supply/BAT0
-    capacity=$(cat $base/capacity)
+    status=⌁
+    capacity=0
+    batteries=( $(ls -d /sys/class/power_supply/BAT*) )
+    for battery in "${batteries[@]}"; do
+        capacity=$(( capacity + $(cat $battery/capacity)))
+        grep 'Discharging' $battery/status && status=🔋
+    done
+    capacity=$(( capacity / ${#batteries[@]} ))
     [ $capacity -lt 09 ] && tmux set -g status-bg red || tmux set -g status-bg black
-    grep 'Discharging' $base/status && pbatt="$capacity%🔋" || pbatt="$capacity%⌁"
+    pbatt=$capacity$status
 fi
 
 if sensors; then

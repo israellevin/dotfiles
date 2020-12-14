@@ -7,40 +7,25 @@ export LANG=en_US.UTF-8
 export EDITOR=vim
 export BROWSER=w3m
 
-# Record
-if which ttyrec && [ ! "$TTYREC" ]; then
-    find /var/log/shells/ -maxdepth 1 -type f -mtime +60 -regex ".*/*-$USER" -delete
-    TTYREC=$$ ttyrec "/var/log/shells/$(date +%F_%H%M%S)-$USER" && exit $?
-fi
-
-# Create a new group for this session
-if grep /sys/fs/cgroup/cpu/user <(mount); then
-    mkdir -pm 0700 /sys/fs/cgroup/cpu/user/$$
-    echo $$ > /sys/fs/cgroup/cpu/user/$$/tasks
-fi
+# Mount encrypted volume.
+[ "$DISPLAY" ] &&\
+    ! [ -r /dev/mapper/encrypted ] &&\
+        [ -r "$HOME/encrypted.iso" ] &&\
+            cryptsetup luksOpen "$HOME/encrypted.iso" encrypted && \
+                ! mount | grep '/dev/mapper/encrypted on /overlay/lower' > /dev/null &&\
+                    mount /dev/mapper/encrypted /overlay/lower/ && \
+                        ! mount | grep "overlay on $HOME" > /dev/null &&\
+                            mount -t overlay overlay -olowerdir=/overlay/lower/,workdir=/overlay/,upperdir="$HOME" "$HOME" &&\
+sus(){
+    cryptsetup luksSuspend encrypted &
+    echo mem > /sys/power/state
+    cryptsetup luksResume encrypted
+}
 
 # Multiplex
 if [ ! "$TMUX" ]; then
     [ "$SSH_CONNECTION" ] && tmux -2 attach || tmux -2 new
     [ ! -e "$HOME/dontquit" ] && exit 0
-fi
-
-# Transfer X credentials in SSH sessions
-[ localhost:10.0 = "$DISPLAY" ] && export XAUTHORITY=~i/.Xauthority
-
-# Spawn / reuse ssh agent
-if which ssh-agent && [ -d "$HOME/.ssh" ]; then
-    sshenv="$HOME/.ssh/env"
-    usesshagent() {
-        if [ -f "$sshenv" ]; then
-            . "$sshenv"
-            pgrep ssh-agent | grep "^$SSH_AGENT_PID$" > /dev/null && return 0
-        fi
-        ssh-agent > "$sshenv"
-        usesshagent
-    }
-    usesshagent
-    ssh-add
 fi
 
 # Shell options
@@ -113,7 +98,7 @@ alias j='fasd_cd -d'
 alias f='fasd -f'
 
 # Completion
-complete -W "$(echo $(grep -a '^ssh ' "$HOME/.bash_history" | sort -u | sed 's/^ssh //'))" ssh
+. /etc/bash_completion
 
 _w(){
     COMPREPLY=($(grep -h "^${COMP_WORDS[COMP_CWORD]}" /usr/share/dict/words))
