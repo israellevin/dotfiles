@@ -1,0 +1,12 @@
+#!/usr/bin/env sh
+# Run from a terminal if we don't have one.
+if [ -t 1 ]; then
+    "$@"
+else
+    infile="$(mktemp)"
+    outfile="$(mktemp)"
+    cat - > "$infile"
+    st bash -c "$@ < '$infile' > '$outfile'"
+    cat "$outfile"
+    rm "$infile" "$outfile"
+fi

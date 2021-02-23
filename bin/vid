@@ -1,37 +1,21 @@
 #!/bin/bash
 paths="$(echo "$HOME"/pub/{audio,cinema,television,video,kids} "$HOME"/torrents)"
 vidtypes='3g\|asf\|asx\|avi\|bin\|divx\|dvx\|f4v\|flc\|flv\|gvi\|m4v\|mkv\|mov\|mp4\|mpeg\|mpg\|ogm\|qt\|rm\|swf\|vid\|wmv\|xvid'
-vidfile="$HOME/vidlist"
-
-(
-    if ! ls $paths > /dev/null 2>&1; then
-        echo "Can not find $paths"
-        exit 1
-    fi
-    find $paths -type f -iregex ".*$1.*\($vidtypes\)" | sort -h >> $vidfile
-    awk '!x[$0]++' "$vidfile" > "$vidfile.tmp" && mv "$vidfile.tmp" "$vidfile"
-)&
+vidhist="$HOME/recent_videos"
 
 if [ "$1" = '-' ]; then
-    shift
-    if [ "$1" ]; then
-        vid="$(find "$HOME/torrents" -type f -iregex ".*$1.*\($vidtypes\)" -printf "%A@ - %p\n" | sort -rn | cut -d' ' -f3- | menu)"
-    else
-        vid=http://10.0.0.0:8888/
-    fi
-elif [ "$1" = '--' ]; then
-    shift
-    if [ "$1" ]; then
-        vid="$(find /mnt/root/torrents -type f -iregex ".*$1.*\($vidtypes\)" -printf "%A@ - %p\n" | sort -rn | cut -d' ' -f3- | menu)"
-    else
-        vid=http://10.0.0.1:8888/
-    fi
-else
-    vid="$(menu -q "$*" < "$vidfile")"
+    mpv http://localhost:8888/
+    exit 0
 fi
+FZF_DEFAULT_OPTS="$FZF_DEFAULT_OPTS --delimiter=/ --with-nth=-1 --query '$*'"
+export FZF_DEFAULT_OPTS
+vid="$({
+    cat "$vidhist"
+    find $paths -type f -iregex ".*\($vidtypes\)" -printf "%A@ - %p\n" | sort -rn | cut -d' ' -f3-
+} | awk '!x[$0]++' | menu)"
 
 if [ -f "$vid" ]; then
-    sed -i "1s#^#$vid\n#" "$vidfile"
+    { echo "$vid"; cat $vidhist; } | awk '!x[$0]++; NR==5{exit}' > $vidhist
     echo "Playing '$vid'"
     mpv "$vid"
 fi

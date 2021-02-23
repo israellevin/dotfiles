@@ -1,0 +1,18 @@
+#!/bin/sh
+cachedir=${XDG_CACHE_HOME:-"$HOME/.cache"}
+if [ -d "$cachedir" ]; then
+    cache="$cachedir/launch_menu_cache"
+    history="$cachedir/launch_menu_history"
+else
+    cache=$HOME/.launch_menu_cache
+    history="$HOME/.launch_menu_history"
+fi
+oldifs="$IFS"
+IFS=:
+if stest -dqr -n "$cache" $PATH; then
+    stest -flx $PATH | sort -u > "$cache"
+fi
+IFS="$oldifs"
+FZF_DEFAULT_OPTS="$FZF_DEFAULT_OPTS --history=$history"
+export FZF_DEFAULT_OPTS
+menu < "$cache" | ${SHELL:-"/bin/sh"} &

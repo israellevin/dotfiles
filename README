@@ -16,14 +16,16 @@ blight.sh   - set and toggle backlight brightness
 cmx         - menu to launch comix
 gmail.sh    - periodically download gmail feed to a file
 m           - mntnir, the CLI volume mounter (from http://github.com/israellevin/mntnir)
-menu        - a menu proxy (fzf if we are running tmux, dmenu otherwise)
+menu        - a menu proxy that makes sure we have a terminal to show fzf in
+menu_run    - a replacement for dmenu_run, requires st
 mus         - create and play MPD playlists according to a string or menu
-net         - connect to networks
+net         - connect to networks (OUTDATED)
 red         - shorthand redshift commands
 remote.sh   - control mpv or mpd remotely, for the media keys
 slp         - sleep and reconnect
 status.sh   - status line for tmux
 t           - shorthand deluge-console commands
+termit      - run a command in a new terminal if stdout is not already connected to one
 torst       - search for magnet links and torrentstream them
 v           - size aware pager (more, vim, less)
 vid         - menu to list videos (with history) and play them

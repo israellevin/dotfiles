@@ -1,6 +1,8 @@
-#!/bin/sh
+#!/usr/bin/env sh
+FZF_DEFAULT_OPTS="$FZF_DEFAULT_OPTS --no-sort"
+export FZF_DEFAULT_OPTS
 if [ "$TMUX" ]; then
-    fzf-tmux --no-sort "$@"
+    fzf-tmux
 else
-    dmenu "$@"
+    termit fzf
 fi

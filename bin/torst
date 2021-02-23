@@ -40,6 +40,6 @@ echo "$magnet"
 peerflix -l "$magnet" | sed -r "s:\x1B\[[0-9;]*[mK]::g" | grep '^[[:digit:]]' | zebra.sh
 read -p '> ' q
 [ q = "$q" ] && exit 1
-tmux split "read; vid - $*"
-peerflix -i"$q" "$magnet"
+tmux split "read; vid $*"
+peerflix -i"${q:-0}" "$magnet"
 exit 0
