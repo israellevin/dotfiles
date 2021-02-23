@@ -208,9 +208,12 @@ augroup mine
     au BufWritePost $MYVIMRC nested source %
 augroup END
 
+" Tags
+silent !ctags -Ro ~/src/ctags --exclude=.git --exclude=venv /mnt/home/i/contracts-solidity &> /dev/null &
+set tags=~/src/ctags
+
 " Pretty
 if has("gui_running") || $DISPLAY != 'no'
-    set termguicolors
     set t_Co=256
     colorscheme jellybeans
 else
