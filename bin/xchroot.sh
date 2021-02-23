@@ -1,26 +1,30 @@
 #!/bin/sh
 
-[ "$1" ] && t="$1" || t='.'
+[ "$1" ] && target="$1" || target='.'
 shift
+mountpoints='dev dev/pts proc sys'
 
-mount -o bind /dev "$t/dev"
-mount -o bind /dev/pts "$t/dev/pts"
-mount -t proc none "$t/proc"
-mount -t sysfs none "$t/sys"
-cp -L /etc/resolv.conf "$t/etc/resolv.conf"
+for mountpoint in $mountpoints; do
+    [ -d "/$mountpoint" ] && [ -d "$target/$mountpoint" ] && mount -B /$mountpoint "$target/$mountpoint"
+done
 
-cp ${HOME}/.xauth* $t/root/ >/dev/null 2>&1
-cp ${HOME}/.Xauthority $t/root/ >/dev/null 2>&1
-mkdir $t/tmp/.X11-unix/  >/dev/null 2>&1
-rm -f $t/tmp/.X11-unix/X0 2>&1
-ln /tmp/.X11-unix/X0 $t/tmp/.X11-unix/X0  >/dev/null 2>&1
+cp ${HOME}/.xauth* $target/root/ >/dev/null 2>&1
+cp ${HOME}/.Xauthority $target/root/ >/dev/null 2>&1
+mkdir $target/tmp/.X11-unix/  >/dev/null 2>&1
+rm -f $target/tmp/.X11-unix/X0 2>&1
+ln /tmp/.X11-unix/X0 $target/tmp/.X11-unix/X0  >/dev/null 2>&1
 
-chroot $t $*
+chroot "$target" "$@"
 
-set -e
-umount "$t/sys"
-umount "$t/proc"
-umount "$t/dev/pts"
-umount "$t/dev"
+for mountpoint in $mountpoints; do
+    echo "!!! - $mountpoint"
+    echo "mount | grep '$target/$mountpoint'"
+    mount | grep "$target/$mountpoint"
+    mount | grep "$target/$mountpoint" && umount "$target/$mountpoint"
+done
+
+for mountpoint in $mountpoints; do
+    mount | grep "$target/$mountpoint" && echo "$target/$mountpoint" still mounted
+done
 
 exit 0
