@@ -7,40 +7,10 @@ export LANG=en_US.UTF-8
 export EDITOR=vim
 export BROWSER=w3m
 
-# Record
-if which ttyrec && [ ! "$TTYREC" ]; then
-    find /var/log/shells/ -maxdepth 1 -type f -mtime +60 -regex ".*/*-$USER" -delete
-    TTYREC=$$ ttyrec "/var/log/shells/$(date +%F_%H%M%S)-$USER" && exit $?
-fi
-
-# Create a new group for this session
-if grep /sys/fs/cgroup/cpu/user <(mount); then
-    mkdir -pm 0700 /sys/fs/cgroup/cpu/user/$$
-    echo $$ > /sys/fs/cgroup/cpu/user/$$/tasks
-fi
-
 # Multiplex
 if [ ! "$TMUX" ]; then
     [ "$SSH_CONNECTION" ] && tmux -2 attach || tmux -2 new
     [ ! -e "$HOME/dontquit" ] && exit 0
-fi
-
-# Transfer X credentials in SSH sessions
-[ localhost:10.0 = "$DISPLAY" ] && export XAUTHORITY=~i/.Xauthority
-
-# Spawn / reuse ssh agent
-if which ssh-agent && [ -d "$HOME/.ssh" ]; then
-    sshenv="$HOME/.ssh/env"
-    usesshagent() {
-        if [ -f "$sshenv" ]; then
-            . "$sshenv"
-            pgrep ssh-agent | grep "^$SSH_AGENT_PID$" > /dev/null && return 0
-        fi
-        ssh-agent > "$sshenv"
-        usesshagent
-    }
-    usesshagent
-    ssh-add
 fi
 
 # Shell options
@@ -66,6 +36,7 @@ HISTIGNORE='&:exit'
 PROMPT_COMMAND='history -a; history -n'
 
 # Filesystem traversal
+alias b='popd'
 cd(){
     [ "$1" = '--' ] && shift
     dest="${1:-$HOME}"
@@ -77,10 +48,6 @@ cd(){
     [ $1 -ge 0 ] 2> /dev/null && x=$1 || x=1
     for(( i = 0; i < $x; i++ )); do cd ..; done;
 }
-mkcd(){ mkdir -p "$*"; cd "$*"; }
-dud(){ du -hxd1 "${1:-.}" | sort -h; }
-alias b='popd'
-
 xs(){
     [ -d "$@" ] 2>/dev/null && pushd "$@" && return
     dirs=()
@@ -102,6 +69,8 @@ xs(){
             ;;
     esac
 }
+mkcd(){ mkdir -p "$*"; cd "$*"; }
+dud(){ du -hxd1 "${1:-.}" | sort -h; }
 
 fasd_cache="$HOME/.fasd-init-bash"
 if [ "$(command -v fasd)" -nt "$fasd_cache" -o ! -s "$fasd_cache" ]; then
@@ -111,9 +80,18 @@ fi
 fasd_cd(){ [ $# -gt 1 ] && cd "$(fasd -e echo "$@")" || fasd "$@"; }
 alias j='fasd_cd -d'
 alias f='fasd -f'
+_fasd_bash_hook_cmd_complete j
+
+# fzf
+export FZF_DEFAULT_OPTS='-e -m --bind=ctrl-u:page-up,ctrl-d:page-down,alt-o:print-query'
+export FZF_DEFAULT_COMMAND='ag -g ""'
+export FZF_TMUX=1
+[ -f ~/.fzf.bash ] && . ~/.fzf.bash
 
 # Completion
-complete -W "$(echo $(grep -a '^ssh ' "$HOME/.bash_history" | sort -u | sed 's/^ssh //'))" ssh
+. /etc/bash_completion
+complete -W "$(grep -aPo '(?<=^ssh ).*$' "$HOME/.bash_history" | sort -u | sed 's/\(.*\)/"\1"/'
+)" ssh
 
 _w(){
     COMPREPLY=($(grep -h "^${COMP_WORDS[COMP_CWORD]}" /usr/share/dict/words))
@@ -139,14 +117,6 @@ _pip_completion()
                    PIP_AUTO_COMPLETE=1 $1 ) )
 }
 complete -o default -F _pip_completion pip
-
-alias v=v
-_fasd_bash_hook_cmd_complete j v mp
-
-export FZF_DEFAULT_OPTS='-e -m --bind=ctrl-u:page-up,ctrl-d:page-down,alt-o:print-query'
-export FZF_DEFAULT_COMMAND='ag -g ""'
-export FZF_TMUX=1
-[ -f ~/.fzf.bash ] && . ~/.fzf.bash
 
 # ls
 LS_OPTIONS='-lh --color=auto --quoting-style=shell'
@@ -244,7 +214,8 @@ export LESS_TERMCAP_us=$GREEN
 export LESS_TERMCAP_ue=$CLEAR
 export LESS_TERMCAP_md=$RED
 export LESS_TERMCAP_me=$CLEAR
-export MANPAGER="vim -M +MANPAGER -c 'set nonumber' -"
+export MANPAGER='sh -c "col -b | vim -c \"set buftype=nofile ft=man ts=8 nolist nonumber norelativenumber\" -c \"map q <Esc>:qa!<CR>\" -c \"normal M\" -"'
+
 
 # Prompt
 gitstat(){
@@ -272,11 +243,42 @@ retcode(){
     [ 0 != "$orig_retcode" ] && echo $orig_retcode
     return $orig_retcode
 }
+
 # Single line version
 PS1="\[${RED}${REVERSE}\]\$(retcode)\[${CLEAR}${RED}\]\u@\h:\[${CLEAR}${GREEN}\]\W\[${CLEAR}${YELLOW}\]\$(gitstat)\[${CLEAR}${CYAN}${REVERSE}\]\$(hasjobs)\[${CLEAR}\]\$ "
 
 # Multiline version
 PS0="$BLUE/$(date '+%d %b %y - %H:%M:%S')\\ $CLEAR\n"
 PS1="\[${BLUE}\]\\\\\D{%d %b %y - %H:%M:%S}/ \[${CLEAR}\]\n\[${RED}\]\u@\h(\!):\[${CLEAR}${GREEN}\]\w\[${CLEAR}${YELLOW}\]\$(gitstat)\[${CLEAR}\]\n\[${RED}${REVERSE}\]\$(retcode)\[${CLEAR}${CYAN}${REVERSE}\]\$(hasjobs)\[${CLEAR}\]\$ "
+
+# Record
+if which ttyrec && [ ! "$TTYREC" ]; then
+    find /var/log/shells/ -maxdepth 1 -type f -mtime +60 -regex ".*/*-$USER" -delete
+    TTYREC=$$ ttyrec "/var/log/shells/$(date +%F_%H%M%S)-$USER" && exit $?
+fi
+
+# Create a new group for this session
+if grep /sys/fs/cgroup/cpu/user <(mount); then
+    mkdir -pm 0700 /sys/fs/cgroup/cpu/user/$$
+    echo $$ > /sys/fs/cgroup/cpu/user/$$/tasks
+fi
+
+# Spawn / reuse ssh agent
+if which ssh-agent && [ -d "$HOME/.ssh" ]; then
+    sshenv="$HOME/.ssh/env"
+    usesshagent() {
+        if [ -f "$sshenv" ]; then
+            . "$sshenv"
+            pgrep ssh-agent | grep "^$SSH_AGENT_PID$" > /dev/null && return 0
+        fi
+        ssh-agent > "$sshenv"
+        usesshagent
+    }
+    usesshagent
+    ssh-add
+fi
+
+# Transfer X credentials in SSH sessions
+[ localhost:10.0 = "$DISPLAY" ] && export XAUTHORITY=~i/.Xauthority
 
 lt
