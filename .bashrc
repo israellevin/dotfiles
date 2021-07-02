@@ -232,7 +232,7 @@ gitstat(){
 }
 hasjobs(){
     orig_retcode=$?
-    pids=($(jobs -rp))
+    pids=($(jobs -p))
     num_pids=${#pids[@]}
     let num_pids--
     [ $num_pids -gt 0 ] && echo $num_pids
@@ -243,12 +243,20 @@ retcode(){
     [ 0 != "$orig_retcode" ] && echo $orig_retcode
     return $orig_retcode
 }
+hostorchrootname(){
+    orig_retcode=$?
+    ischroot && cat /etc/hostname || hostname
+    return $orig_retcode
+}
 
 # Single line version
-PS1="\[${RED}${REVERSE}\]\$(retcode)\[${CLEAR}${RED}\]\u@\$(ischroot && cat /etc/hostname || hostname):\[${CLEAR}${GREEN}\]\W\[${CLEAR}${YELLOW}\]\$(gitstat)\[${CLEAR}${CYAN}${REVERSE}\]\$(hasjobs)\[${CLEAR}\]\$ "
+PS1="${RED}$REVERSE\$(retcode)${CLEAR}$RED\u@\$(hostorchrootname):$CLEAR"
+PS1+="${GREEN}\W${CLEAR}$YELLOW\$(gitstat)${CLEAR}${CYAN}$REVERSE\$(hasjobs)$CLEAR\$ "
 
 # Multiline version
-PS0="$BLUE/$(date '+%d %b %y - %H:%M:%S')\\ $CLEAR\n"
-PS1="\[${BLUE}\]\\\\\D{%d %b %y - %H:%M:%S}/ \[${CLEAR}\]\n\[${RED}\]\u@\$(ischroot && cat /etc/hostname || hostname)(\!):\[${CLEAR}${GREEN}\]\w\[${CLEAR}${YELLOW}\]\$(gitstat)\[${CLEAR}\]\n\[${RED}${REVERSE}\]\$(retcode)\[${CLEAR}${CYAN}${REVERSE}\]\$(hasjobs)\[${CLEAR}\]\$ "
+PS0="$BLUE/\D{%d %b %y - %H:%M:%S}\\ $CLEAR\n"
+PS1="$BLUE\\\\\D{%d %b %y - %H:%M:%S}/ $CLEAR\n"
+PS1+="$RED\u@\$(hostorchrootname)(\!):${CLEAR}$GREEN\w${CLEAR}$YELLOW\$(gitstat)$CLEAR\n"
+PS1+="\[${RED}$REVERSE\]\$(retcode)\[${CLEAR}${CYAN}$REVERSE\]\$(hasjobs)\[$CLEAR\]\$ "
 
 lt
