@@ -127,19 +127,28 @@ alias ld="ls $LS_OPTIONS -Ad */"
 alias lss="ls $LS_OPTIONS -Sr"
 
 # grep
-alias gp='grep --color=auto -i'
-lg(){ ll "${2:-.}" | gp "$1"; }
-fgg(){ find "${2:-.}" | gp "$1"; }
-pg(){ gp "$@" <<< "$(ps -eF --forest --sort=start_time)"; }
+which ag || alias ag='grep --color=auto -i'
+lg(){ ll "${2:-.}" | ag "$1"; }
+fgg(){ find "${2:-.}" | ag "$1"; }
+pg(){ ag "$@" <<< "$(ps -eF --forest --sort=start_time)"; }
 
 # vim
-vv(){ [ -z $1 ] && vim -c "normal '0" || vim -p *$**; }
-vg(){ vim -p $(grep -l "$*" *); }
-vz(){
+vv(){ [ -z $1 ] && vim -c "normal '0" || vim -p *$**; } # Open last file or all filenames matching argument.
+vg(){ vim -p $(ag -l "$*" *); } # Open all files containing argument.
+vz(){ # Toggle vim with C-z.
     bind '"\C-z":" \C-u fg\C-j"'
     trap "stty susp '^z'" DEBUG
     PROMPT_COMMAND="$PROMPT_COMMAND; stty susp ''"
     [ "$1" ] && vi "$@"
+}
+vd(){ # Recursive vimdiff.
+    if [ -f "$1" ] && [ -f "$2" ]; then
+        vimdiff "$1" "$2"
+        return
+    fi
+    diff -rq "$1" "$2" | sed -n 's/^Files \(.*\) and \(.*\) differ$/vimdiff "\1" "\2"/p' | while read cmd; do
+        sh <<<$cmd
+    done
 }
 
 # Web
