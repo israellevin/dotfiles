@@ -146,7 +146,10 @@ vz(){
 alias webshare='python3 -m http.server'
 alias wclip='curl -F "sprunge=<-" http://sprunge.us | tee >(xsel -i)'
 exp(){ curl -Gs "https://www.mankier.com/api/explain/?cols="$(tput cols) --data-urlencode "q=$*"; }
-wf(){ curl "http://api.wolframalpha.com/v1/query?input=$*&appid=LAWJG2-J2GVW6WV9Q" 2>/dev/null | grep plaintext | sed -n 2,4p | cut -d '>' -f2 | cut -d '<' -f1; }
+wf(){
+    echo -e "$(curl -s -d format=plaintext -d output=JSON -d appid=LAWJG2-J2GVW6WV9Q -d "input='$*'" \
+        https://api.wolframalpha.com/v2/query | grep -Po '(?<="plaintext":")[^"]*')";
+}
 wff(){ while read r; do wf $r; done; }
 
 # Media
