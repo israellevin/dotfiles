@@ -160,6 +160,10 @@ wf(){
         https://api.wolframalpha.com/v2/query | grep -Po '(?<="plaintext":")[^"]*')";
 }
 wff(){ while read r; do wf $r; done; }
+connect(){
+    [ "$2" ] && wpa_supplicant -i wlan0 -c <(wpa_passphrase "$1" "$2") \
+    || while :; do iw dev wlan0 link | ag not\ connected && date && iw dev wlan0 connect "$1"; sleep 10; done
+}
 
 # Media
 alias d0='DISPLAY=":0.0"'
