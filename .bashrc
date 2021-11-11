@@ -184,7 +184,8 @@ gsl() { git fetch; git checkout "$(git branch -r | fzf | sed -e 's/^[[:space:]]*
 gmb() { git merge-base "$(git branch --show-current)" "${1:-master}"; }
 alias x='TMUX="" TTYREC="" startx &'
 alias gl='git log --graph --all --decorate --oneline'
-alias gll='git log --graph --all --decorate --oneline --simplify-by-decoration'
+alias gll='git log --graph --all --decorate --oneline --decorate-refs=refs/heads'
+alias gls='git log --graph --all --decorate --oneline --simplify-by-decoration'
 alias pyx="python -m trace --ignore-dir \$(python -c 'import os, sys; print(os.pathsep.join(sys.path[1:]))') -t"
 
 # Steal all tmux windows into current session
