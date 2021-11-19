@@ -127,7 +127,7 @@ alias ld="ls $LS_OPTIONS -Ad */"
 alias lss="ls $LS_OPTIONS -Sr"
 
 # grep
-which ag || alias ag='grep --color=auto -i'
+type ag > /dev/null || alias ag='grep --color=auto -i'
 lg(){ ll "${2:-.}" | ag "$1"; }
 fgg(){ find "${2:-.}" | ag "$1"; }
 pg(){ ag "$@" <<< "$(ps -eF --forest --sort=start_time)"; }
@@ -222,8 +222,8 @@ REVERSE="$(tput rev)"
 CLEAR="\e[m"
 
 # Easy view
-which dircolors && eval "`dircolors`"
-which lesspipe && eval "`lesspipe`"
+type dircolors > /dev/null && eval "`dircolors`"
+type lesspipe > /dev/null && eval "`lesspipe`"
 alias pyg='pygmentize -g -f terminal256 -O style=monokai'
 alias pygl='LESSOPEN="| pygmentize -g -f terminal256 -O style=monokai %s" less'
 export LESS=' -MR '
