@@ -29,7 +29,8 @@ elif [[ "$1" == magnet:* ]]; then
     magnet="$1"
     set -- '.'
 else
-    magnets="$(curl -s "https://thepiratebay10.org/search/$*" | grep -Pom10 '(?<= href=")magnet:[^"]*(?=")')"
+    q="$*" && q="${q// /+}"
+    magnets="$(curl -s "https://thepiratebay10.org/search/$q" | grep -Pom10 '(?<= href=")magnet:[^"]*(?=")')"
     echo "$magnets" | grep -Po '(?<=&dn=)[^&]*' | nl -v0 -s'   ' | zebra.sh
     read -p '> ' q
     [ q = "$q" ] && exit 1
