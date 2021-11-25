@@ -231,8 +231,11 @@ export LESS_TERMCAP_us=$GREEN
 export LESS_TERMCAP_ue=$CLEAR
 export LESS_TERMCAP_md=$RED
 export LESS_TERMCAP_me=$CLEAR
-export MANPAGER='sh -c "col -b | vim -c \"set buftype=nofile ft=man ts=8 nolist nonumber norelativenumber\" -c \"map q <Esc>:qa!<CR>\" -c \"normal M\" -"'
-
+if type nvim > /dev/null; then
+    export MANPAGER='nvim +Man!'
+else
+    export MANPAGER='vim -M +MANPAGER -c "set nonumber" -'
+fi
 
 # Prompt
 gitstat(){
