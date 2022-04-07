@@ -15,7 +15,7 @@ vid="$({
 } | awk '!x[$0]++' | menu)"
 
 if [ -f "$vid" ]; then
-    { echo "$vid"; cat $vidhist; } | awk '!x[$0]++; NR==5{exit}' > $vidhist
+    { echo "$vid"; cat "$vidhist"; } | awk '!x[$0]++; NR==5{exit}' > "$vidhist"
     echo "Playing '$vid'"
     mpv "$vid"
 fi
