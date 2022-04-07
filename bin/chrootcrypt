@@ -1,0 +1,48 @@
+#!/usr/bin/env bash
+set -e
+volume=${1:-/dev/nvme0n1p5}
+target=${2:-/mnt}
+user=${3:-i}
+name=${4:-enc}
+
+case $(cryptsetup status "$name" | grep -Po "(?<=/dev/mapper/$name is )[^\.]*") in
+    'inactive')
+        if ! cryptsetup open "$volume" "$name"; then
+            echo can not decrypt "$volume"
+            exit 1
+        fi
+        $0; exit;;
+    'active')
+        if !  mount "/dev/mapper/$name" "$target"; then
+            echo can not mount "$name"
+            exit 1
+        fi
+        $0; exit;;
+    'active and is in use');;
+    *) echo can not identify volume "$volume" && exit 1;;
+esac
+
+[ $(mount | grep " on $target/" | wc -l) -gt 0 ] && echo too many mounts on "$target" && exit 1
+
+mountpoints='dev dev/pts dev/shm etc/resolv.conf proc run sys tmp'
+
+mount_cleanup() {
+    unmountpoints="$(tr ' ' '\n' <<< "$mountpoints" | tac |tr '\n' ' ')"
+    for mountpoint in $unmountpoints; do
+        if mount | grep "$target/$mountpoint" > /dev/null; then
+            umount "$target/$mountpoint" || echo "$target/$mountpoint" still mounted
+        fi
+    done
+}
+trap mount_cleanup EXIT
+
+for mountpoint in $mountpoints; do
+    [ -d "/$mountpoint" ] && [ -d "$target/$mountpoint" ] && mount -B /$mountpoint "$target/$mountpoint"
+    [ -f "/$mountpoint" ] && [ -f "$target/$mountpoint" ] && mount -B /$mountpoint "$target/$mountpoint"
+done
+
+cat ~/.Xauthority > "$target/home/$user/.Xauthority"
+
+is_nested=1 chroot "$target" /bin/login "$user"
+
+exit 0
