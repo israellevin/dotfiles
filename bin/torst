@@ -42,5 +42,5 @@ webtorrent "$magnet" -s | grep '^[[:digit:]]' | zebra.sh
 read -p '> ' q
 [ q = "$q" ] && exit 1
 tmux split "read; vid $*"
-webtorrent "$magnet" --select "${q:-0}" --out ~/torrents
+webtorrent "$magnet" --select "${q:-0}" --out ~/torrents --keep-seeding
 exit 0
