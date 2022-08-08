@@ -94,7 +94,7 @@ complete -W "$(grep -aPo '(?<=^ssh ).*$' "$HOME/.bash_history" | sort -u | sed '
 )" ssh
 
 _w(){
-    COMPREPLY=($(grep -h "^${COMP_WORDS[COMP_CWORD]}" /usr/share/dict/words))
+    COMPREPLY=($(grep -h "^${COMP_WORDS[COMP_CWORD]}" /usr/share/dict/[ab]*))
     return 0
 }
 complete -F _w w
@@ -133,6 +133,7 @@ fgg(){ find "${2:-.}" | ag "$1"; }
 pg(){ ag "$@" <<< "$(ps -eF --forest --sort=start_time)"; }
 
 # vim
+vj(){ vim -c'set bt=nofile| set fdm=indent| set fdl=5| set ft=json'; }
 vv(){ [ -z $1 ] && vim -c "normal '0" || vim -p *$**; } # Open last file or all filenames matching argument.
 vg(){ vim -p $(ag -l "$*" *); } # Open all files containing argument.
 vz(){ # Toggle vim with C-z.
