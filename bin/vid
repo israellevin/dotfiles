@@ -1,7 +1,7 @@
 #!/bin/bash
-paths="$(echo "$HOME"/pub/{audio,cinema,television,video,kids} "$HOME"/torrents)"
+paths="$HOME/torrents"
 vidtypes='3g\|asf\|asx\|avi\|bin\|divx\|dvx\|f4v\|flc\|flv\|gvi\|m4v\|mkv\|mov\|mp4\|mpeg\|mpg\|ogm\|qt\|rm\|swf\|vid\|wmv\|xvid'
-vidhist="$HOME/recent_videos"
+vidhist="$HOME/torrents/recent_videos"
 
 if [ "$1" = '-' ]; then
     mpv http://localhost:8888/
@@ -15,7 +15,7 @@ vid="$({
 } | awk '!x[$0]++' | menu)"
 
 if [ -f "$vid" ]; then
-    { echo "$vid"; cat "$vidhist"; } | awk '!x[$0]++; NR==5{exit}' > "$vidhist"
+    { echo "$vid"; cat "$vidhist"; } | awk '!x[$0]++; NR==5{exit}' > "$vidhist.tmp" && mv "$vidhist.tmp" "$vidhist"
     echo "Playing '$vid'"
     mpv "$vid"
 fi
