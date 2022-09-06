@@ -1,31 +1,17 @@
 #!/bin/bash
-if [ "$1" == clean ]; then
-    set -e
-    cd ~/torrents/torrent-stream
+OUT_DIR=~/torrents
 
-    # Clean loose torrent files.
-    find . -maxdepth 1 -type f | while IFS=/ read file; do
-        if ! ls "${file%.torrent}" >/dev/null 2>&1; then
-            ls -l "$file"
-            q=n
-            read q < /dev/tty
-            [ "$q" = d ] && rm "$file" && echo deleted
-        fi
-    done
+# Tiny utility to easily distinguish lines, if the user doesn't have one in his path.
+# Note the surrounding $'\001' and $'\002'  which tell readline the escape sequence has zero length.
+ALTERNATE=$'\001'"$(tput rev)"$'\002'
+RESET=$'\001'"$(tput sgr0)"$'\002'
+type zebra.sh 2>&1 > /dev/null || zebra.sh() { while read line; do
+    echo "$ALTERNATE$line$RESET"
+    read line
+    echo "$line"
+done; }
 
-    # Clean torrents with data dirs.
-    find . -mindepth 2 -maxdepth 2 -type d | while IFS=/ read -a patharray; do
-        echo ${patharray[2]}/${patharray[1]}
-    done | sort -h | while IFS=/ read name UUID; do
-        cd "$UUID"
-        find .
-        cd ..
-        q=n
-        read q < /dev/tty
-        [ "$q" = d ] && rm -r "$UUID.torrent" && rm -r "$UUID" && echo deleted
-    done
-    exit 0
-elif [[ "$1" == magnet:* ]]; then
+if [[ "$1" == magnet:* ]]; then
     magnet="$1"
     set -- '.'
 else
@@ -38,9 +24,9 @@ else
 fi
 echo "$magnet"
 
-webtorrent "$magnet" -s | grep '^[[:digit:]]' | zebra.sh
+webtorrent "$magnet" --out "$OUT_DIR" -s | grep '^[[:digit:]]' | zebra.sh
 read -p '> ' q
 [ q = "$q" ] && exit 1
 tmux split "read; vid $*"
-webtorrent "$magnet" --select "${q:-0}" --out ~/torrents --keep-seeding
+webtorrent "$magnet" --select "${q:-0}" --out "$OUT_DIR" --keep-seeding
 exit 0
