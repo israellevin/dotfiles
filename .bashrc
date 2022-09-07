@@ -214,14 +214,16 @@ muxsplit(){
 alias muxheist='muxjoin && muxsplit'
 
 # Some escape sequences for colors.
-RED="$(tput setaf 1)"
-GREEN="$(tput setaf 2)"
-YELLOW="$(tput setaf 3)"
-BLUE="$(tput setaf 4)"
-MAGENTA="$(tput setaf 5)"
-CYAN="$(tput setaf 6)"
-REVERSE="$(tput rev)"
-CLEAR="\e[m"
+# Note the surrounding $'\001' and $'\002'  which tell readline the escape sequence has zero length.
+# Bash documentation recommends using escaped square brackets, but these fail on command substitution.
+RED=$'\001'"$(tput setaf 1)"$'\002'
+GREEN=$'\001'"$(tput setaf 2)"$'\002'
+YELLOW=$'\001'"$(tput setaf 3)"$'\002'
+BLUE=$'\001'"$(tput setaf 4)"$'\002'
+MAGENTA=$'\001'"$(tput setaf 5)"$'\002'
+CYAN=$'\001'"$(tput setaf 6)"$'\002'
+REVERSE=$'\001'"$(tput rev)"$'\002'
+RESET=$'\001'"$(tput sgr0)"$'\002'
 
 # Easy view
 type dircolors > /dev/null && eval "`dircolors`"
@@ -230,9 +232,9 @@ alias pyg='pygmentize -g -f terminal256 -O style=monokai'
 alias pygl='LESSOPEN="| pygmentize -g -f terminal256 -O style=monokai %s" less'
 export LESS=' -MR '
 export LESS_TERMCAP_us=$GREEN
-export LESS_TERMCAP_ue=$CLEAR
+export LESS_TERMCAP_ue=$RESET
 export LESS_TERMCAP_md=$RED
-export LESS_TERMCAP_me=$CLEAR
+export LESS_TERMCAP_me=$RESET
 if type nvim > /dev/null; then
     export MANPAGER='nvim +Man!'
 else
@@ -247,8 +249,8 @@ gitstat(){
     dirty=$(git status --porcelain 2> /dev/null | grep -v '^??' | wc -l)
     ahead=$(git log origin/$branch..HEAD 2> /dev/null | grep '^commit' | wc -l)
     echo -n "($branch"
-    [ 0 = "$dirty" ] || echo -ne "${RED} ${dirty}${CLEAR}"
-    [ 0 = "$ahead" ] || echo -ne "${GREEN} ${ahead}${CLEAR}"
+    [ 0 = "$dirty" ] || echo -n " $RED$dirty$RESET"
+    [ 0 = "$ahead" ] || echo -n " $GREEN$ahead$RESET"
     echo -n ')'
     return $orig_retcode
 }
@@ -272,13 +274,13 @@ hostorchrootname(){
 }
 
 # Single line version
-PS1="${RED}$REVERSE\$(retcode)${CLEAR}$RED\u@\$(hostorchrootname):$CLEAR"
-PS1+="${GREEN}\W${CLEAR}$YELLOW\$(gitstat)${CLEAR}${CYAN}$REVERSE\$(hasjobs)$CLEAR\$ "
+PS1="$RED$REVERSE\$(retcode)$RESET$RED\u@\$(hostorchrootname):$RESET"
+PS1+="$GREEN\W$RESET$YELLOW\$(gitstat)$RESET$CYAN$REVERSE\$(hasjobs)$RESET\$ "
 
 # Multiline version
-PS0="$BLUE/\D{%d %b %y - %H:%M:%S}\\ $CLEAR\n"
-PS1="$BLUE\\\\\D{%d %b %y - %H:%M:%S}/ $CLEAR\n"
-PS1+="$RED\u@\$(hostorchrootname)(\!):${CLEAR}$GREEN\w${CLEAR}$YELLOW\$(gitstat)$CLEAR\n"
-PS1+="\[${RED}$REVERSE\]\$(retcode)\[${CLEAR}${CYAN}$REVERSE\]\$(hasjobs)\[$CLEAR\]\$ "
+PS0="$BLUE/\D{%d %b %y - %H:%M:%S}\\$RESET\n"
+PS1="$BLUE\\\\\D{%d %b %y - %H:%M:%S}/$RESET\n"
+PS1+="$RED\u@\$(hostorchrootname)(\!):$RESET$GREEN\w$RESET$YELLOW\$(gitstat)$RESET\n"
+PS1+="$RED$REVERSE\$(retcode)$RESET$CYAN$REVERSE\$(hasjobs)$RESET\$ "
 
 lt
