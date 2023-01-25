@@ -2,7 +2,7 @@
 FZF_DEFAULT_OPTS="$FZF_DEFAULT_OPTS --no-sort"
 export FZF_DEFAULT_OPTS
 if [ "$TMUX" ]; then
-    fzf-tmux
+    fzf-tmux "$@"
 else
-    termit fzf
+    termit fzf "$@"
 fi
