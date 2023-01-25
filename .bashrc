@@ -6,6 +6,7 @@ export PATH="$HOME/bin:$PATH"
 export LANG=en_US.UTF-8
 export EDITOR=vim
 export BROWSER=w3m
+export GDK_SCALE=1
 
 # Multiplex
 if [ ! "$TMUX" ]; then
@@ -80,6 +81,7 @@ fi
 fasd_cd(){ [ $# -gt 1 ] && cd "$(fasd -e echo "$@")" || fasd "$@"; }
 alias j='fasd_cd -d'
 alias f='fasd -f'
+alias d='fasd -d'
 _fasd_bash_hook_cmd_complete j
 
 # fzf
@@ -130,7 +132,7 @@ alias lss="ls $LS_OPTIONS -Sr"
 type ag > /dev/null || alias ag='grep --color=auto -i'
 lg(){ ll "${2:-.}" | ag "$1"; }
 fgg(){ find "${2:-.}" | ag "$1"; }
-pg(){ ag "$@" <<< "$(ps -eF --forest --sort=start_time)"; }
+pg(){ ag "$@" <<< "$(ps -eF --forest | sort)"; }
 
 # vim
 vj(){ vim -c'set bt=nofile| set fdm=indent| set fdl=5| set ft=json'; }
@@ -185,9 +187,10 @@ gsl() { git fetch; git checkout "$(git branch -r | fzf | sed -e 's/^[[:space:]]*
 gmb() { git merge-base "$(git branch --show-current)" "${1:-master}"; }
 from_json() { node -pe "JSON.parse(require('fs').readFileSync(0, 'utf-8'))$1"; }
 alias x='TMUX="" TTYREC="" startx &'
-alias gl='git log --graph --all --decorate --oneline'
-alias gll='git log --graph --all --decorate --oneline --decorate-refs=refs/heads'
-alias gls='git log --graph --all --decorate --oneline --simplify-by-decoration'
+gitformat="%s %C(dim)%C(cyan)%ah %C(green)%al %C(magenta)%h%C(auto)%d"
+alias glg="git log --graph --abbrev-commit --pretty=format:'$gitformat'"
+alias gll="glg --exclude=refs/remotes/** --all --decorate-refs=refs/heads/"
+alias gl="glg --all"
 alias pyx="python -m trace --ignore-dir \$(python -c 'import os, sys; print(os.pathsep.join(sys.path[1:]))') -t"
 
 # Steal all tmux windows into current session
