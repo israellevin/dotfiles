@@ -15,7 +15,7 @@ syndaemon -dtk
 while true; do
     pgrep -x monsterwm || continue
     unclutter -root &
-    copyq &
+    copyq --start-server
     st -e sh -c "exec tmux attach-session -d"
     break
 done &
