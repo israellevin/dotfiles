@@ -16,18 +16,10 @@ fi
 (
     if ! timeout 2 curl google.com; then
         tmux set -g status-fg '#555555'
-    elif ! pgrep ^pulseaudio; then
-        tmux set -g status-fg white
-        pulseaudio -D
-    elif ! /etc/init.d/bluetooth status; then
-        tmux set -g status-fg white
-    elif echo 'info 00:12:6F:AC:37:88' | bluetoothctl | grep 'Connected: yes'; then
-        tmux set -g status-fg green
-    elif echo 'info 99:B7:CA:AB:85:72' | bluetoothctl | grep 'Connected: yes'; then
-        tmux set -g status-fg cyan
+    elif /etc/init.d/bluetooth status && echo 'info 2C:FD:B4:4F:C5:1B' | bluetoothctl | grep 'Connected: yes'; then
+        tmux set -g status-fg pink
     else
-        tmux set -g status-fg yellow
-        echo 'connect 00:00:00:00:00:00' | bluetoothctl
+        tmux set -g status-fg white
     fi
 )&
 
