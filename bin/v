@@ -11,7 +11,7 @@ elif [ -t 0 ]; then
     elif [ -r "$1" ]; then
         vim "$@"
     else
-        fasd -e vim -b viminfo "$@"
+        fasd -e vim "$@"
     fi
 # If output is a terminal but input isn't, it's probably a pipe.
 else
