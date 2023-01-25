@@ -29,6 +29,7 @@ Plug 'zweifisch/pipe2eval'
 Plug 'unblevable/quick-scope'
 Plug 'junegunn/rainbow_parentheses.vim'
 Plug 'maxbrunsfeld/vim-yankstack'
+Plug 'github/copilot.vim'
 
 " Auto install plugins on first run
 call plug#end()
