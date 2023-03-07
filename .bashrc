@@ -233,7 +233,7 @@ type dircolors > /dev/null && eval "`dircolors`"
 type lesspipe > /dev/null && eval "`lesspipe`"
 alias pyg='pygmentize -g -f terminal256 -O style=monokai'
 alias pygl='LESSOPEN="| pygmentize -g -f terminal256 -O style=monokai %s" less'
-export LESS=' -MR '
+export LESS=' -MRSXF '
 export LESS_TERMCAP_us=$GREEN
 export LESS_TERMCAP_ue=$RESET
 export LESS_TERMCAP_md=$RED
