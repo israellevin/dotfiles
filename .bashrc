@@ -145,13 +145,7 @@ vz(){ # Toggle vim with C-z.
     [ "$1" ] && vi "$@"
 }
 vd(){ # Recursive vimdiff.
-    if [ -f "$1" ] && [ -f "$2" ]; then
-        vimdiff "$1" "$2"
-        return
-    fi
-    diff -rq "$1" "$2" | sed -n 's/^Files \(.*\) and \(.*\) differ$/vimdiff "\1" "\2"/p' | while read cmd; do
-        sh <<<$cmd
-    done
+    diff -rq "$1" "$2" | sed -n 's/^Files \(.*\) and \(.*\) differ$/"\1" "\2"/p' | xargs -n2 vimdiff
 }
 
 # Web
