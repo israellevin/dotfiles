@@ -13,10 +13,15 @@ done; }
 
 if [[ "$1" == magnet:* ]]; then
     magnet="$1"
-    set -- '.'
+    set -- ' '
 else
-    q="$*" && q="${q// /%20}"
-    magnets="$(curl -s "https://thepiratebay10.org/search/$q" | grep -Pom10 '(?<= href=")magnet:[^"]*(?=")')"
+    if [ -z "$1" ]; then
+        search_url="https://thepiratebay.party/top/200"
+    else
+        q="$*" && q="${q// /%20}"
+        search_url="https://thepiratebay10.org/search/$q"
+    fi
+    magnets="$(curl -s "$search_url" | grep -Pom10 '(?<= href=")magnet:[^"]*(?=")')"
     echo "$magnets" | grep -Po '(?<=&dn=)[^&]*' | nl -v0 -s'   ' | zebra.sh
     read -p '> ' q
     [ q = "$q" ] && exit 1
