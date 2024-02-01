@@ -21,7 +21,7 @@ for mountpoint in $mountpoints; do
     [ -d "/$mountpoint" ] && [ -d "$target/$mountpoint" ] && mount -B /$mountpoint "$target/$mountpoint"
 done
 
-## Copy X credentials.
+# Copy X credentials.
 cp ${HOME}/.Xauthority $target/root/ >/dev/null 2>&1
 mkdir $target/tmp/.X11-unix/  >/dev/null 2>&1
 rm -f $target/tmp/.X11-unix/X0 2>&1

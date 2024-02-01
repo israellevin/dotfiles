@@ -1,0 +1,26 @@
+#!/bin/bash
+
+if [ "$1" -eq "$1" ] 2>/dev/null; then
+    pid_flag="-p $1"
+    shift
+fi
+if [ "$@" ]; then
+    command="$@"
+else
+    command="sleep 5"
+fi
+perf_file=$(mktemp perf.data.XXXXXX)
+perf record -g -F max -o $perf_file $pid_flag -- "$@" &
+perf_pid=$!
+
+perf_to_svg() {
+    while kill -0 $perf_pid 2>/dev/null; do
+        sleep 1
+    done
+    perf script -i $perf_file | ~/src/FlameGraph/stackcollapse-perf.pl | ~/src/FlameGraph/flamegraph.pl > "$(date +%s).svg"
+    rm $perf_file
+}
+
+trap perf_to_svg SIGINT SIGTERM
+wait
+perf_to_svg

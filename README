@@ -16,6 +16,7 @@ blight.sh   - set and toggle backlight brightness
 browse      - run my current browser of choice (vieb) and focus it
 chrootcrypt - chroot into an encrypted partition
 cmx         - menu to launch comix
+flame       - flame graph generator, requires perf
 getwin.sh   - focus a window by name
 gmail.sh    - periodically download gmail feed to a file
 m           - mntnir, the CLI volume mounter (from http://github.com/israellevin/mntnir)
