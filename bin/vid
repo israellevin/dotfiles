@@ -11,16 +11,20 @@ vid="$({
     find $paths -type f -iregex ".*\($vidtypes\)" -printf "%A@ %p\n"
 } | sort -rn | cut -d' ' -f2- | awk '!filenames[$0]++' | menu)"
 
-bt_options() {
+device_options() {
+    return
+    # Check for bluetooth speaker.
     bt_device='2C:FD:B4:4F:C5:1B'
     (/etc/init.d/bluetooth status && echo "info $bt_device" | bluetoothctl | grep 'Connected: yes') > /dev/null 2>&1
-    [ "$?" -eq 0 ] && echo "--audio-device=alsa/bt"
+    [ "$?" -eq 0 ] && echo "--audio-device=alsa/bt" && return
+    # Check for hdmi.
+    xrandr | grep -q 'HDMI-1 connected' && echo "--audio-device=alsa/4800" && return
 }
 
 if [ -f "$vid" ]; then
     echo "$(date +%s.%N) $vid" >> "$vidhist"
-    echo "Playing '$vid'"
-    mpv "$vid" $(bt_options)
+    echo "Playing '$vid' $(device_options)"
+    mpv "$vid" $(device_options)
 fi
 
 exit 0
