@@ -13,13 +13,16 @@ Configuration files and some handy scripts
 
 bash-define - bash front end to dict.org, with completion (not mine, source unknown)
 blight.sh   - set and toggle backlight brightness
+browse      - run my current browser of choice (vieb) and focus it
+chrootcrypt - chroot into an encrypted partition
 cmx         - menu to launch comix
+getwin.sh   - focus a window by name
 gmail.sh    - periodically download gmail feed to a file
 m           - mntnir, the CLI volume mounter (from http://github.com/israellevin/mntnir)
 menu        - a menu proxy that makes sure we have a terminal to show fzf in
 menu_run    - a replacement for dmenu_run, requires st
 mus         - create and play MPD playlists according to a string or menu
-net         - connect to networks (OUTDATED)
+presleep.sh - place in /usr/lib/systemd/system-sleep/ to handle sleep events
 red         - shorthand redshift commands
 remote.sh   - control mpv or mpd remotely, for the media keys
 slp         - sleep and reconnect
