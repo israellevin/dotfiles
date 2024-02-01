@@ -1,0 +1,3 @@
+#!/usr/bin/bash
+node ~/src/Vieb/node_modules/electron/cli.js ~/src/Vieb/app --no-sandbox "$@"
+getwin.sh vieb
