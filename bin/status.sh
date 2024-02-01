@@ -50,7 +50,9 @@ if sensors; then
 fi
 
 if amixer; then
-    pvolm=$(amixer get Master | grep -om1 '[[:digit:]]*%')
+    line="$(amixer get Master | grep 'Front Right: Playback ')"
+    grln() { echo "$line" | grep "$@"; }
+    pvolm="$(grln -Po '[[:digit:]]{1,3}(?=%)')$(grln -q '\[off\]' && echo 🔇 || echo 🔊)"
 fi
 
 # Write status line to stdout and to file.
