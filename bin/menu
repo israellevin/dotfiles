@@ -1,5 +1,5 @@
 #!/usr/bin/env sh
-FZF_DEFAULT_OPTS="$FZF_DEFAULT_OPTS --no-sort"
+FZF_DEFAULT_OPTS="$FZF_DEFAULT_OPTS --no-sort --exact"
 export FZF_DEFAULT_OPTS
 if [ "$TMUX" ]; then
     fzf-tmux "$@"
