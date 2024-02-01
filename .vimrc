@@ -99,6 +99,7 @@ set ignorecase
 set smartcase
 set wildmenu
 set wildmode=longest:full,full
+set wildignorecase
 set completeopt=longest,menu
 set omnifunc=syntaxcomplete#Complete
 set incsearch
@@ -216,6 +217,7 @@ set tags=~/src/ctags
 " Pretty
 if has("gui_running") || $DISPLAY != 'no'
     set t_Co=256
+    setg termguicolors
     colorscheme jellybeans
 else
     colorscheme desert
