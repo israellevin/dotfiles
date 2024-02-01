@@ -9,7 +9,7 @@ export BROWSER=w3m
 export GDK_SCALE=1
 
 # Multiplex
-if [ ! "$TMUX" ]; then
+if type tmux > /dev/null && [ ! "$TMUX" ]; then
     [ "$SSH_CONNECTION" ] && tmux -2 attach || tmux -2 new
     [ ! -e "$HOME/dontquit" ] && exit 0
 fi
@@ -125,8 +125,11 @@ LS_OPTIONS='-lh --color=auto --quoting-style=shell'
 alias l="ls $LS_OPTIONS"
 alias ll="ls $LS_OPTIONS -A"
 alias lt="ls $LS_OPTIONS -tr"
-alias ld="ls $LS_OPTIONS -Ad */"
+alias ltl="ls $LS_OPTIONS -Atr"
+alias ldd="ls $LS_OPTIONS -d */"
+alias ldl="ls $LS_OPTIONS -Ad */"
 alias lss="ls $LS_OPTIONS -Sr"
+alias lsl="ls $LS_OPTIONS -ASr"
 
 # grep
 type ag > /dev/null || alias ag='grep --color=auto -i'
@@ -170,6 +173,7 @@ alias mpv='mpv --volume-max=1000'
 alias mpt='mpv http://localhost:8888/'
 alias mpl='mpv -lavdopts lowres=1:fast:skiploopfilter=all'
 alias mpy='mpv -vf yadif'
+alias blu='pgrep -x pulseaudio > /dev/null || pulseaudio --start; systemctl start bluetooth.service; bluetoothctl; systemctl stop bluetooth.service'
 mplen(){ ffmpeg -i "$1" 2>&1 | ag duration; }
 
 # General aliases and functions
@@ -177,7 +181,6 @@ log(){ $@ 2>&1 | tee log.txt; }
 til(){ sleep $(( $(date -d "$*" +%s) - $(date +%s) )); }
 sume(){ [ "$EUID" -ne 0 ] && sudo -E su -p; }
 genpas(){ shuf -zern${1:-8} ':' ';' '<' '=' '>' '?' '@' '[' ']' '^' '_' '`' '{' '|' '}' '~' {0..9} {A..Z} {a..z} {a..z} {a..z}; echo; }
-gsl() { git fetch; git checkout "$(git branch -r | fzf | sed -e 's/^[[:space:]]*//')"; }
 gmb() { git merge-base "$(git branch --show-current)" "${1:-master}"; }
 from_json() { node -pe "JSON.parse(require('fs').readFileSync(0, 'utf-8'))$1"; }
 alias x='TMUX="" TTYREC="" startx &'
@@ -225,8 +228,6 @@ RESET=$'\001'"$(tput sgr0)"$'\002'
 # Easy view
 type dircolors > /dev/null && eval "`dircolors`"
 type lesspipe > /dev/null && eval "`lesspipe`"
-alias pyg='pygmentize -g -f terminal256 -O style=monokai'
-alias pygl='LESSOPEN="| pygmentize -g -f terminal256 -O style=monokai %s" less'
 export LESS=' -MRSXF '
 export LESS_TERMCAP_us=$GREEN
 export LESS_TERMCAP_ue=$RESET
@@ -237,6 +238,7 @@ if type nvim > /dev/null; then
 else
     export MANPAGER='vim -M +MANPAGER -c "set nonumber" -'
 fi
+alias pyg='pygmentize -gf terminal256 -O style=monokai'
 
 # Prompt
 gitstat(){
