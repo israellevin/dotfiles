@@ -11,6 +11,7 @@ call plug#begin('~/.vim/plugged')
 Plug 'dense-analysis/ale'
 Plug 'PeterRincker/vim-argumentative'
 Plug 'prabirshrestha/asyncomplete.vim'
+Plug 'prabirshrestha/asyncomplete-buffer.vim'
 Plug 'prabirshrestha/asyncomplete-lsp.vim'
 Plug 'github/copilot.vim'
 Plug 'will133/vim-dirdiff'
@@ -33,12 +34,6 @@ Plug 'unblevable/quick-scope'
 Plug 'junegunn/rainbow_parentheses.vim'
 Plug 'maxbrunsfeld/vim-yankstack'
 
-"Plug 'folke/noice.nvim'
-"Plug 'MunifTanjim/nui.nvim'
-"Plug 'rcarriga/nvim-notify'
-"Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}
-
-
 " Auto install plugins on first run
 call plug#end()
 if 1 == firstrun
@@ -53,10 +48,20 @@ let g:ale_linters_ignore = {'html': ['eslint']}
 nmap <expr> <C-j> &diff ? ']c' : ':ALENext<cr>'
 nmap <expr> <C-k> &diff ? '[c' : ':ALEPrevious<cr>'
 
-let g:lsp_diagnostics_enabled = 0
+call asyncomplete#register_source(asyncomplete#sources#buffer#get_source_options({
+    \ 'name': 'buffer',
+    \ 'allowlist': ['*'],
+    \ 'blocklist': ['go'],
+    \ 'completor': function('asyncomplete#sources#buffer#completor'),
+    \ 'config': {
+    \    'max_buffer_size': 500000,
+    \  },
+    \ }))
 
 imap <silent><script><expr> <C-J> copilot#Accept("\<CR>")
 let g:copilot_no_tab_map = v:true
+
+let g:lsp_diagnostics_enabled = 0
 
 let g:yankstack_map_keys = 0
 call yankstack#setup()
@@ -107,7 +112,7 @@ set smartcase
 set wildmenu
 set wildmode=longest:full,full
 set wildignorecase
-set completeopt=longest,menu
+set completeopt=longest,menuone,preview
 set omnifunc=syntaxcomplete#Complete
 set incsearch
 set hlsearch
@@ -183,7 +188,6 @@ augroup mine
     au BufReadPost * normal zR
     au InsertEnter * if !exists('w:last_fdm') | let w:last_fdm=&foldmethod | setlocal foldmethod=manual | endif
     au InsertLeave,WinLeave * if exists('w:last_fdm') | let &l:foldmethod=w:last_fdm | unlet w:last_fdm | endif
-
 
     " Many ftplugins override formatoptions, so override them back
     au BufReadPost,BufNewFile * setlocal formatoptions=tcqnj
