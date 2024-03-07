@@ -3,8 +3,7 @@ let firstrun=0
 if !filereadable(expand("~/.vim/autoload/plug.vim"))
     let firstrun=1
     silent !mkdir -p ~/.vim/{autoload,undo,backups}
-    silent !wget -O ~/.vim/autoload/plug.vim
-        \ https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
+    silent !curl https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim > ~/.vim/autoload/plug.vim
 endif
 
 "Plugins
