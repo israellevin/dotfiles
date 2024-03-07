@@ -8,7 +8,7 @@ export FZF_DEFAULT_OPTS
 
 vid="$({
     cat "$vidhist"
-    find $paths -type f -iregex ".*\($vidtypes\)" -printf "%A@ %p\n"
+    find $paths -type f -iregex ".*\($vidtypes\)" -printf "%T@ %p\n"
 } | sort -rn | cut -d' ' -f2- | awk '!filenames[$0]++' | menu)"
 
 device_options() {

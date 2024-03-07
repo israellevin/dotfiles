@@ -24,7 +24,7 @@ menu        - a menu proxy that makes sure we have a terminal to show fzf in
 menu_run    - a replacement for dmenu_run, requires st
 mus         - create and play MPD playlists according to a string or menu
 presleep.sh - place in /usr/lib/systemd/system-sleep/ to handle sleep events
-red         - shorthand redshift commands
+red         - shorthand redshift (xsct) commands
 remote.sh   - control mpv or mpd remotely, for the media keys
 slp         - sleep and reconnect
 status.sh   - status line for tmux
@@ -37,3 +37,4 @@ vol         - set the alsa master volume and update root window title with statu
 w           - simple web searches for the terminal (w3m powered)
 xchroot.sh  - chroot with x auth, proc, sys, dev and dev/pts
 zebra.sh    - alternate line colors
+
