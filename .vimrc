@@ -9,27 +9,36 @@ endif
 
 "Plugins
 call plug#begin('~/.vim/plugged')
-Plug 'PeterRincker/vim-argumentative'
 Plug 'dense-analysis/ale'
-Plug 'neoclide/coc.nvim', {'branch': 'release'}
+Plug 'PeterRincker/vim-argumentative'
+Plug 'prabirshrestha/asyncomplete.vim'
+Plug 'prabirshrestha/asyncomplete-lsp.vim'
+Plug 'github/copilot.vim'
+Plug 'will133/vim-dirdiff'
 Plug 'mattn/emmet-vim', { 'for': 'html' }
 Plug 'tommcdo/vim-exchange'
 Plug 'tpope/vim-fugitive'
 Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': 'yes \| ./install' }
 Plug 'junegunn/fzf.vim'
-Plug 'junegunn/goyo.vim'
+Plug 'junegunn/gv.vim'
 Plug 'vim-utils/vim-husk'
 Plug 'michaeljsmith/vim-indent-object'
-Plug 'vasconcelloslf/vim-interestingwords'
+Plug 'lfv89/vim-interestingwords'
 Plug 'nanotech/jellybeans.vim'
-Plug 'junegunn/limelight.vim'
+Plug 'prabirshrestha/vim-lsp'
+Plug 'mattn/vim-lsp-settings'
 Plug 'andymass/vim-matchup'
 Plug 'junegunn/vim-peekaboo'
 Plug 'zweifisch/pipe2eval'
 Plug 'unblevable/quick-scope'
 Plug 'junegunn/rainbow_parentheses.vim'
 Plug 'maxbrunsfeld/vim-yankstack'
-Plug 'github/copilot.vim'
+
+"Plug 'folke/noice.nvim'
+"Plug 'MunifTanjim/nui.nvim'
+"Plug 'rcarriga/nvim-notify'
+"Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}
+
 
 " Auto install plugins on first run
 call plug#end()
@@ -41,15 +50,14 @@ endif
 let g:ale_linters = {'python': ['pycodestyle', 'flake8', 'mypy', 'pylint']}
 let g:ale_python_pycodestyle_options = '--max-line-length=120'
 let g:ale_python_pylint_options = '--max-line-length=120'
+let g:ale_linters_ignore = {'html': ['eslint']}
 nmap <expr> <C-j> &diff ? ']c' : ':ALENext<cr>'
 nmap <expr> <C-k> &diff ? '[c' : ':ALEPrevious<cr>'
 
-inoremap <silent><expr> <cr> pumvisible() ? coc#_select_confirm() : "\<C-g>u\<CR>\<c-r>=coc#on_enter()\<CR>"
+let g:lsp_diagnostics_enabled = 0
 
-let g:qs_highlight_on_keys = ['f', 'F', 't', 'T']
-
-nnoremap <Leader>( :RainbowParentheses!!<CR>
-let g:acp_behaviorKeywordLength = 2
+imap <silent><script><expr> <C-J> copilot#Accept("\<CR>")
+let g:copilot_no_tab_map = v:true
 
 let g:yankstack_map_keys = 0
 call yankstack#setup()
@@ -155,7 +163,7 @@ command! Lds source ~/.vim/.session
 command! Heb setlocal rightleft | setlocal rightleftcmd | setlocal keymap=hebrew | inoremap -- ־| inoremap --- –| call matchdelete(nonansi)
 command! Noheb setlocal norightleft | setlocal rightleftcmd= | setlocal keymap= | let nonansi = matchadd('Error', '[^\d0-\d127]')
 command! Lowtag %s/<\/\?\u\+/\L&/g
-command! DiffOrig vert new | set bt=nofile | r ++edit # | 0d_ | diffthis | wincmd p | diffthis
+command! DiffOrig vert new | set bt=nofile | r ++edit
 
 " Enable arrows for visitors
 nnoremap <Up> gk
@@ -207,11 +215,11 @@ augroup mine
     au WinLeave * setlocal nocursorline | setlocal nocursorcolumn
 
     " Source vimrc when written
-    au BufWritePost $MYVIMRC nested source %
+    au BufWritePost ~/.vimrc nested source % | redraw! | echomsg "sourced"
 augroup END
 
 " Tags
-silent !ctags -Ro ~/src/ctags --exclude=.git --exclude=venv /mnt/home/i/contracts-solidity &> /dev/null &
+silent !ctags -Ro ~/src/ctags --exclude=.git ~/src ~/bin &> /dev/null &
 set tags=~/src/ctags
 
 " Pretty
