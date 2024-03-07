@@ -11,7 +11,7 @@ export GDK_SCALE=1
 # Multiplex
 if type tmux > /dev/null && [ ! "$TMUX" ]; then
     [ "$SSH_CONNECTION" ] && tmux -2 attach || tmux -2 new
-    [ ! -e "$HOME/dontquit" ] && exit 0
+    [ ! -e ~/dontquit ] && exit 0
 fi
 
 # Shell options
@@ -49,6 +49,8 @@ cd(){
     [ $1 -ge 0 ] 2> /dev/null && x=$1 || x=1
     for(( i = 0; i < $x; i++ )); do cd ..; done;
 }
+mkcd(){ mkdir -p "$*"; cd "$*"; }
+dud(){ du -hxd1 "${1:-.}" | sort -h; }
 xs(){
     [ -d "$@" ] 2>/dev/null && pushd "$@" && return
     dirs=()
@@ -70,10 +72,8 @@ xs(){
             ;;
     esac
 }
-mkcd(){ mkdir -p "$*"; cd "$*"; }
-dud(){ du -hxd1 "${1:-.}" | sort -h; }
 
-fasd_cache="$HOME/.fasd-init-bash"
+fasd_cache=~/.fasd-init-bash
 if [ "$(command -v fasd)" -nt "$fasd_cache" -o ! -s "$fasd_cache" ]; then
     fasd --init bash-hook bash-ccomp bash-ccomp-install >| "$fasd_cache"
 fi
@@ -92,7 +92,7 @@ export FZF_TMUX=1
 
 # Completion
 . /etc/bash_completion
-complete -W "$(grep -aPo '(?<=^ssh ).*$' "$HOME/.bash_history" | sort -u | sed 's/\(.*\)/"\1"/'
+complete -W "$(grep -aPo '(?<=^ssh ).*$' ~/.bash_history | sort -u | sed 's/\(.*\)/"\1"/'
 )" ssh
 
 _w(){
@@ -135,20 +135,20 @@ alias lsl="ls $LS_OPTIONS -ASr"
 type ag > /dev/null || alias ag='grep --color=auto -i'
 lg(){ ll "${2:-.}" | ag "$1"; }
 fgg(){ find "${2:-.}" | ag "$1"; }
-pg(){ ag "$@" <<< "$(ps -eF --forest | sort)"; }
+pg(){ ag "$@" <<<"$(ps -eF --forest | sort)"; }
 
 # vim
 vj(){ vim -c'set bt=nofile| set fdm=indent| set fdl=5| set ft=json'; }
 vv(){ [ -z $1 ] && vim -c "normal '0" || vim -p *$**; } # Open last file or all filenames matching argument.
 vg(){ vim -p $(ag -l "$*" *); } # Open all files containing argument.
-vz(){ # Toggle vim with C-z.
+vd(){
+    diff -rq "$1" "$2" | sed -n 's/^Files \(.*\) and \(.*\) differ$/"\1" "\2"/p' | xargs -n2 vimdiff
+}
+vz(){
     bind '"\C-z":" \C-u fg\C-j"'
     trap "stty susp '^z'" DEBUG
     PROMPT_COMMAND="$PROMPT_COMMAND; stty susp ''"
     [ "$1" ] && vi "$@"
-}
-vd(){ # Recursive vimdiff.
-    diff -rq "$1" "$2" | sed -n 's/^Files \(.*\) and \(.*\) differ$/"\1" "\2"/p' | xargs -n2 vimdiff
 }
 
 # Web
@@ -164,6 +164,20 @@ connect(){
     [ "$2" ] && wpa_supplicant -i wlan0 -c <(wpa_passphrase "$1" "$2") \
     || while :; do iw dev wlan0 link | ag not\ connected && date && iw dev wlan0 connect "$1"; sleep 10; done
 }
+
+# Open-AI
+export OPENAI_KEY=sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+alias sanjer='~/src/chatGPT-shell-cli/chatgpt.sh'
+alias sgpt='~/src/shell_gpt/venv/bin/sgpt'
+alias sgptr='sgpt --repl tmp'
+alias sgpts='sgpt --repl shell'
+_sgpt_bash() {
+if [[ -n "$READLINE_LINE" ]]; then
+    READLINE_LINE=$(sgpt --shell <<< "$READLINE_LINE")
+    READLINE_POINT=${#READLINE_LINE}
+fi
+}
+bind -x '"\C-g": _sgpt_bash'
 
 # Media
 alias d0='DISPLAY=":0.0"'
@@ -233,7 +247,7 @@ export LESS_TERMCAP_us=$GREEN
 export LESS_TERMCAP_ue=$RESET
 export LESS_TERMCAP_md=$RED
 export LESS_TERMCAP_me=$RESET
-if type nvim > /dev/null; then
+if type nvim > /dev/null 2>&1; then
     export MANPAGER='nvim +Man!'
 else
     export MANPAGER='vim -M +MANPAGER -c "set nonumber" -'
