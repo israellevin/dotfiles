@@ -151,6 +151,13 @@ vz(){
     [ "$1" ] && vi "$@"
 }
 
+# git
+gitformat="%s %C(dim)%C(cyan)%ah %C(green)%al %C(magenta)%h%C(auto)%d"
+alias glg="git log --graph --abbrev-commit --pretty=format:'$gitformat'"
+alias gll="glg --exclude=refs/remotes/** --all --decorate-refs=refs/heads/"
+alias gl="glg --all"
+gmb() { git merge-base "$(git branch --show-current)" "${1:-master}"; }
+
 # Web
 alias webshare='python3 -m http.server'
 alias wclip='curl -F "sprunge=<-" http://sprunge.us | tee >(xsel -i)'
@@ -167,15 +174,29 @@ connect(){
 
 # Open-AI
 export OPENAI_KEY=sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-alias sanjer='~/src/chatGPT-shell-cli/chatgpt.sh'
-alias sgpt='~/src/shell_gpt/venv/bin/sgpt'
+sanj() {
+    sanjer="$HOME/src/chatGPT-shell-cli/chatgpt.sh"
+    if [ "$1" = '-' ]; then
+        shift
+    else
+        sanjer="$sanjer -m gpt-4-turbo-preview"
+    fi
+    if ! [ "$1" ]; then
+        rlfe -h ~/.sanjer_history $sanjer -b "$@" || $sanjer -b "$@"
+    elif [ "$1" = 'do' ]; then
+        $sanjer -p "command: $*"
+    else
+        $sanjer -p "$*"
+    fi
+}
+
+alias sgpt='~/src/shell_gpt/venv/bin/sgpt --model=gpt-4'
 alias sgptr='sgpt --repl tmp'
-alias sgpts='sgpt --repl shell'
 _sgpt_bash() {
-if [[ -n "$READLINE_LINE" ]]; then
-    READLINE_LINE=$(sgpt --shell <<< "$READLINE_LINE")
-    READLINE_POINT=${#READLINE_LINE}
-fi
+    if [[ -n "$READLINE_LINE" ]]; then
+        READLINE_LINE=$(sgpt --shell <<< "$READLINE_LINE")
+        READLINE_POINT=${#READLINE_LINE}
+    fi
 }
 bind -x '"\C-g": _sgpt_bash'
 
@@ -195,13 +216,23 @@ log(){ $@ 2>&1 | tee log.txt; }
 til(){ sleep $(( $(date -d "$*" +%s) - $(date +%s) )); }
 sume(){ [ "$EUID" -ne 0 ] && sudo -E su -p; }
 genpas(){ shuf -zern${1:-8} ':' ';' '<' '=' '>' '?' '@' '[' ']' '^' '_' '`' '{' '|' '}' '~' {0..9} {A..Z} {a..z} {a..z} {a..z}; echo; }
-gmb() { git merge-base "$(git branch --show-current)" "${1:-master}"; }
 from_json() { node -pe "JSON.parse(require('fs').readFileSync(0, 'utf-8'))$1"; }
+mkenv() {
+    local venv_dir="${1:-./venv}"
+    if ! . ./"$venv_dir"/bin/activate 2>/dev/null; then
+        python3 -m venv "$venv_dir"
+        . ./"$venv_dir"/bin/activate
+    fi
+    if [ -f requirements.txt ]; then
+        missing_packages="$(comm -23 <(sort requirements.txt) <(pip freeze | grep -v '0.0.0' | sort))"
+        if [ "$missing_packages" ]; then
+            read -p "$missing_packages - install (y/N)? " -n 1 -r
+            echo
+            [[ $REPLY =~ ^[Yy]$ ]] && pip install -r requirements.txt
+        fi
+    fi
+}
 alias x='TMUX="" TTYREC="" startx &'
-gitformat="%s %C(dim)%C(cyan)%ah %C(green)%al %C(magenta)%h%C(auto)%d"
-alias glg="git log --graph --abbrev-commit --pretty=format:'$gitformat'"
-alias gll="glg --exclude=refs/remotes/** --all --decorate-refs=refs/heads/"
-alias gl="glg --all"
 alias pyx="python -m trace --ignore-dir \$(python -c 'import os, sys; print(os.pathsep.join(sys.path[1:]))') -t"
 
 # Steal all tmux windows into current session
