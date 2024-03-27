@@ -1,5 +1,6 @@
 #!/bin/bash
 OUT_DIR=~/torrents
+BASE_URL=https://tpb.party
 
 # Tiny utility to easily distinguish lines, if the user doesn't have one in his path.
 # Note the surrounding $'\001' and $'\002'  which tell readline the escape sequence has zero length.
@@ -16,10 +17,10 @@ if [[ "$1" == magnet:* ]]; then
     set -- ' '
 else
     if [ -z "$1" ]; then
-        search_url="https://thepiratebay.party/top/200"
+        search_url="$BASE_URL/top/200"
     else
         q="$*" && q="${q// /%20}"
-        search_url="https://thepiratebay10.org/search/$q"
+        search_url="$BASE_URL/search/$q"
     fi
     magnets="$(curl -s "$search_url" | grep -Pom10 '(?<= href=")magnet:[^"]*(?=")')"
     echo "$magnets" | grep -Po '(?<=&dn=)[^&]*' | nl -v0 -s'   ' | zebra.sh
