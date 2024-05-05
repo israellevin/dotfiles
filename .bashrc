@@ -86,7 +86,6 @@ _fasd_bash_hook_cmd_complete j
 
 # fzf
 export FZF_DEFAULT_OPTS='-e -m --bind=ctrl-u:page-up,ctrl-d:page-down,alt-o:print-query,ctrl-o:replace-query'
-export FZF_DEFAULT_COMMAND='ag -g ""'
 export FZF_TMUX=1
 [ -f ~/.fzf.bash ] && . ~/.fzf.bash
 
@@ -132,15 +131,15 @@ alias lss="ls $LS_OPTIONS -Sr"
 alias lsl="ls $LS_OPTIONS -ASr"
 
 # grep
-type ag > /dev/null || alias ag='grep --color=auto -i'
-lg(){ ll "${2:-.}" | ag "$1"; }
-fgg(){ find "${2:-.}" | ag "$1"; }
-pg(){ ag "$@" <<<"$(ps -eF --forest | sort)"; }
+type rg > /dev/null && alias g='rg --smart-case' || alias g='grep --color=auto -i'
+lg(){ ll "${2:-.}" | g "$1"; }
+fgg(){ find "${2:-.}" | g "$1"; }
+pg(){ g "$@" <<<"$(ps -eF --forest | sort)"; }
 
 # vim
 vj(){ vim -c'set bt=nofile| set fdm=indent| set fdl=5| set ft=json'; }
 vv(){ [ -z $1 ] && vim -c "normal '0" || vim -p *$**; } # Open last file or all filenames matching argument.
-vg(){ vim -p $(ag -l "$*" *); } # Open all files containing argument.
+vg(){ vim -p $(g -l "$*" *); } # Open all files containing argument.
 vd(){
     diff -rq "$1" "$2" | sed -n 's/^Files \(.*\) and \(.*\) differ$/"\1" "\2"/p' | xargs -n2 vimdiff
 }
@@ -169,7 +168,7 @@ wf(){
 wff(){ while read r; do wf $r; done; }
 connect(){
     [ "$2" ] && wpa_supplicant -i wlan0 -c <(wpa_passphrase "$1" "$2") \
-    || while :; do iw dev wlan0 link | ag not\ connected && date && iw dev wlan0 connect "$1"; sleep 10; done
+    || while :; do iw dev wlan0 link | g not\ connected && date && iw dev wlan0 connect "$1"; sleep 10; done
 }
 
 # Open-AI
@@ -209,7 +208,7 @@ alias mpt='mpv http://localhost:8888/'
 alias mpl='mpv -lavdopts lowres=1:fast:skiploopfilter=all'
 alias mpy='mpv -vf yadif'
 alias blu='pgrep -x pulseaudio > /dev/null || pulseaudio --start; systemctl start bluetooth.service; bluetoothctl; systemctl stop bluetooth.service'
-mplen(){ ffmpeg -i "$1" 2>&1 | ag duration; }
+mplen(){ ffmpeg -i "$1" 2>&1 | g duration; }
 
 # General aliases and functions
 log(){ $@ 2>&1 | tee log.txt; }
