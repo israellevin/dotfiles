@@ -1,7 +1,7 @@
 # startup - only after monsterwm is up
 
 xmodmap ~/.xmodmap
-xrandr --output eDP-1 --auto --primary
+xrandr --output eDP-1 --auto --primary # --scale 0.5x0.5
 xrandr --output HDMI-1 --auto --right-of eDP-1
 xset r rate 300 30 s off -dpms m 1 1
 setxkbmap us,il -option grp:caps_toggle

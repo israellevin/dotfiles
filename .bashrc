@@ -175,8 +175,11 @@ connect(){
 export OPENAI_KEY=sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 sanj() {
     sanjer="$HOME/src/chatGPT-shell-cli/chatgpt.sh"
-    if [ "$1" = '-' ]; then
+    if [ "$1" = '--' ]; then
         shift
+    elif [ "$1" = '-' ]; then
+        shift
+        sanjer="$sanjer -m gpt-4"
     else
         sanjer="$sanjer -m gpt-4-turbo-preview"
     fi

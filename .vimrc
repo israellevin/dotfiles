@@ -30,8 +30,8 @@ Plug 'mattn/vim-lsp-settings'
 Plug 'andymass/vim-matchup'
 Plug 'junegunn/vim-peekaboo'
 Plug 'zweifisch/pipe2eval'
-Plug 'unblevable/quick-scope'
 Plug 'junegunn/rainbow_parentheses.vim'
+Plug 'tpope/vim-surround'
 Plug 'maxbrunsfeld/vim-yankstack'
 
 " Auto install plugins on first run
@@ -62,6 +62,10 @@ imap <silent><script><expr> <C-J> copilot#Accept("\<CR>")
 let g:copilot_no_tab_map = v:true
 
 let g:lsp_diagnostics_enabled = 0
+let g:lsp_preview_float = 0
+let g:lsp_signature_help_enabled = 0
+let g:lsp_document_code_action_signs_enabled = 0
+let g:python3_host_prog = '~/.local/share/vim-lsp-settings/servers/pylsp-all/venv/bin/python3'
 
 let g:yankstack_map_keys = 0
 call yankstack#setup()
@@ -232,6 +236,7 @@ if has("gui_running") || $DISPLAY != 'no'
     colorscheme jellybeans
 else
     colorscheme desert
+    setg notermguicolors
 endif
 
 set encoding=utf-8
