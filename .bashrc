@@ -6,7 +6,6 @@ export PATH="$HOME/bin:$PATH"
 export LANG=en_US.UTF-8
 export EDITOR=vim
 export BROWSER=w3m
-export GDK_SCALE=1
 
 # Multiplex
 if type tmux > /dev/null && [ ! "$TMUX" ]; then
@@ -181,7 +180,7 @@ sanj() {
         shift
         sanjer="$sanjer -m gpt-4"
     else
-        sanjer="$sanjer -m gpt-4-turbo-preview"
+        sanjer="$sanjer -m gpt-4o"
     fi
     if ! [ "$1" ]; then
         rlfe -h ~/.sanjer_history $sanjer -b "$@" || $sanjer -b "$@"
@@ -192,13 +191,14 @@ sanj() {
     fi
 }
 
-alias sgpt='~/src/shell_gpt/venv/bin/sgpt --model=gpt-4'
-alias sgptr='sgpt --repl tmp'
+alias sgpt='~/src/shell_gpt/venv/bin/sgpt'
+alias sgptr='sgpt --repl defualt'
+sgpts() { sgpt --shell <<< "$*"; }
 _sgpt_bash() {
-    if [[ -n "$READLINE_LINE" ]]; then
-        READLINE_LINE=$(sgpt --shell <<< "$READLINE_LINE")
-        READLINE_POINT=${#READLINE_LINE}
-    fi
+if [[ -n "$READLINE_LINE" ]]; then
+    READLINE_LINE=$(sgpt --shell <<< "$READLINE_LINE" --no-interaction)
+    READLINE_POINT=${#READLINE_LINE}
+fi
 }
 bind -x '"\C-g": _sgpt_bash'
 
@@ -210,7 +210,7 @@ alias mpv='mpv --volume-max=1000'
 alias mpt='mpv http://localhost:8888/'
 alias mpl='mpv -lavdopts lowres=1:fast:skiploopfilter=all'
 alias mpy='mpv -vf yadif'
-alias blu='pgrep -x pulseaudio > /dev/null || pulseaudio --start; systemctl start bluetooth.service; bluetoothctl; systemctl stop bluetooth.service'
+alias blu='systemctl start bluetooth.service; bluetoothctl; systemctl stop bluetooth.service'
 mplen(){ ffmpeg -i "$1" 2>&1 | g duration; }
 
 # General aliases and functions
