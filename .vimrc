@@ -48,16 +48,6 @@ let g:ale_linters_ignore = {'html': ['eslint']}
 nmap <expr> <C-j> &diff ? ']c' : ':ALENext<cr>'
 nmap <expr> <C-k> &diff ? '[c' : ':ALEPrevious<cr>'
 
-call asyncomplete#register_source(asyncomplete#sources#buffer#get_source_options({
-    \ 'name': 'buffer',
-    \ 'allowlist': ['*'],
-    \ 'blocklist': ['go'],
-    \ 'completor': function('asyncomplete#sources#buffer#completor'),
-    \ 'config': {
-    \    'max_buffer_size': 500000,
-    \  },
-    \ }))
-
 imap <silent><script><expr> <C-J> copilot#Accept("\<CR>")
 let g:copilot_no_tab_map = v:true
 
@@ -151,6 +141,9 @@ nnoremap <expr> <Leader>h "hebrew" == &keymap ? ':Noheb<CR>' : ':Heb<CR>'
 nnoremap <expr> <Leader>n &nu == &rnu ? ':setlocal nu!<CR>' : ':setlocal rnu!<CR>'
 nnoremap <expr> <Leader>z 0 == &scrolloff ? ':setlocal scrolloff=999<CR>' : ':setlocal scrolloff=0<CR>'
 nnoremap ?? o<Esc>:.!howdoi <c-r>=expand(&filetype)<CR><Space>
+nnoremap <C-b>c :silent !tmux new-window<CR>
+nnoremap <C-b>" :silent !tmux split-window -v<CR>
+nnoremap <C-b>% :silent !tmux split-window -h<CR>
 
 inoremap jj <ESC>
 inoremap <expr> <Tab> pumvisible() ? "\<C-n>" : "\<C-g>u\<Tab>"
