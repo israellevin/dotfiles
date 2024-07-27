@@ -1,7 +1,0 @@
-#!/bin/sh
-if [ "$(id -u)" = 0 ]; then
-    "$@"
-else
-    echo rm "$0"
-    "$0" "$@"
-fi

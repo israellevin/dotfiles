@@ -1,7 +1,6 @@
 Configuration files and some handy scripts
 
 .bashrc
-.conkerorrc
 .inputrc
 .profile
 .tmux.conf
@@ -37,4 +36,3 @@ vol         - set the alsa master volume and update root window title with statu
 w           - simple web searches for the terminal (w3m powered)
 xchroot.sh  - chroot with x auth, proc, sys, dev and dev/pts
 zebra.sh    - alternate line colors
-
