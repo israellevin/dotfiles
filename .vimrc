@@ -126,6 +126,7 @@ endif
 
 "Maps, abrvs, commands
 nnoremap Y y$
+nnoremap <expr> 0 col('.') - 1 == match(getline('.'), '\S') ? '0' : '^'
 nnoremap <Space> <PageDown>
 nnoremap <Backspace> <PageUp>
 nnoremap <CR> :nohlsearch<CR><CR>
