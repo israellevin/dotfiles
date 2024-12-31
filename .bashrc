@@ -156,7 +156,12 @@ gitformat="%s %C(dim)%C(cyan)%ah %C(green)%al %C(magenta)%h%C(auto)%d"
 alias glg="git log --graph --abbrev-commit --pretty=format:'$gitformat'"
 alias gll="glg --exclude=refs/remotes/** --all --decorate-refs=refs/heads/"
 alias gl="glg --all"
+alias gs="git status"
 gmb() { git merge-base "$(git branch --show-current)" "${1:-master}"; }
+gcur() { git branch --show-current; }
+gremtrack() { git rev-parse --abbrev-ref --symbolic-full-name @{u}; }
+gresetlocal() { git reset --hard "$(gcur)"; }
+gresetremote() { git reset --hard "$(gremtrack)"; }
 
 # Web
 alias webshare='python3 -m http.server'
