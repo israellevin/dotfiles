@@ -149,6 +149,12 @@ nnoremap <C-b>% :silent !tmux split-window -h<CR>
 inoremap jj <ESC>
 inoremap <expr> <Tab> pumvisible() ? "\<C-n>" : "\<C-g>u\<Tab>"
 inoremap <F5> <Esc>:w<CR>:! <C-r>=expand("%:p")<CR><CR>
+nnoremap <C-M-j> :move +1<CR>
+nnoremap <C-M-k> :move -2<CR>
+vnoremap <C-M-j> :move '>+1<CR>gv
+vnoremap <C-M-k> :move '<-2<CR>gv
+inoremap <C-M-j> <Esc>:move +1<CR>a
+inoremap <C-M-k> <Esc>:move -2<CR>a
 
 vnoremap <Right> >gv
 vnoremap <Left> <gv
