@@ -85,7 +85,9 @@ _fasd_bash_hook_cmd_complete j
 
 # fzf
 export FZF_DEFAULT_OPTS='-e -m --bind=ctrl-u:page-up,ctrl-d:page-down,alt-o:print-query,ctrl-o:replace-query'
+export FZF_CTRL_T_OPTS='--preview=preview.sh\ {} --height=100%'
 export FZF_TMUX=1
+[ -f ~/.fzf.colors ] && source ~/.fzf.colors
 [ -f ~/.fzf.bash ] && . ~/.fzf.bash
 
 # Completion
@@ -219,6 +221,15 @@ til(){ sleep $(( $(date -d "$*" +%s) - $(date +%s) )); }
 sume(){ [ "$EUID" -ne 0 ] && sudo -E su -p; }
 genpas(){ shuf -zern${1:-8} ':' ';' '<' '=' '>' '?' '@' '[' ']' '^' '_' '`' '{' '|' '}' '~' {0..9} {A..Z} {a..z} {a..z} {a..z}; echo; }
 from_json() { node -pe "JSON.parse(require('fs').readFileSync(0, 'utf-8'))$1"; }
+timediff(){
+    diff="$(date -d @$(( $(date -d "$3 $4" +%s) - $(date -d "$1 $2" +%s) )) -u +%Y-%j-%T)"
+    orig_ifs=$IFS
+    IFS=-
+    while read -r y d t; do
+        echo $(($y - 1970)) $(($d - 1)) $t
+    done <<< "$diff"
+    IFS=$orig_ifs
+}
 mkenv() {
     local venv_dir="${1:-./venv}"
     if ! . ./"$venv_dir"/bin/activate 2>/dev/null; then
@@ -247,7 +258,7 @@ muxjoin(){
 
 # Break a tmux window to a new terminal window
 muxbreak(){
-    TMUX='' urxvtcd -e dash -c "tmux new-session \\; move-window -ds $1 \\; swap-window -t2 \\; kill-window";
+    TMUX='' st -e sh -c "tmux new-session \\; move-window -ds $1 \\; swap-window -t2 \\; kill-window";
 }
 
 # Split current tmux session to multiple terminal windows
@@ -324,8 +335,8 @@ PS1="$RED$REVERSE\$(retcode)$RESET$RED\u@\$(hostorchrootname):$RESET"
 PS1+="$GREEN\W$RESET$YELLOW\$(gitstat)$RESET$CYAN$REVERSE\$(hasjobs)$RESET\$ "
 
 # Multiline version
-PS0="$BLUE/\D{%d %b %y - %H:%M:%S}\\$RESET\n"
-PS1="$BLUE\\\\\D{%d %b %y - %H:%M:%S}/$RESET\n"
+PS0="$BLUE/ \D{%d-%b-%y %H:%M:%S} \\$RESET\n"
+PS1="$BLUE\\\\ \D{%d-%b-%y %H:%M:%S} /$RESET\n"
 PS1+="$RED\u@\$(hostorchrootname)(\!):$RESET$GREEN\w$RESET$YELLOW\$(gitstat)$RESET\n"
 PS1+="$RED$REVERSE\$(retcode)$RESET$CYAN$REVERSE\$(hasjobs)$RESET\$ "
 

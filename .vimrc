@@ -24,7 +24,6 @@ Plug 'junegunn/gv.vim'
 Plug 'vim-utils/vim-husk'
 Plug 'michaeljsmith/vim-indent-object'
 Plug 'lfv89/vim-interestingwords'
-Plug 'nanotech/jellybeans.vim'
 Plug 'prabirshrestha/vim-lsp'
 Plug 'mattn/vim-lsp-settings'
 Plug 'andymass/vim-matchup'
@@ -45,10 +44,10 @@ let g:ale_linters = {'python': ['pycodestyle', 'flake8', 'mypy', 'pylint']}
 let g:ale_python_pycodestyle_options = '--max-line-length=120'
 let g:ale_python_pylint_options = '--max-line-length=120'
 let g:ale_linters_ignore = {'html': ['eslint']}
-nmap <expr> <C-j> &diff ? ']c' : ':ALENext<cr>'
-nmap <expr> <C-k> &diff ? '[c' : ':ALEPrevious<cr>'
+nmap <expr> <C-j> &diff ? ']c' : ':ALENext<CR>'
+nmap <expr> <C-k> &diff ? '[c' : ':ALEPrevious<CR>'
 
-imap <silent><script><expr> <C-J> copilot#Accept("\<CR>")
+imap <silent><script><expr> <C-j> copilot#Accept("\<CR>")
 let g:copilot_no_tab_map = v:true
 
 let g:lsp_diagnostics_enabled = 0
@@ -105,6 +104,7 @@ set ignorecase
 set smartcase
 set wildmenu
 set wildmode=longest:full,full
+set wildoptions=pum
 set wildignorecase
 set completeopt=longest,menuone,preview
 set omnifunc=syntaxcomplete#Complete
@@ -163,14 +163,7 @@ command! Mks wa | mksession! ~/.vim/.session
 command! Lds source ~/.vim/.session
 command! Heb setlocal rightleft | setlocal rightleftcmd | setlocal keymap=hebrew | inoremap -- ־| inoremap --- –| call matchdelete(nonansi)
 command! Noheb setlocal norightleft | setlocal rightleftcmd= | setlocal keymap= | let nonansi = matchadd('Error', '[^\d0-\d127]')
-command! Lowtag %s/<\/\?\u\+/\L&/g
 command! DiffOrig vert new | set bt=nofile | r ++edit
-
-" Enable arrows for visitors
-nnoremap <Up> gk
-nnoremap <Down> gj
-inoremap <Up> <C-o>gk
-inoremap <Down> <C-o>gj
 
 " autocommands
 filetype plugin indent on
