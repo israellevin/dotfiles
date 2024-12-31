@@ -8,7 +8,7 @@ export EDITOR=vim
 export BROWSER=w3m
 
 # Multiplex
-if type tmux > /dev/null && [ ! "$TMUX" ]; then
+if type tmux > /dev/null 2>&1 && [ ! "$TMUX" ]; then
     [ "$SSH_CONNECTION" ] && tmux -2 attach || tmux -2 new
     [ ! -e ~/dontquit ] && exit 0
 fi
@@ -132,7 +132,7 @@ alias lss="ls $LS_OPTIONS -Sr"
 alias lsl="ls $LS_OPTIONS -ASr"
 
 # grep
-type rg > /dev/null && alias g='rg --smart-case' || alias g='grep --color=auto -i'
+type rg > /dev/null 2>&1 && alias g='rg --smart-case' || alias g='grep --color=auto -i'
 lg(){ ll "${2:-.}" | g "$1"; }
 fgg(){ find "${2:-.}" | g "$1"; }
 pg(){ g "$@" <<<"$(ps -eF --forest | sort)"; }
@@ -289,8 +289,8 @@ REVERSE=$'\001'"$(tput rev)"$'\002'
 RESET=$'\001'"$(tput sgr0)"$'\002'
 
 # Easy view
-type dircolors > /dev/null && eval "`dircolors`"
-type lesspipe > /dev/null && eval "`lesspipe`"
+type dircolors > /dev/null 2>&1 && eval "`dircolors`"
+type lesspipe > /dev/null 2>&1 && eval "`lesspipe`"
 export LESS=' -MRSXF '
 export LESS_TERMCAP_us=$GREEN
 export LESS_TERMCAP_ue=$RESET
