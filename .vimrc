@@ -31,7 +31,12 @@ Plug 'junegunn/vim-peekaboo'
 Plug 'zweifisch/pipe2eval'
 Plug 'junegunn/rainbow_parentheses.vim'
 Plug 'tpope/vim-surround'
+Plug 'florentc/vim-tla'
+Plug 'puremourning/vimspector'
 Plug 'maxbrunsfeld/vim-yankstack'
+
+Plug 'w0ng/vim-hybrid'
+Plug 'sudorook/colorific.vim'
 
 " Auto install plugins on first run
 call plug#end()
@@ -170,12 +175,13 @@ command! Mks wa | mksession! ~/.vim/.session
 command! Lds source ~/.vim/.session
 command! Heb setlocal rightleft | setlocal rightleftcmd | setlocal keymap=hebrew | inoremap -- ־| inoremap --- –| call matchdelete(nonansi)
 command! Noheb setlocal norightleft | setlocal rightleftcmd= | setlocal keymap= | let nonansi = matchadd('Error', '[^\d0-\d127]')
-command! DiffOrig vert new | set bt=nofile | r ++edit
+command! UnwrittenDiff vert new | set bt=nofile | r ++edit
 
 " autocommands
 filetype plugin indent on
 augroup mine
     au!
+    au VimEnter * call Pretty(0)
 
     " Return to last position
     au BufReadPost * normal `"
@@ -205,7 +211,7 @@ augroup mine
     au BufReadPost *.rtf silent %!unrtf --text "%"
 
     " Diff view
-    au FilterWritePre * if &diff | setlocal wrap< | setlocal virtualedit=all | endif
+    au OptionSet diff call timer_start(0, 'Pretty')
 
     " Equal size windows upon resize
     au VimResized * wincmd =
@@ -223,18 +229,34 @@ silent !ctags -Ro ~/src/ctags --exclude=.git ~/src ~/bin &> /dev/null &
 set tags=~/src/ctags
 
 " Pretty
-if has("gui_running") || $DISPLAY != 'no'
-    set t_Co=256
-    setg termguicolors
-    colorscheme jellybeans
-else
-    colorscheme desert
-    setg notermguicolors
-endif
+" Accepts an argument so it can be called from a timer (in some autocommands)
+function! Pretty(_)
+    if has("gui_running") || $DISPLAY != 'no'
+        set t_Co=256
+        set termguicolors
+        set background=dark
+        colorscheme hybrid
+    else
+        colorscheme colorific
+        set notermguicolors
+    endif
 
-set encoding=utf-8
-set colorcolumn=121
-hi ExtraWhitespace ctermbg=1
-call matchadd('Error', '\s\+$\| \+\ze\t')
-let nonansi = matchadd('Error', '[^\d0-\d127]')
-syntax enable
+    if &diff
+        windo set virtualedit=all
+        windo set wrap<
+        if !exists('g:colors_name') || g:colors_name == 'hybrid'
+            colorscheme colorific
+        endif
+    else
+        set virtualedit=
+    endif
+
+    syntax enable
+    set encoding=utf-8
+    set colorcolumn=121
+    hi ExtraWhitespace ctermbg=1
+    call matchadd('Error', '\s\+$\| \+\ze\t')
+    let nonansi = matchadd('Error', '[^\d0-\d127]')
+    hi Comment guifg=orange
+    hi Conceal guibg=#1d1f21
+endfunction
