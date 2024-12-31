@@ -61,6 +61,20 @@ let g:lsp_signature_help_enabled = 0
 let g:lsp_document_code_action_signs_enabled = 0
 let g:python3_host_prog = '~/.local/share/vim-lsp-settings/servers/pylsp-all/venv/bin/python3'
 
+nmap <leader>dc <Plug>VimspectorContinue
+nmap <leader>dl <Plug>VimspectorLaunch
+nmap <leader>ds <Plug>VimspectorStop
+nmap <leader>dr <Plug>VimspectorRestart
+nmap <leader>dp <Plug>VimspectorPause
+nmap <leader>db <Plug>VimspectorToggleBreakpoint
+nmap <leader>dB <Plug>VimspectorToggleConditionalBreakpoint
+nmap <leader>dF <Plug>VimspectorAddFunctionBreakpoint
+nmap <leader>dx <Plug>VimspectorRunToCursor
+nmap <leader>do <Plug>VimspectorStepOver
+nmap <leader>di <Plug>VimspectorStepInto
+nmap <leader>dO <Plug>VimspectorStepOut
+nmap <leader>dw <Plug>VimspectorBalloonEval
+
 let g:yankstack_map_keys = 0
 call yankstack#setup()
 nmap <C-p> <Plug>yankstack_substitute_older_paste
@@ -153,7 +167,6 @@ nnoremap <C-b>% :silent !tmux split-window -h<CR>
 
 inoremap jj <ESC>
 inoremap <expr> <Tab> pumvisible() ? "\<C-n>" : "\<C-g>u\<Tab>"
-inoremap <F5> <Esc>:w<CR>:! <C-r>=expand("%:p")<CR><CR>
 nnoremap <C-M-j> :move +1<CR>
 nnoremap <C-M-k> :move -2<CR>
 vnoremap <C-M-j> :move '>+1<CR>gv
