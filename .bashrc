@@ -13,6 +13,14 @@ if type tmux > /dev/null 2>&1 && [ ! "$TMUX" ]; then
     [ ! -e ~/dontquit ] && exit 0
 fi
 
+# Steal all tmux windows into current session
+muxjoin(){
+    for win in $(tmux list-windows -aF "#{session_name}:#{window_index}"); do
+        [ $win = $(tmux display-message -p '#{session_name}:#{window_index}') ] && continue
+        tmux move-window -ds "$win"
+    done
+}
+
 # Shell options
 shopt -s autocd
 shopt -s cdspell
@@ -35,6 +43,46 @@ HISTTIMEFORMAT='%F %T '
 HISTIGNORE='&:exit'
 PROMPT_COMMAND='history -a; history -n'
 
+# General aliases and functions
+alias webshare='python3 -m http.server'
+alias x='TMUX="" startx &'
+dud(){ du -hxd1 "${1:-.}" | sort -h; }
+exp(){ curl -Gs "https://www.mankier.com/api/explain/?cols="$(tput cols) --data-urlencode "q=$*"; }
+from_json() { node -pe "JSON.parse(require('fs').readFileSync(0, 'utf-8'))$1"; }
+genpas(){ shuf -zern${1:-8} ':' ';' '<' '=' '>' '?' '@' '[' ']' '^' '_' '`' '{' '|' '}' '~' {0..9} {A..Z} {a..z} {a..z} {a..z}; echo; }
+log(){ $@ 2>&1 | tee log.txt; }
+sume(){ [ "$EUID" -ne 0 ] && sudo -E su -p; }
+til(){ sleep $(( $(date -d "$*" +%s) - $(date +%s) )); }
+connect(){
+    [ "$2" ] && wpa_supplicant -i wlan0 -c <(wpa_passphrase "$1" "$2") \
+    || while :; do iw dev wlan0 link | g not\ connected && date && iw dev wlan0 connect "$1"; sleep 10; done
+}
+mkenv() {
+    local venv_dir="${1:-./venv}"
+    if ! . ./"$venv_dir"/bin/activate 2>/dev/null; then
+        python3 -m venv "$venv_dir"
+        . ./"$venv_dir"/bin/activate
+    fi
+    if [ -f requirements.txt ]; then
+        missing_packages="$(comm -23 <(sort requirements.txt) <(pip freeze | grep -v '0.0.0' | sort))"
+        if [ "$missing_packages" ]; then
+            read -p "$missing_packages - install (y/N)? " -n 1 -r
+            echo
+            [[ $REPLY =~ ^[Yy]$ ]] && pip install -r requirements.txt
+        fi
+    fi
+    pip install -e --upgrade . 2>/dev/null
+}
+timediff(){
+    diff="$(date -d @$(( $(date -d "$3 $4" +%s) - $(date -d "$1 $2" +%s) )) -u +%Y-%j-%T)"
+    orig_ifs=$IFS
+    IFS=-
+    while read -r y d t; do
+        echo $(($y - 1970)) $(($d - 1)) $t
+    done <<< "$diff"
+    IFS=$orig_ifs
+}
+
 # Filesystem traversal
 alias b='popd'
 cd(){
@@ -49,7 +97,6 @@ cd(){
     for(( i = 0; i < $x; i++ )); do cd ..; done;
 }
 mkcd(){ mkdir -p "$*"; cd "$*"; }
-dud(){ du -hxd1 "${1:-.}" | sort -h; }
 xs(){
     [ -d "$@" ] 2>/dev/null && pushd "$@" && return
     dirs=()
@@ -71,24 +118,6 @@ xs(){
             ;;
     esac
 }
-
-fasd_cache=~/.fasd-init-bash
-if [ "$(command -v fasd)" -nt "$fasd_cache" -o ! -s "$fasd_cache" ]; then
-    fasd --init bash-hook bash-ccomp bash-ccomp-install >| "$fasd_cache"
-fi
-. "$fasd_cache"
-fasd_cd(){ [ $# -gt 1 ] && cd "$(fasd -e echo "$@")" || fasd "$@"; }
-alias j='fasd_cd -d'
-alias f='fasd -f'
-alias d='fasd -d'
-_fasd_bash_hook_cmd_complete j
-
-# fzf
-export FZF_DEFAULT_OPTS='-e -m --bind=ctrl-u:page-up,ctrl-d:page-down,alt-o:print-query,ctrl-o:replace-query'
-export FZF_CTRL_T_OPTS='--preview=preview.sh\ {} --height=100%'
-export FZF_TMUX=1
-[ -f ~/.fzf.colors ] && source ~/.fzf.colors
-[ -f ~/.fzf.bash ] && . ~/.fzf.bash
 
 # Completion
 . /etc/bash_completion
@@ -137,19 +166,24 @@ lg(){ ll "${2:-.}" | g "$1"; }
 fgg(){ find "${2:-.}" | g "$1"; }
 pg(){ g "$@" <<<"$(ps -eF --forest | sort)"; }
 
-# vim
-vj(){ vim -c'set bt=nofile| set fdm=indent| set fdl=5| set ft=json'; }
-vv(){ [ -z $1 ] && vim -c "normal '0" || vim -p *$**; } # Open last file or all filenames matching argument.
-vg(){ vim -p $(g -l "$*" *); } # Open all files containing argument.
-vd(){
-    diff -rq "$1" "$2" | sed -n 's/^Files \(.*\) and \(.*\) differ$/"\1" "\2"/p' | xargs -n2 vimdiff
-}
-vz(){
-    bind '"\C-z":" \C-u fg\C-j"'
-    trap "stty susp '^z'" DEBUG
-    PROMPT_COMMAND="$PROMPT_COMMAND; stty susp ''"
-    [ "$1" ] && vi "$@"
-}
+# fasd
+fasd_cache=~/.fasd-init-bash
+if [ "$(command -v fasd)" -nt "$fasd_cache" -o ! -s "$fasd_cache" ]; then
+    fasd --init bash-hook bash-ccomp bash-ccomp-install >| "$fasd_cache"
+fi
+. "$fasd_cache"
+fasd_cd(){ [ $# -gt 1 ] && cd "$(fasd -e echo "$@")" || fasd "$@"; }
+alias j='fasd_cd -d'
+alias f='fasd -f'
+alias d='fasd -d'
+_fasd_bash_hook_cmd_complete j
+
+# fzf
+export FZF_DEFAULT_OPTS='-e -m --bind=ctrl-u:page-up,ctrl-d:page-down,alt-o:print-query,ctrl-o:replace-query'
+export FZF_CTRL_T_OPTS='--preview=preview.sh\ {} --height=100%'
+export FZF_TMUX=1
+[ -f ~/.fzf.colors ] && source ~/.fzf.colors
+[ -f ~/.fzf.bash ] && . ~/.fzf.bash
 
 # git
 gitformat="%s %C(dim)%C(cyan)%ah %C(green)%al %C(magenta)%h%C(auto)%d"
@@ -163,18 +197,18 @@ gremtrack() { git rev-parse --abbrev-ref --symbolic-full-name @{u}; }
 gresetlocal() { git reset --hard "$(gcur)"; }
 gresetremote() { git reset --hard "$(gremtrack)"; }
 
-# Web
-alias webshare='python3 -m http.server'
-alias wclip='curl -F "sprunge=<-" http://sprunge.us | tee >(xsel -i)'
-exp(){ curl -Gs "https://www.mankier.com/api/explain/?cols="$(tput cols) --data-urlencode "q=$*"; }
-wf(){
-    echo -e "$(curl -s -d format=plaintext -d output=JSON -d appid=LAWJG2-J2GVW6WV9Q -d "input='$*'" \
-        https://api.wolframalpha.com/v2/query | grep -Po '(?<="plaintext":")[^"]*')";
+# vim
+vj(){ vim -c'set bt=nofile| set fdm=indent| set fdl=5| set ft=json'; }
+vv(){ [ -z $1 ] && vim -c "normal '0" || vim -p *$**; } # Open last file or all filenames matching argument.
+vg(){ vim -p $(g -l "$*" *); } # Open all files containing argument.
+vd(){
+    diff -rq "$1" "$2" | sed -n 's/^Files \(.*\) and \(.*\) differ$/"\1" "\2"/p' | xargs -n2 vimdiff
 }
-wff(){ while read r; do wf $r; done; }
-connect(){
-    [ "$2" ] && wpa_supplicant -i wlan0 -c <(wpa_passphrase "$1" "$2") \
-    || while :; do iw dev wlan0 link | g not\ connected && date && iw dev wlan0 connect "$1"; sleep 10; done
+vz(){
+    bind '"\C-z":" \C-u fg\C-j"'
+    trap "stty susp '^z'" DEBUG
+    PROMPT_COMMAND="$PROMPT_COMMAND; stty susp ''"
+    [ "$1" ] && vi "$@"
 }
 
 # LLM
@@ -250,67 +284,7 @@ alias d0='DISPLAY=":0.0"'
 alias d1='DISPLAY="localhost:10.0"'
 alias feh='feh -ZF'
 alias mpv='mpv --volume-max=1000'
-alias mpt='mpv http://localhost:8888/'
-alias mpl='mpv -lavdopts lowres=1:fast:skiploopfilter=all'
-alias mpy='mpv -vf yadif'
 alias blu='systemctl start bluetooth.service; bluetoothctl; systemctl stop bluetooth.service'
-mplen(){ ffmpeg -i "$1" 2>&1 | g duration; }
-
-# General aliases and functions
-log(){ $@ 2>&1 | tee log.txt; }
-til(){ sleep $(( $(date -d "$*" +%s) - $(date +%s) )); }
-sume(){ [ "$EUID" -ne 0 ] && sudo -E su -p; }
-genpas(){ shuf -zern${1:-8} ':' ';' '<' '=' '>' '?' '@' '[' ']' '^' '_' '`' '{' '|' '}' '~' {0..9} {A..Z} {a..z} {a..z} {a..z}; echo; }
-from_json() { node -pe "JSON.parse(require('fs').readFileSync(0, 'utf-8'))$1"; }
-timediff(){
-    diff="$(date -d @$(( $(date -d "$3 $4" +%s) - $(date -d "$1 $2" +%s) )) -u +%Y-%j-%T)"
-    orig_ifs=$IFS
-    IFS=-
-    while read -r y d t; do
-        echo $(($y - 1970)) $(($d - 1)) $t
-    done <<< "$diff"
-    IFS=$orig_ifs
-}
-mkenv() {
-    local venv_dir="${1:-./venv}"
-    if ! . ./"$venv_dir"/bin/activate 2>/dev/null; then
-        python3 -m venv "$venv_dir"
-        . ./"$venv_dir"/bin/activate
-    fi
-    if [ -f requirements.txt ]; then
-        missing_packages="$(comm -23 <(sort requirements.txt) <(pip freeze | grep -v '0.0.0' | sort))"
-        if [ "$missing_packages" ]; then
-            read -p "$missing_packages - install (y/N)? " -n 1 -r
-            echo
-            [[ $REPLY =~ ^[Yy]$ ]] && pip install -r requirements.txt
-        fi
-    fi
-}
-alias x='TMUX="" TTYREC="" startx &'
-alias pyx="python -m trace --ignore-dir \$(python -c 'import os, sys; print(os.pathsep.join(sys.path[1:]))') -t"
-
-# Steal all tmux windows into current session
-muxjoin(){
-    for win in $(tmux list-windows -aF "#{session_name}:#{window_index}"); do
-        [ $win = $(tmux display-message -p '#{session_name}:#{window_index}') ] && continue
-        tmux move-window -ds "$win"
-    done
-}
-
-# Break a tmux window to a new terminal window
-muxbreak(){
-    TMUX='' st -e sh -c "tmux new-session \\; move-window -ds $1 \\; swap-window -t2 \\; kill-window";
-}
-
-# Split current tmux session to multiple terminal windows
-muxsplit(){
-    for win in $(tmux list-windows -F "#{session_name}:#{window_index}"); do
-        [ $win = $(tmux display-message -p '#{session_name}:#{window_index}') ] && continue
-        muxbreak $win
-    done
-}
-
-alias muxheist='muxjoin && muxsplit'
 
 # Some escape sequences for colors.
 # Note the surrounding $'\001' and $'\002'  which tell readline the escape sequence has zero length.
@@ -332,11 +306,7 @@ export LESS_TERMCAP_us=$GREEN
 export LESS_TERMCAP_ue=$RESET
 export LESS_TERMCAP_md=$RED
 export LESS_TERMCAP_me=$RESET
-if type nvim > /dev/null 2>&1; then
-    export MANPAGER='nvim +Man!'
-else
-    export MANPAGER='vim -M +MANPAGER -c "set nonumber" -'
-fi
+export MANPAGER='vim -M +MANPAGER -c "set nonumber" -'
 alias pyg='pygmentize -gf terminal256 -O style=monokai'
 
 # Prompt
