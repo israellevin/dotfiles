@@ -187,8 +187,8 @@ cnoremap %% <C-r>=expand("%:p:h") . '/' <CR>
 command! Q q
 command! Mks wa | mksession! ~/.vim/.session
 command! Lds source ~/.vim/.session
-command! Heb setlocal rightleft | setlocal rightleftcmd | setlocal keymap=hebrew | inoremap -- ־| inoremap --- –| call matchdelete(nonansi)
-command! Noheb setlocal norightleft | setlocal rightleftcmd= | setlocal keymap= | let nonansi = matchadd('Error', '[^\d0-\d127]')
+command! Heb setlocal rightleft | setlocal rightleftcmd | setlocal keymap=hebrew | inoremap -- ־| inoremap --- –| call Pretty(0)
+command! Noheb setlocal norightleft | setlocal rightleftcmd= | setlocal keymap= | call Pretty(0)
 command! UnwrittenDiff vert new | set bt=nofile | r ++edit
 
 " autocommands
@@ -268,9 +268,14 @@ function! Pretty(_)
     syntax enable
     set encoding=utf-8
     set colorcolumn=121
-    hi ExtraWhitespace ctermbg=1
-    call matchadd('Error', '\s\+$\| \+\ze\t')
-    let nonansi = matchadd('Error', '[^\d0-\d127]')
     hi Comment guifg=orange
     hi Conceal guibg=#1d1f21
+    hi ExtraWhitespace ctermbg=1
+    hi NonAnsii ctermbg=1
+    call matchadd('ExtraWhitespace', '\s\+$\| \+\ze\t')
+    call matchadd('NonAnsii', '[^\d0-\d127]')
+    if &keymap == 'hebrew'
+        hi NonAnsii ctermbg=0
+        setlocal nospell
+    endif
 endfunction
