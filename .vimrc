@@ -60,6 +60,7 @@ let g:lsp_preview_float = 0
 let g:lsp_signature_help_enabled = 0
 let g:lsp_document_code_action_signs_enabled = 0
 let g:python3_host_prog = '~/.local/share/vim-lsp-settings/servers/pylsp-all/venv/bin/python3'
+nnoremap gd <Plug>(lsp-definition)
 
 nmap <leader>dc <Plug>VimspectorContinue
 nmap <leader>dl <Plug>VimspectorLaunch
