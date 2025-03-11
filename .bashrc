@@ -177,37 +177,73 @@ connect(){
     || while :; do iw dev wlan0 link | g not\ connected && date && iw dev wlan0 connect "$1"; sleep 10; done
 }
 
-# Open-AI
+# LLM
 export OPENAI_KEY=sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-sanj() {
-    sanjer="$HOME/src/chatGPT-shell-cli/chatgpt.sh"
-    if [ "$1" = '--' ]; then
-        shift
-    elif [ "$1" = '-' ]; then
-        shift
-        sanjer="$sanjer -m gpt-4"
-    else
-        sanjer="$sanjer -m gpt-4o"
-    fi
-    if ! [ "$1" ]; then
-        rlfe -h ~/.sanjer_history $sanjer -b "$@" || $sanjer -b "$@"
-    elif [ "$1" = 'do' ]; then
-        $sanjer -p "command: $*"
-    else
-        $sanjer -p "$*"
-    fi
+llm_cmd=~/src/llm/venv/bin/llm
+alias llm="$llm_cmd"
+generate_command() {
+    $llm_cmd -s 'Provide just the one-line bash command for a debian system with no decorations' "$*"
 }
+generate_image() {
+    local size=256x256
+    if [ "$1" = '-l' ]; then
+        shift
+        size=512x512
+    elif [ "$1" = '-x' ]; then
+        shift
+        size=1024x1024
+    fi
+    local prompt="$*"
+    img_url=$(curl https://api.openai.com/v1/images/generations -sS \
+        -H 'Content-Type: application/json' \
+        -H "Authorization: Bearer $OPENAI_API_KEY" \
+        -d '{
+            "prompt": "'"$prompt"'",
+            "n": 1,
+            "size": "'"$size"'"
+        }' | from_json .data[0].url)
+    file_name="${prompt// /_}.png"
+    curl -sS "$img_url" -o "$file_name"
+    chafa "$file_name"
+}
+sanj() {
+    local model=o3-mini
+    local chat_flags
+    if [ "$1" = - ]; then
+        shift
+        model=gpt-4o
+    elif [ "$1" = -- ]; then
+        shift
+        model=gpt-4o-mini
+    elif [ "$1" = --- ]; then
+        shift
+        model=gpt-4.5-preview
+    elif [ "$1" = do ]; then
+        shift && (xdotool type "$(generate_command "$@")" &) && return
+    elif [ "$1" = img ]; then
+        shift && generate_image "$@" && return
+    fi
 
-alias sgpt='~/src/shell_gpt/venv/bin/sgpt'
-alias sgptr='sgpt --repl defualt'
-sgpts() { sgpt --shell <<< "$*"; }
-_sgpt_bash() {
-if [[ -n "$READLINE_LINE" ]]; then
-    READLINE_LINE=$(sgpt --shell <<< "$READLINE_LINE" --no-interaction)
+    if [ "$1" = cont ]; then
+        shift
+        if [ -z "$1" ]; then
+            chat_flags=--continue
+        else
+            chat_flags="--cid $1"
+            shift
+        fi
+    else
+        chat_flags="--system '$*'"
+    fi
+    rlfe -h ~/.llm_history $llm_cmd chat -m "$model" $chat_flags
+}
+sanj_rewrite() {
+if [ -n "$READLINE_LINE" ]; then
+    READLINE_LINE="$(generate_command "$READLINE_LINE")"
     READLINE_POINT=${#READLINE_LINE}
 fi
 }
-bind -x '"\C-g": _sgpt_bash'
+bind -x '"\C-g": sanj_rewrite'
 
 # Media
 alias d0='DISPLAY=":0.0"'
