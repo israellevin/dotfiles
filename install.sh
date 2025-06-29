@@ -1,23 +1,24 @@
 #!/bin/bash
-if [ ! $UID = 0 ]; then
-    sudo -E $0
-    exit 0
+
+if [ "$1" = --apt-install ]; then
+    shift
+    apt-get --no-install-recommends --no-install-suggests install \
+        bash-completion bc bsdextrautils curl git locales mc moreutils psmisc tmux unzip vim tmux vim wget
+    echo en_US.UTF-8 UTF-8 >> /etc/locale.gen
+    locale-gen
+    LC_ALL=en_US.UTF-8
+    export LC_ALL
 fi
 
-apt-get --no-install-recommends install bash-completion git locales tmux vim
-echo en_US.UTF-8 UTF-8 >> /etc/locale.gen
-locale-gen
+pushd "$(dirname "$(realpath "$0")")" || exit 1
 
-cd
 
-[ -d dotfiles ] || git clone https://israellevin@github.com/israellevin/dotfiles
-cp dotfiles/.* .
-cp -r dotfiles/bin .
-cp -r dotfiles/.config .
+git remote show -n origin 2>/dev/null | grep -q '^ *Fetch URL:.*israellevin/dotfiles\(.git\)*$' ||
+    git clone https://israellevin@github.com/israellevin/dotfiles && cd dotfiles
 
 git clone https://github.com/clvv/fasd
-mv fasd/fasd bin/.
-rm -r fasd
+mv fasd/fasd ./bin/.
+rm -rf fasd
 
 wget git.io/trans
 chmod +x ./trans
@@ -26,6 +27,7 @@ mv ./trans ./bin/.
 cp --preserve=all ./.* ~/.
 cp -a ./bin ./.config ~/.
 
-LC_ALL=en_US.UTF-8 vim +:qa
+vim -c +:qa
+. ~/.bashrc
 
-. .bashrc
+exit
