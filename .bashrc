@@ -36,6 +36,7 @@ shopt -s no_empty_cmd_completion
 stty -ixon
 
 # History
+HISTFILE=~/.bash_history_safe
 HISTFILESIZE=
 HISTSIZE=
 HISTCONTROL=ignoreboth
@@ -46,6 +47,7 @@ PROMPT_COMMAND='history -a; history -n'
 # General aliases and functions
 alias webshare='python3 -m http.server'
 alias x='TMUX="" startx &'
+alias xclip='xclip -selection clipboard -i'
 dud(){ du -hxd1 "${1:-.}" | sort -h; }
 exp(){ curl -Gs "https://www.mankier.com/api/explain/?cols="$(tput cols) --data-urlencode "q=$*"; }
 from_json() { node -pe "JSON.parse(require('fs').readFileSync(0, 'utf-8'))$1"; }
@@ -57,11 +59,12 @@ connect(){
     [ "$2" ] && wpa_supplicant -i wlan0 -c <(wpa_passphrase "$1" "$2") \
     || while :; do iw dev wlan0 link | g not\ connected && date && iw dev wlan0 connect "$1"; sleep 10; done
 }
-mkenv() {
+venv() {
     local venv_dir="${1:-./venv}"
     if ! . ./"$venv_dir"/bin/activate 2>/dev/null; then
         python3 -m venv "$venv_dir"
         . ./"$venv_dir"/bin/activate
+        pip install --upgrade pip setuptools
     fi
     if [ -f requirements.txt ]; then
         missing_packages="$(comm -23 <(sort requirements.txt) <(pip freeze | grep -v '0.0.0' | sort))"
@@ -71,7 +74,7 @@ mkenv() {
             [[ $REPLY =~ ^[Yy]$ ]] && pip install -r requirements.txt
         fi
     fi
-    pip install -e --upgrade . 2>/dev/null
+    [ -f pyproject.toml ] && pip install -e --upgrade . || true
 }
 timediff(){
     diff="$(date -d @$(( $(date -d "$3 $4" +%s) - $(date -d "$1 $2" +%s) )) -u +%Y-%j-%T)"
@@ -216,7 +219,7 @@ export OPENAI_KEY=sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 llm_cmd=~/src/llm/venv/bin/llm
 alias llm="$llm_cmd"
 generate_command() {
-    $llm_cmd -s 'Provide just the one-line bash command for a debian system with no decorations' "$*"
+    $llm_cmd --system 'Provide just the one-line bash command for a debian system with no decorations' "$*"
 }
 generate_image() {
     local size=256x256
@@ -241,35 +244,34 @@ generate_image() {
     chafa "$file_name"
 }
 sanj() {
-    local model=o3-mini
-    local chat_flags
-    if [ "$1" = - ]; then
-        shift
-        model=gpt-4o
-    elif [ "$1" = -- ]; then
-        shift
-        model=gpt-4o-mini
-    elif [ "$1" = --- ]; then
-        shift
-        model=gpt-4.5-preview
-    elif [ "$1" = do ]; then
+    if [ "$1" = do ]; then
         shift && (xdotool type "$(generate_command "$@")" &) && return
     elif [ "$1" = img ]; then
         shift && generate_image "$@" && return
     fi
 
-    if [ "$1" = cont ]; then
+    local chat_flags=(--model o3-mini)
+    if [ "$1" = - ]; then
+        chat_flags=(--model gpt-4o-mini)
         shift
-        if [ -z "$1" ]; then
-            chat_flags=--continue
-        else
-            chat_flags="--cid $1"
-            shift
-        fi
-    else
-        chat_flags="--system '$*'"
+    elif [ "$1" = -- ]; then
+        chat_flags=(--model gpt-4o)
+        shift
+    elif [ "$1" = --- ]; then
+        chat_flags=(--model gpt-4.5-preview)
+        shift
     fi
-    rlfe -h ~/.llm_history $llm_cmd chat -m "$model" $chat_flags
+
+    if [ "$1" = cont ]; then
+        chat_flags+=(--continue)
+    else
+        while [ -f "$1" ]; do
+            chat_flags+=(--fragment "$1")
+            shift
+        done
+        [ "$1" ] && chat_flags+=(--system "$*")
+    fi
+    rlfe -h ~/.llm_history $llm_cmd chat "${chat_flags[@]}"
 }
 sanj_rewrite() {
 if [ -n "$READLINE_LINE" ]; then
@@ -308,7 +310,7 @@ export LESS_TERMCAP_us=$GREEN
 export LESS_TERMCAP_ue=$RESET
 export LESS_TERMCAP_md=$RED
 export LESS_TERMCAP_me=$RESET
-export MANPAGER='vim -M +MANPAGER -c "set nonumber" -'
+export MANPAGER='vim +MANPAGER --not-a-term -c "nmap <buffer><nowait> q :q<CR>" -'
 alias pyg='pygmentize -gf terminal256 -O style=monokai'
 
 # Prompt
