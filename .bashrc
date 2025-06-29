@@ -277,7 +277,9 @@ if [ -n "$READLINE_LINE" ]; then
     READLINE_POINT=${#READLINE_LINE}
 fi
 }
-bind -x '"\C-g": sanj_rewrite'
+if set -o | grep -q 'emacs'; then
+    bind -x '"\C-g": sanj_rewrite'
+fi
 
 # Media
 alias d0='DISPLAY=":0.0"'

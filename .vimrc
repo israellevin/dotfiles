@@ -4,15 +4,14 @@ if !filereadable(expand("~/.vim/autoload/plug.vim"))
     let firstrun=1
     silent !mkdir -p ~/.vim/{autoload,undo,backups}
     silent !curl https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim > ~/.vim/autoload/plug.vim
+    silent !python3 -m venv ~/.vim/venv
+    silent !~/.vim/venv/bin/python -m pip install pylsp
 endif
 
 "Plugins
 call plug#begin('~/.vim/plugged')
 Plug 'dense-analysis/ale'
 Plug 'PeterRincker/vim-argumentative'
-Plug 'prabirshrestha/asyncomplete.vim'
-Plug 'prabirshrestha/asyncomplete-buffer.vim'
-Plug 'prabirshrestha/asyncomplete-lsp.vim'
 Plug 'github/copilot.vim'
 Plug 'will133/vim-dirdiff'
 Plug 'mattn/emmet-vim', { 'for': 'html' }
@@ -21,11 +20,10 @@ Plug 'tpope/vim-fugitive'
 Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': 'yes \| ./install' }
 Plug 'junegunn/fzf.vim'
 Plug 'junegunn/gv.vim'
+Plug 'yegappan/lsp'
 Plug 'vim-utils/vim-husk'
 Plug 'michaeljsmith/vim-indent-object'
 Plug 'lfv89/vim-interestingwords'
-Plug 'prabirshrestha/vim-lsp'
-Plug 'mattn/vim-lsp-settings'
 Plug 'andymass/vim-matchup'
 Plug 'junegunn/vim-peekaboo'
 Plug 'zweifisch/pipe2eval'
@@ -45,36 +43,86 @@ if 1 == firstrun
 endif
 
 " Plugin configurations
-let g:ale_linters = {'python': ['pycodestyle', 'flake8', 'mypy', 'pylint']}
+
+let g:ale_linters = {'python': ['ruff']}
 let g:ale_python_pycodestyle_options = '--max-line-length=120'
 let g:ale_python_pylint_options = '--max-line-length=120'
 let g:ale_linters_ignore = {'html': ['eslint']}
-nmap <expr> <C-j> &diff ? ']c' : ':ALENext<CR>'
-nmap <expr> <C-k> &diff ? '[c' : ':ALEPrevious<CR>'
 
-imap <silent><script><expr> <C-j> copilot#Accept("\<CR>")
-let g:copilot_no_tab_map = v:true
+let lspOpts = #{
+\    aleSupport: v:true,
+\    autoComplete: v:true,
+\    autoHighlightDiags: v:true,
+\    completionMatcher: 'fuzzy',
+\    filterCompletionDuplicates: v:true,
+\    noNewlineInCompletion: v:true,
+\    omniComplete: v:true,
+\    usePopupInCodeAction: v:true,
+\    useBufferCompletion: v:true,
+\}
 
-let g:lsp_diagnostics_enabled = 0
-let g:lsp_preview_float = 0
-let g:lsp_signature_help_enabled = 0
-let g:lsp_document_code_action_signs_enabled = 0
-let g:python3_host_prog = '~/.local/share/vim-lsp-settings/servers/pylsp-all/venv/bin/python3'
-nnoremap gd <Plug>(lsp-definition)
+autocmd User LspSetup call LspOptionsSet(lspOpts)
+let lspServers = [#{
+\    name: 'pylsp',
+\    filetype: 'python',
+\    path: '~/.vim/venv/bin/pylsp',
+\    args: [],
+\    initializationOptions: {
+\        'pylsp': {
+\           'plugins': {
+\               'pycodestyle': {
+\                   'maxLineLength': 120,
+\               },
+\           },
+\        },
+\    },
+\ }, #{
+\    name: 'rust',
+\    filetype: 'rust',
+\    path: '~/.vim/rust-analyzer/rust-analyzer',
+\    args: [],
+\    initializationOptions: {
+\        'pylsp': {
+\           'plugins': {
+\               'pycodestyle': {
+\                   'maxLineLength': 120,
+\               },
+\           },
+\        },
+\    },
+\ }, #{
+\    name: 'typescriptlang',
+\    filetype: ['javascript', 'typescript'],
+\    path: '~/.vim/node_modules/.bin/typescript-language-server',
+\    args: ['--stdio']
+\ }]
 
-nmap <leader>dc <Plug>VimspectorContinue
-nmap <leader>dl <Plug>VimspectorLaunch
-nmap <leader>ds <Plug>VimspectorStop
-nmap <leader>dr <Plug>VimspectorRestart
-nmap <leader>dp <Plug>VimspectorPause
+if !executable(lspServers[0].path)
+    let lspServers = []
+endif
+
+autocmd User LspSetup call LspAddServer(lspServers)
+set keywordprg=:LspHover
+setlocal tagfunc=lsp#lsp#TagFunc
+nnoremap <expr> <C-j> pumvisible() ? "\<C-e>" : (&diff ? ']c' : ':LspDiagNext<CR>')
+nnoremap <expr> <C-k> pumvisible() ? "\<C-y>" : (&diff ? '[c' : ':LspDiagPrev<CR>')
+nnoremap gd :LspGotoDefinition<CR>
+nnoremap gD :LspGotoImpl<CR>
+
 nmap <leader>db <Plug>VimspectorToggleBreakpoint
 nmap <leader>dB <Plug>VimspectorToggleConditionalBreakpoint
+nmap <leader>dc <Plug>VimspectorContinue
+nmap <leader>de <Plug>VimspectorBalloonEval
 nmap <leader>dF <Plug>VimspectorAddFunctionBreakpoint
-nmap <leader>dx <Plug>VimspectorRunToCursor
-nmap <leader>do <Plug>VimspectorStepOver
 nmap <leader>di <Plug>VimspectorStepInto
+nmap <leader>dl <Plug>VimspectorLaunch
 nmap <leader>dO <Plug>VimspectorStepOut
-nmap <leader>dw <Plug>VimspectorBalloonEval
+nmap <leader>do <Plug>VimspectorStepOver
+nmap <leader>dp <Plug>VimspectorPause
+nmap <leader>dr <Plug>VimspectorRestart
+nmap <leader>ds <Plug>VimspectorStop
+nmap <leader>dw <Plug>VimspectorWatch
+nmap <leader>dx <Plug>VimspectorRunToCursor
 
 let g:yankstack_map_keys = 0
 call yankstack#setup()
@@ -139,9 +187,9 @@ set shortmess=aoTW
 set laststatus=1
 set list listchars=tab:»\ ,trail:•,extends:↜,precedes:↜,nbsp:°
 
-" Use ag if available
-if executable('ag')
-    set grepprg=ag\ --vimgrep
+" Use rg if available
+if executable('rg')
+    set grepprg=rg\ --vimgrep
 endif
 
 "Maps, abrvs, commands

@@ -20,7 +20,11 @@ mv fasd/fasd bin/.
 rm -r fasd
 
 wget git.io/trans
-mv trans bin/.
+chmod +x ./trans
+mv ./trans ./bin/.
+
+cp --preserve=all ./.* ~/.
+cp -a ./bin ./.config ~/.
 
 LC_ALL=en_US.UTF-8 vim +:qa
 
