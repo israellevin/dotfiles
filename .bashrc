@@ -124,8 +124,7 @@ xs(){
 
 # Completion
 . /etc/bash_completion
-complete -W "$(grep -aPo '(?<=^ssh ).*$' ~/.bash_history | sort -u | sed 's/\(.*\)/"\1"/'
-)" ssh
+complete -W "$(grep -aPo '(?<=^ssh ).*$' ~/.bash_history_safe 2>/dev/null | sort -u | sed 's/\(.*\)/"\1"/')" ssh
 
 _w(){
     COMPREPLY=($(grep -h "^${COMP_WORDS[COMP_CWORD]}" /usr/share/dict/[ab]*))
@@ -279,9 +278,7 @@ if [ -n "$READLINE_LINE" ]; then
     READLINE_POINT=${#READLINE_LINE}
 fi
 }
-if set -o | grep -q 'emacs'; then
-    bind -x '"\C-g": sanj_rewrite'
-fi
+bind -x '"\C-g": sanj_rewrite'
 
 # Media
 alias d0='DISPLAY=":0.0"'

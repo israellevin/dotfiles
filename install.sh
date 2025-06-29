@@ -6,8 +6,6 @@ if [ "$1" = --apt-install ]; then
         bash-completion bc bsdextrautils curl git locales mc moreutils psmisc tmux unzip vim tmux vim wget
     echo en_US.UTF-8 UTF-8 >> /etc/locale.gen
     locale-gen
-    LC_ALL=en_US.UTF-8
-    export LC_ALL
 fi
 
 pushd "$(dirname "$(realpath "$0")")" || exit 1
@@ -27,7 +25,7 @@ mv ./trans ./bin/.
 cp --preserve=all ./.* ~/.
 cp -a ./bin ./.config ~/.
 
-vim -c +:qa
-. ~/.bashrc
+LC_ALL=en_US.UTF-8 vim +:qa
+[ -t 0 ] && . ~/.bashrc
 
 exit

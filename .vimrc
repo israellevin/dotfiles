@@ -4,8 +4,6 @@ if !filereadable(expand("~/.vim/autoload/plug.vim"))
     let firstrun=1
     silent !mkdir -p ~/.vim/{autoload,undo,backups}
     silent !curl https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim > ~/.vim/autoload/plug.vim
-    silent !python3 -m venv ~/.vim/venv
-    silent !~/.vim/venv/bin/python -m pip install pylsp
 endif
 
 "Plugins
