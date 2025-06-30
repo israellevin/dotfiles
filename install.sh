@@ -9,10 +9,10 @@ if [ "$1" = --apt-install ]; then
 fi
 
 pushd "$(dirname "$(realpath "$0")")" || exit 1
-
-
-git remote show -n origin 2>/dev/null | grep -q '^ *Fetch URL:.*israellevin/dotfiles\(.git\)*$' ||
-    git clone https://israellevin@github.com/israellevin/dotfiles && cd dotfiles
+if git remote show -n origin 2>/dev/null | grep -q '^ *Fetch URL:.*israellevin/dotfiles\(.git\)*$'; then
+    git clone https://israellevin@github.com/israellevin/dotfiles
+    cd dotfiles
+fi
 
 git clone https://github.com/clvv/fasd
 mv fasd/fasd ./bin/.
