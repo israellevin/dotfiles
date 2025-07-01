@@ -4,7 +4,7 @@ if [ "$1" = --apt-install ]; then
     shift
     apt-get --no-install-recommends --no-install-suggests install \
         bash-completion bc bsdextrautils curl git locales mc moreutils psmisc tmux unzip vim tmux vim wget
-    echo en_US.UTF-8 UTF-8 >> /etc/locale.gen
+    echo en_US.UTF-8 UTF-8 > /etc/locale.gen
     locale-gen
 fi
 
