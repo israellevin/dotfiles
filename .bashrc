@@ -249,28 +249,37 @@ sanj() {
         shift && generate_image "$@" && return
     fi
 
-    local chat_flags=(--model o3-mini)
+    local llm_flags=(--model o3-mini)
     if [ "$1" = - ]; then
-        chat_flags=(--model gpt-4o-mini)
+        llm_flags=(--model gpt-4o-mini)
         shift
     elif [ "$1" = -- ]; then
-        chat_flags=(--model gpt-4o)
+        llm_flags=(--model gpt-4o)
         shift
     elif [ "$1" = --- ]; then
-        chat_flags=(--model gpt-4.5-preview)
+        llm_flags=(--model gpt-4.5-preview)
         shift
     fi
 
-    if [ "$1" = cont ]; then
-        chat_flags+=(--continue)
+    if [ "$1" = dump ]; then
+        shift
     else
-        while [ -f "$1" ]; do
-            chat_flags+=(--fragment "$1")
+        action=chat
+        if [ "$1" = cont ]; then
+            llm_flags+=(--continue)
             shift
-        done
-        [ "$1" ] && chat_flags+=(--system "$*")
+        fi
     fi
-    rlfe -h ~/.llm_history $llm_cmd chat "${chat_flags[@]}"
+
+    while [ -f "$1" ]; do
+        llm_flags+=(--fragment "$1")
+        shift
+    done
+    if [ "$action" = chat ]; then
+        rlfe -h ~/.llm_history $llm_cmd chat "${llm_flags[@]}" --system "$*"
+    else
+        $llm_cmd "${llm_flags[@]}" "'$*'"
+    fi
 }
 sanj_rewrite() {
 if [ -n "$READLINE_LINE" ]; then
