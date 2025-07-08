@@ -1,31 +1,29 @@
 #!/bin/bash
 if [ "$1" ]; then
-    # Isolate dash (browse marker)
+    # Isolate trailing dash (browse marker).
     a=$*
     q=${a%-}
     browse=${a#$q}
-    # Isolate ' h' (rtl marker)
+    # Isolate trailing ' h' (rtl marker).
     a=$q
     q=${q% h}
     rtl=${a#$q}
-    # Isolate first arg (engine)
+    # Isolate first arg (engine).
     engine=$1
     shift
     q=${q#$engine }
-    # Escape spaces for URL
+    # Escape spaces for everythin else.
     q=${q// /+}
 
-    req="http://"
+    req="https://"
     case "$engine" in
         s) req="${req}duckduckgo.com/?q=$q";;
-        g) req="${req}google.com/search?q=$q";;
-        l) req="${req}google.com/search?q=$q&btnI=";;
-        w) req="${req}en.wikipedia.org/w/index.php?title=Special:Search&search=$q&go=Go";;
-        d) req="${req}dictionary.reference.com/browse/$q";;
+        l) req="${req}duckduckgo.com/?q=$q !";;
+        g) req="${req}duckduckgo.com/?q=$q !g";;
+        w) req="${req}duckduckgo.com/?q=$q !w";;
+        d) req="${req}en.wiktionary.org/wiki/$q";;
         t) req="${req}thesaurus.com/browse/$q";;
-        dd) req="${req}machaut.uchicago.edu/?resource=Webster%27s&word=$q&use1913=on&use1828=on";;
-        m) req="${req}morfix.co.il/$q";;
-        h) req="${req}morfix.co.il/$q"; rtl=yes;;
+        h) req="${req}he.wiktionary.org/wiki/$q"; rtl=yes;;
         *) $0 l $engine $@; exit 0;;
     esac
 
@@ -33,9 +31,9 @@ if [ "$1" ]; then
         w3m -no-cookie "$req"
     else
         if [ "$rtl" ]; then
-            w3m -no-cookie -dump "$req" | rev | more
+            w3m -no-cookie -dump "$req" | rev | less
         else
-            w3m -no-cookie -dump "$req" | more
+            w3m -no-cookie -dump "$req" | less
         fi
     fi
 else
