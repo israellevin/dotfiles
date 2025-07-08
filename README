@@ -12,7 +12,7 @@ Configuration files and some handy scripts
 
 bash-define   - bash front end to dict.org, with completion (not mine, source unknown)
 blight.sh     - set and toggle backlight brightness
-browse        - run my current browser of choice (vieb) and focus it
+brows         - run my current browser of choice (vieb) and focus it
 chrootcrypt   - chroot into an encrypted partition
 cmx           - menu to launch comix
 flame         - flame graph generator, requires perf
