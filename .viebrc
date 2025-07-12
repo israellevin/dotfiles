@@ -1,0 +1,28 @@
+" Options
+set adblocker=update
+set devtoolsposition=split
+set guiscrollbar=onmove
+set pdfbehavior=view
+set quitonlasttabclose
+set redirects+=https://www\.google\.com/url\?q=(.*)~$1
+set searchwords={}
+set searchwords+=w~en.wikipedia.org/wiki/Special:Search/%s
+set searchwords+=d~en.wiktionary.org/wiki/Special:Search?search=%s
+set searchwords+=g~encrypted.google.com/search?q=%s
+set searchwords+=l~google.com/search?q=%s&btnI
+set searchwords+=yt~youtube.com/results?search_query=%s,imdb~imdb.com/find?q=%s
+set tabclosefocus=previous
+set vimcommand="st -e vim"
+
+colorscheme mine
+
+" Mappings
+nmap <Space> <scrollPageDown>
+nmap <C-/> <:runjsinpage ~/src/Vieb/search.js>
+cmap <C-a> <Home>
+cmap <C-e> <End>
+smap <C-a> <Home>
+smap <C-e> <End>
+
+" Commands
+:command mpv <:!mpv "<useCurrentUrl>">
