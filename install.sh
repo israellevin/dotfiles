@@ -25,6 +25,17 @@ mv ./trans ./bin/.
 cp --preserve=all ./.* ~/.
 cp -a ./bin ./.config ~/.
 
+python3 -m venv ~/bin/python
+. ~/bin/python/bin/activate
+pip install --upgrade pip setuptools
+pip install pygments python-lsp-server shell-gpt
+
+npm --prefix ~/bin install npm@latest typescript-language-server webtorrent-cli
+rm ~/bin/package.json ~/bin/package-lock.json
+
+git clone https://github.com/Jelmerro/Vieb ~/src/vieb
+npm --prefix ~/src/vieb install
+
 LC_ALL=en_US.UTF-8 vim +:qa
 [ -t 0 ] && . ~/.bashrc
 

@@ -1,9 +1,11 @@
 Configuration files and some handy scripts
 
 .bashrc
+.gitconfig
 .inputrc
 .profile
 .tmux.conf
+.viebrc
 .vimrc
 .Xdefaults
 .xinitrc
