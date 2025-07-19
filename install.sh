@@ -22,7 +22,7 @@ wget git.io/trans
 chmod +x ./trans
 mv ./trans ./bin/.
 
-cp --preserve=all ./.* ~/.
+find . -maxdepth 1 -type f -name '.*' -exec cp -at ~ {} +
 cp -a ./bin ./.config ~/.
 
 python3 -m venv ~/bin/python
