@@ -3,13 +3,13 @@
 if [ "$1" = --apt-install ]; then
     shift
     apt-get --no-install-recommends --no-install-suggests install \
-        bash-completion bc bsdextrautils curl git locales mc moreutils psmisc tmux unzip vim tmux vim wget
+        bash-completion bc bsdextrautils curl git locales mc moreutils npm psmisc python3-venv tmux unzip vim tmux vim wget
     echo en_US.UTF-8 UTF-8 > /etc/locale.gen
     locale-gen
 fi
 
 pushd "$(dirname "$(realpath "$0")")" || exit 1
-if git remote show -n origin 2>/dev/null | grep -q '^ *Fetch URL:.*israellevin/dotfiles\(.git\)*$'; then
+if ! git remote show -n origin 2>/dev/null | grep -q '^ *Fetch URL:.*israellevin/dotfiles\(.git\)*$'; then
     git clone https://israellevin@github.com/israellevin/dotfiles
     cd dotfiles
 fi
