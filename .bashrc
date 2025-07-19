@@ -9,8 +9,7 @@ export BROWSER=w3m
 
 # Multiplex
 if type tmux > /dev/null 2>&1 && [ ! "$TMUX" ]; then
-    [ "$SSH_CONNECTION" ] && tmux -2 attach || tmux -2 new
-    [ ! -e ~/dontquit ] && exit 0
+    tmux -2 attach || tmux -2 new && [ ! -e ~/dontquit ] && exit 0
 fi
 
 # Steal all tmux windows into current session
