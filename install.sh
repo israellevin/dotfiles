@@ -1,14 +1,23 @@
-#!/bin/bash
+#!/bin/sh
 
-if [ "$1" = --apt-install ]; then
-    shift
-    apt-get --no-install-recommends --no-install-suggests install \
-        bash-completion bc bsdextrautils curl git locales mc moreutils npm psmisc python3-venv tmux unzip vim tmux vim wget
+if [ "$EUID" = 0 ]; then
+    cat > ./etc/apt/apt.conf <<EOF
+APT::Install-Recommends "0";
+APT::Install-Suggests "0";
+EOF
+    DEBIAN_FRONTEND=noninteractive apt -y install \
+        bash bash-completion chafa console-setup git git-delta locales mc tmux vim \
+        cpio gzip tar unrar unzip zstd \
+        bc bsdextrautils bsdutils mawk moreutils pciutils psmisc pv sed ripgrep usbutils \
+        ca-certificates dhcpcd5 iproute2 netbase \
+        aria2 curl iputils-ping openssh-server w3m wget \
+        firmware-iwlwifi iw wpasupplicant \
+        docker.io docker-cli nodejs npm python3-pip python3-venv
     echo en_US.UTF-8 UTF-8 > /etc/locale.gen
     locale-gen
 fi
 
-pushd "$(dirname "$(realpath "$0")")" || exit 1
+cd "$(dirname "$(realpath "$0")")" || exit 1
 if ! git remote show -n origin 2>/dev/null | grep -q '^ *Fetch URL:.*israellevin/dotfiles\(.git\)*$'; then
     git clone https://israellevin@github.com/israellevin/dotfiles
     cd dotfiles
@@ -37,6 +46,6 @@ git clone https://github.com/Jelmerro/Vieb ~/src/vieb
 npm --prefix ~/src/vieb install
 
 LC_ALL=en_US.UTF-8 vim +:qa
-[ -t 0 ] && . ~/.bashrc
+[ "$1" = --non-interactive ] || . ~/.bashrc
 
 exit
