@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 if [ "$EUID" = 0 ]; then
     cat > ./etc/apt/apt.conf <<EOF
@@ -6,7 +6,7 @@ APT::Install-Recommends "0";
 APT::Install-Suggests "0";
 EOF
     DEBIAN_FRONTEND=noninteractive apt -y install \
-        bash bash-completion chafa console-setup git git-delta locales mc tmux vim \
+        bash bash-completion chafa console-setup git git-delta less locales man mc tmux vim \
         cpio gzip tar unrar unzip zstd \
         bc bsdextrautils bsdutils mawk moreutils pciutils psmisc pv sed ripgrep usbutils \
         ca-certificates dhcpcd5 iproute2 netbase \
