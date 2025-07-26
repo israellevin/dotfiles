@@ -303,12 +303,15 @@ alias blu='systemctl start bluetooth.service; bluetoothctl; systemctl stop bluet
 # Some escape sequences for colors.
 # Note the surrounding $'\001' and $'\002'  which tell readline the escape sequence has zero length.
 # Bash documentation recommends using escaped square brackets, but these fail on command substitution.
-RED=$'\001'"$(tput setaf 1)"$'\002'
-GREEN=$'\001'"$(tput setaf 2)"$'\002'
-YELLOW=$'\001'"$(tput setaf 3)"$'\002'
-BLUE=$'\001'"$(tput setaf 4)"$'\002'
-MAGENTA=$'\001'"$(tput setaf 5)"$'\002'
-CYAN=$'\001'"$(tput setaf 6)"$'\002'
+rgb_color() {
+    printf "\001\033[38;2;%d;%d;%dm\002" "$1" "$2" "$3"
+}
+RED="$(rgb_color 178 148 187)"
+GREEN="$(rgb_color 71 180 19)"
+YELLOW="$(rgb_color 255 175 0)"
+BLUE="$(rgb_color 39 59 150)"
+MAGENTA="$(rgb_color 204 102 153)"
+CYAN="$(rgb_color 102 204 204)"
 REVERSE=$'\001'"$(tput rev)"$'\002'
 RESET=$'\001'"$(tput sgr0)"$'\002'
 
