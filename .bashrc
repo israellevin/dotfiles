@@ -9,7 +9,12 @@ export BROWSER=w3m
 
 # Multiplex
 if type tmux > /dev/null 2>&1 && [ ! "$TMUX" ]; then
-    tmux -2 attach || tmux -2 new && [ ! -e ~/dontquit ] && exit 0
+    unattached_sessions=("$(tmux list-sessions | grep -v '(attached)')")
+    if [ ${#unattached_sessions[0]} -gt 0 ]; then
+        zebra.sh <<<"${unattached_sessions[*]}"
+        read -n1 -p'Choose session to attach ' session
+    fi
+    tmux attach -t"$session" || tmux -TRGB new && [ ! -e ~/dontquit ] && exit 0
 fi
 
 # Steal all tmux windows into current session
