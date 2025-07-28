@@ -39,11 +39,15 @@ python3 -m venv ~/bin/python
 pip install --upgrade pip setuptools
 pip install pygments python-lsp-server shell-gpt
 
-npm --prefix ~/bin install npm@latest typescript-language-server webtorrent-cli
+[ -d ~/bin/n ] || \
+    curl https://raw.githubusercontent.com/mklement0/n-install/stable/bin/n-install | N_PREFIX=~/bin/n bash -s -- -y
+export PATH="$HOME/bin/n/bin:$PATH"
+npm --prefix ~/bin install \
+    npm@latest \
+    https://github.com/Jelmerro/Vieb \
+    webtorrent-cli \
+    typescript-language-server
 rm ~/bin/package.json ~/bin/package-lock.json
-
-git clone https://github.com/Jelmerro/Vieb ~/src/vieb
-npm --prefix ~/src/vieb install
 
 LC_ALL=en_US.UTF-8 vim +:qa
 [ "$1" = --non-interactive ] || . ~/.bashrc
