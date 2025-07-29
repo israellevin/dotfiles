@@ -3,7 +3,7 @@ set adblocker=update
 set devtoolsposition=split
 set guiscrollbar=onmove
 set pdfbehavior=view
-set quitonlasttabclose
+set noquitonlasttabclose
 set redirects+=https://www\.google\.com/url\?q=(.*)~$1
 set searchwords={}
 set searchwords+=w~en.wikipedia.org/wiki/Special:Search/%s

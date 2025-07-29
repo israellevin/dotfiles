@@ -1,18 +1,18 @@
 #!/bin/sh
-cachedir=${XDG_CACHE_HOME:-"$HOME/.cache"}
-if [ -d "$cachedir" ]; then
-    cache="$cachedir/launch_menu_cache"
-    history="$cachedir/launch_menu_history"
-else
-    cache=$HOME/.launch_menu_cache
-    history="$HOME/.launch_menu_history"
-fi
-oldifs="$IFS"
-IFS=:
-if stest -dqr -n "$cache" $PATH; then
-    stest -flx $PATH | sort -u > "$cache"
-fi
-IFS="$oldifs"
-FZF_DEFAULT_OPTS="$FZF_DEFAULT_OPTS --history=$history"
+cache_dir=${XDG_CACHE_HOME:-"$HOME/.cache"}
+cache_file="$cache_dir/menu_run_cache"
+history_file="$cache_dir/menu_run_history"
+FZF_DEFAULT_OPTS="$FZF_DEFAULT_OPTS --history='$history_file' --no-sort"
 export FZF_DEFAULT_OPTS
-menu < "$cache" | ${SHELL:-"/bin/sh"} &
+(
+    tac "$history_file" 2>/dev/null || true
+    cat "$cache_file" 2>/dev/null || true
+    (
+        IFS=:
+        for directory in ${PATH:-""}; do
+            if [ -d "$directory" ]; then
+                find "$directory" -maxdepth 1 -type f,l -executable -exec basename {} \;
+            fi
+        done
+    ) &
+) | awk -W interactive '!commands[$0]++' | tee "$cache_file" | exec menu | /bin/sh

@@ -6,7 +6,7 @@ else
     infile="$(mktemp)"
     outfile="$(mktemp)"
     cat - > "$infile"
-    st bash -c "$@ < '$infile' > '$outfile'"
+    foot bash -c "$@ < '$infile' > '$outfile'"
     cat "$outfile"
     rm "$infile" "$outfile"
 fi
