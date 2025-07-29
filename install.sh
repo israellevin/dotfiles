@@ -39,9 +39,15 @@ python3 -m venv ~/bin/python
 pip install --upgrade pip setuptools
 pip install pygments python-lsp-server shell-gpt
 
+export CARGO_HOME=~/bin/cargo
+[ -d ~/bin/cargo ] || \
+    curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain stable --profile minimal --no-modify-path
+export PATH="$CARGO_HOME:$PATH"
+
 [ -d ~/bin/n ] || \
     curl https://raw.githubusercontent.com/mklement0/n-install/stable/bin/n-install | N_PREFIX=~/bin/n bash -s -- -y
 export PATH="$HOME/bin/n/bin:$PATH"
+
 npm --prefix ~/bin install \
     npm@latest \
     https://github.com/Jelmerro/Vieb \

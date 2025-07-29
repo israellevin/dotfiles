@@ -2,7 +2,7 @@
 [ -t 0 ] || return
 
 # Truisms
-export PATH="$HOME/bin:$HOME/bin/python/bin:$HOME/bin/node_modules/.bin:$HOME/bin/n/bin:$PATH:/sbin"
+export PATH="$HOME/bin:$HOME/bin/python/bin:$HOME/bin/cargo/bin:$HOME/bin/node_modules/.bin:$HOME/bin/n/bin:$PATH:/sbin"
 export LANG=en_US.UTF-8
 export EDITOR=vim
 export BROWSER=w3m
