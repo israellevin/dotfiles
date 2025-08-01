@@ -14,11 +14,9 @@ set searchwords+=yt~youtube.com/results?search_query=%s,imdb~imdb.com/find?q=%s
 set tabclosefocus=previous
 set vimcommand="st -e vim"
 
-colorscheme mine
-
 " Mappings
 nmap <Space> <scrollPageDown>
-nmap <C-/> <:runjsinpage ~/src/Vieb/search.js>
+"nmap <C-/> <:runjsinpage ~/src/Vieb/search.js>
 cmap <C-a> <Home>
 cmap <C-e> <End>
 smap <C-a> <Home>
