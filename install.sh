@@ -1,5 +1,11 @@
 #!/bin/bash
 
+cd "$(dirname "$(realpath "$0")")" || exit 1
+if ! git remote show -n origin 2>/dev/null | grep -q '^ *Fetch URL:.*israellevin/dotfiles\(.git\)*$'; then
+    git clone https://israellevin@github.com/israellevin/dotfiles
+    cd dotfiles
+fi
+
 if [ "$EUID" = 0 ]; then
     cat > ./etc/apt/apt.conf <<EOF
 APT::Install-Recommends "0";
@@ -12,16 +18,16 @@ EOF
         ca-certificates dhcpcd5 iproute2 netbase \
         aria2 curl iputils-ping openssh-server w3m wget \
         firmware-iwlwifi iw wpasupplicant \
-        docker.io docker-cli nodejs npm python3-pip python3-venv
+        docker.io docker-cli nodejs npm python3-pip python3-venv fonts-noto-color-emoji
     echo en_US.UTF-8 UTF-8 > /etc/locale.gen
     locale-gen
 fi
 
-cd "$(dirname "$(realpath "$0")")" || exit 1
-if ! git remote show -n origin 2>/dev/null | grep -q '^ *Fetch URL:.*israellevin/dotfiles\(.git\)*$'; then
-    git clone https://israellevin@github.com/israellevin/dotfiles
-    cd dotfiles
-fi
+mkdir -p ~/.local/share/fonts
+cd ~/.local/share/fonts
+wget https://github.com/ryanoasis/nerd-fonts/releases/download/v3.4.0/0xProto.zip
+unzip 0xProto.zip
+rm 0xProto.zip
 
 git clone https://github.com/clvv/fasd
 mv fasd/fasd ./bin/.
@@ -30,9 +36,6 @@ rm -rf fasd
 wget git.io/trans
 chmod +x ./trans
 mv ./trans ./bin/.
-
-find . -maxdepth 1 -type f -name '.*' -exec cp -at ~ {} +
-cp -a ./bin ./.config ~/.
 
 python3 -m venv ~/bin/python
 . ~/bin/python/bin/activate
@@ -54,6 +57,9 @@ npm --prefix ~/bin install \
     webtorrent-cli \
     typescript-language-server
 rm ~/bin/package.json ~/bin/package-lock.json
+
+find . -maxdepth 1 -type f -name '.*' -exec cp -at ~ {} +
+cp -a ./bin ./.config ~/.
 
 LC_ALL=en_US.UTF-8 vim +:qa
 [ "$1" = --non-interactive ] || . ~/.bashrc
