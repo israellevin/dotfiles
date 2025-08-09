@@ -1,13 +1,11 @@
-#!/bin/bash
-brightnessfile=/sys/class/backlight/intel_backlight/brightness
+#!/bin/sh
 maxfile=/sys/class/backlight/intel_backlight/max_brightness
-max=$(cat $maxfile)
-echo $(($(if [ "$1" ]; then
-    echo "$1"
-else
-    if [ $max -eq $(cat $brightnessfile) ]; then
-        echo 1
-    else
-        echo 100
-    fi
-fi) * max / 100)) > $brightnessfile
+valfile=/sys/class/backlight/intel_backlight/brightness
+maxlight=$(cat $maxfile)
+
+blight() { echo "$maxlight / 10 * $1" | bc > "$valfile"; }
+
+[ "$1" -eq "$1" ] 2>/dev/null && blight "$1" && exit 0
+
+curlight=$(cat $valfile)
+[ $(echo "10 * $curlight / $maxlight" | bc) -gt 3 ] && $0 2 || $0 5
