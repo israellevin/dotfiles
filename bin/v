@@ -2,32 +2,27 @@
 
 # If output is not a terminal, run a terminal with vim and exit.
 if [ ! -t 1 ]; then
-    TMUX='' urxvt -e tmux new-session vim "$@"
-# If input is from terminal (pipe).
+    TMUX='' foot tmux new-session vim "$@"
+# If input is from terminal (no pipe).
 elif [ -t 0 ]; then
+    # With no arguments, just open a scratch file.
     if [ 0 = $# ]; then
         vim -c "set buftype=nofile | set spell"
-    # With readable file as first arg.
+    # With readable file as first arg, open it.
     elif [ -r "$1" ]; then
         vim "$@"
+    # Otherwise open the most frecent.
     else
         fasd -e vim "$@"
     fi
-# If output is a terminal but input isn't, it's probably a pipe.
+# If input isn't a terminal, but output is, use as a pager.
 else
-    # Less than 50 lines go to more.
-    lines=()
-    while IFS='' read line && [ ${#lines[@]} -lt 50 ]; do
+    # Less than 1000 go to vim.
+    while IFS='' read line && [ ${#lines[@]} -lt 1001 ]; do
         lines+=("$line")
     done
-    [ ${#lines[@]} -lt 50 ] && printf '%s\n' "${lines[@]}" | more && exit 0
-
-    # Less than 500 go to vim.
-    while IFS='' read line && [ ${#lines[@]} -lt 500 ]; do
-        lines+=("$line")
-    done
-    [ ${#lines[@]} -lt 500 ] && printf '%s\n' "${lines[@]}" | col -bx | vim \
-        -c "set buftype=nofile" -c "map q <Esc>:qa!<CR>" -c "normal M" - && exit 0
+    [ ${#lines[@]} -lt 1000 ] && printf '%s\n' "${lines[@]}" | vim \
+        -c "set buftype=nofile" -c "map q <Esc>:qa!<CR>" - && exit 0
 
     # Bigger stuff go to less.
     (printf '%s\n' "${lines[@]}" && while read line; do echo "$line"; done) | less
