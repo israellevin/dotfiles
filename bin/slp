@@ -1,28 +1,2 @@
-#!/bin/bash
-testcon() { timeout 1 ping -c1 8.8.8.8; }
-
-if ! testcon; then
-    echo mem > /sys/power/state
-    exit
-fi
-
-pushd /sys/class/net
-for iface in *; do
-    if iwconfig "$iface" && [ up = "$(cat "$iface/operstate")" ]; then
-        essid="$(iwgetid -r $iface)"
-        connect() {
-            [ "$(iwgetid -r $iface)" ] || iwconfig $iface essid "$essid"
-        }
-    fi
-done
-popd
-
-blight.sh 10
-
+#!/bin/sh
 echo mem > /sys/power/state
-
-pm-powersave true
-
-type connect && while ! testcon; do connect; done
-
-blight.sh 70
