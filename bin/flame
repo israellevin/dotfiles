@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 if [ "$1" -eq "$1" ] 2>/dev/null; then
     pid_flag="-p $1"
@@ -17,7 +17,7 @@ perf_to_svg() {
     while kill -0 $perf_pid 2>/dev/null; do
         sleep 1
     done
-    perf script -i $perf_file | ~/src/FlameGraph/stackcollapse-perf.pl | ~/src/FlameGraph/flamegraph.pl > "$(date +%s).svg"
+    perf script -i $perf_file | ~/bin/flamegraph/stackcollapse-perf.pl | ~/bin/flamegraph/flamegraph.pl > "$(date +%s).svg"
     rm $perf_file
 }
 
