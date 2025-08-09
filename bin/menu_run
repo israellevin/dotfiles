@@ -2,17 +2,18 @@
 cache_dir=${XDG_CACHE_HOME:-"$HOME/.cache"}
 cache_file="$cache_dir/menu_run_cache"
 history_file="$cache_dir/menu_run_history"
-FZF_DEFAULT_OPTS="$FZF_DEFAULT_OPTS --history='$history_file' --no-sort"
-export FZF_DEFAULT_OPTS
-(
-    tac "$history_file" 2>/dev/null || true
+
+command_to_run="$({
     cat "$cache_file" 2>/dev/null || true
-    (
+    {
+        sleep 1
         IFS=:
         for directory in ${PATH:-""}; do
             if [ -d "$directory" ]; then
                 find "$directory" -maxdepth 1 -type f,l -executable -exec basename {} \;
             fi
-        done
-    ) &
-) | awk -W interactive '!commands[$0]++' | tee "$cache_file" | exec menu | /bin/sh
+        done | tee "$cache_file" &
+    }
+} | awk -W interactive '!commands[$0]++' | menu)"
+
+$command_to_run

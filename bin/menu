@@ -1,8 +1,13 @@
-#!/usr/bin/env sh
-FZF_DEFAULT_OPTS="$FZF_DEFAULT_OPTS --no-sort --exact"
-export FZF_DEFAULT_OPTS
-if [ "$TMUX" ]; then
-    fzf-tmux "$@"
-else
-    termit fzf "$@"
-fi
+#!/bin/sh
+[ "$TMUX" ] && exec fzf-tmux "$@"
+
+tmpdir=$(mktemp -dt menu.XXXXXX)
+trap 'rm -rf "$tmpdir"' EXIT
+
+infifo="$tmpdir/in"
+outfifo="$tmpdir/out"
+mkfifo "$infifo" "$outfifo"
+
+cat "$outfifo" &
+foot sh -c "fzf $@ < '$infifo' > '$outfifo'" &
+cat - > "$infifo"
