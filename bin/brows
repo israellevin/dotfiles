@@ -1,2 +1,2 @@
 #!/usr/bin/sh
-electron ~/bin/node_modules/vieb/app --enable-features=UseOzonePlatform --ozone-platform=wayland "$@"
+dbus-run-session electron ~/bin/node_modules/vieb/app --enable-features=UseOzonePlatform --ozone-platform=wayland "$@"
