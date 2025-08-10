@@ -3,6 +3,9 @@ cache_dir=${XDG_CACHE_HOME:-"$HOME/.cache"}
 cache_file="$cache_dir/menu_run_cache"
 history_file="$cache_dir/menu_run_history"
 
+FZF_DEFAULT_OPTS="$FZF_DEFAULT_OPTS --history='$history_file' --scheme history"
+export FZF_DEFAULT_OPTS
+
 command_to_run="$({
     cat "$cache_file" 2>/dev/null || true
     {
