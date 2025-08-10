@@ -41,7 +41,7 @@ if acpi; then
 else
     base=/sys/class/power_supply/BAT0
     capacity=$(cat $base/capacity)
-    [ $capacity -lt 09 ] && tmux set -g status-bg red || tmux set -g status-bg black
+    [ $capacity -lt 09 ] && tmux set -g status-bg red || tmux set -g status-bg '#000000'
     grep 'Discharging' $base/status && pbatt="$capacity%🔋" || pbatt="$capacity%⌁"
 fi
 
