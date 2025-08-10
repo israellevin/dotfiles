@@ -160,11 +160,9 @@ LS_OPTIONS='-lh --color=auto --quoting-style=shell'
 alias l="ls $LS_OPTIONS"
 alias ll="ls $LS_OPTIONS -A"
 alias lt="ls $LS_OPTIONS -tr"
-alias ltl="ls $LS_OPTIONS -Atr"
-alias ldd="ls $LS_OPTIONS -d */"
-alias ldl="ls $LS_OPTIONS -Ad */"
-alias lss="ls $LS_OPTIONS -Sr"
-alias lsl="ls $LS_OPTIONS -ASr"
+alias llt="ls $LS_OPTIONS -Atr"
+alias lld="ls $LS_OPTIONS -Ad */"
+alias lls="ls $LS_OPTIONS -ASr"
 
 # grep
 type rg > /dev/null 2>&1 && alias g='rg --smart-case' || alias g='grep --color=auto -i'
