@@ -1,3 +1,6 @@
 #!/bin/sh
-curl -s https://ipinfo.io | jq -r '.loc' | IFS=, read -r lat lon
+{
+    curl -s https://ipinfo.io | jq -er '.loc' || echo 31.9,34.7
+
+} | IFS=, read -r lat lon
 wlsunset -l "$lat" -L "$lon"
