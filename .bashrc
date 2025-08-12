@@ -217,7 +217,7 @@ vz(){
 
 # LLM
 export OPENAI_KEY=sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-llm_cmd=~/src/llm/venv/bin/llm
+llm_cmd=~/bin/python/bin/llm
 alias llm="$llm_cmd"
 generate_command() {
     $llm_cmd --system 'Provide just the one-line bash command for a debian system with no decorations' "$*"
