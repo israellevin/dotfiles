@@ -11,7 +11,7 @@ EOF
         bc bsdextrautils bsdutils jq linux-perf mawk moreutils pciutils psmisc pv sed ripgrep usbutils \
         ca-certificates dhcpcd5 iproute2 netbase \
         aria2 curl iputils-ping iwd openssh-server rsync sshfs w3m wget \
-        cliphist foot fonts-noto-color-emoji wl-clipboard wl-sunset wlrctl \
+        cliphist foot fonts-noto-color-emoji wl-clipboard wlsunset wlrctl \
         make python3-pip python3-venv
     echo en_US.UTF-8 UTF-8 > /etc/locale.gen
     locale-gen
