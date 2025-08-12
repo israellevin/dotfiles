@@ -7,6 +7,8 @@
     renames = true
 [merge]
     tool = vimdiff
+[rerere]
+    enabled = true
 [interactive]
     diffFilter = delta --color-only --features=interactive
 [delta]
