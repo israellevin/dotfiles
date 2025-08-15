@@ -64,7 +64,7 @@ autocmd User LspSetup call LspOptionsSet(lspOpts)
 let lspServers = [#{
 \    name: 'pylsp',
 \    filetype: 'python',
-\    path: '~/.vim/venv/bin/pylsp',
+\    path: $HOME . '/bin/python/bin/pylsp',
 \    args: [],
 \    initializationOptions: {
 \        'pylsp': {
@@ -78,7 +78,7 @@ let lspServers = [#{
 \ }, #{
 \    name: 'rust',
 \    filetype: 'rust',
-\    path: '~/.vim/rust-analyzer/rust-analyzer',
+\    path: $HOME . '/bin/cargo/bin/rust-analyzer',
 \    args: [],
 \    initializationOptions: {
 \        'pylsp': {
@@ -92,7 +92,7 @@ let lspServers = [#{
 \ }, #{
 \    name: 'typescriptlang',
 \    filetype: ['javascript', 'typescript'],
-\    path: '~/.vim/node_modules/.bin/typescript-language-server',
+\    path: $HOME . '/bin/node_modules/.bin/typescript-language-server',
 \    args: ['--stdio']
 \ }]
 
@@ -319,6 +319,9 @@ function! Pretty(_)
     hi Conceal guibg=#1d1f21
     hi ExtraWhitespace ctermbg=1
     hi NonAnsii ctermbg=1
+    hi LspPopup ctermfg=red
+    hi LspSigActiveParameter ctermfg=green
+
     call matchadd('ExtraWhitespace', '\s\+$\| \+\ze\t')
     call matchadd('NonAnsii', '[^\d0-\d127]')
     if &keymap == 'hebrew'

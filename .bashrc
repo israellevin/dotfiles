@@ -10,11 +10,14 @@ export BROWSER=w3m
 # Multiplex
 if type tmux > /dev/null 2>&1 && [ ! "$TMUX" ]; then
     unattached_sessions=("$(tmux list-sessions | grep -v '(attached)')")
-    if [ ${#unattached_sessions[0]} -gt 0 ]; then
-        zebra.sh <<<"${unattached_sessions[*]}"
-        read -n1 -p'Choose session to attach ' session
+    if [ ${#unattached_sessions[0]} -eq 0 ]; then
+        tmux -TRGB new-session
+    else
+        tmp_session=tmp$(tr -dc '0-9' < /dev/urandom | head -c4)
+        tmux new-session -ds $tmp_session "tmux choose-tree -s 'switch-client -t %%; kill-session -t $tmp_session'; exec bash"
+        tmux -TRBG attach-session -t $tmp_session
     fi
-    tmux attach -t"$session" || tmux -TRGB new && [ ! -e ~/dontquit ] && exit 0
+    [ -e ~/dontquit ] || exit 0
 fi
 
 # Steal all tmux windows into current session
@@ -184,7 +187,7 @@ _fasd_bash_hook_cmd_complete j
 
 # fzf
 export FZF_DEFAULT_OPTS='-e -m --bind=ctrl-u:page-up,ctrl-d:page-down,alt-o:print-query,ctrl-o:replace-query'
-export FZF_CTRL_T_OPTS='--preview=preview.sh\ {} --height=100%'
+export FZF_CTRL_T_OPTS='--preview=~/.fzf/bin/fzf-preview.sh\ {}'
 export FZF_TMUX=1
 [ -f ~/.fzf.colors ] && source ~/.fzf.colors
 [ -f ~/.fzf.bash ] && . ~/.fzf.bash
