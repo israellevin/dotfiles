@@ -1,2 +1,5 @@
 #!/usr/bin/sh
-dbus-run-session electron ~/bin/node_modules/vieb/app --enable-features=UseOzonePlatform --ozone-platform=wayland "$@"
+[ "$1" ] && opts="$@" || opts="vieb://help"
+dbus-run-session electron \
+    ~/bin/node_modules/vieb/app --enable-features=UseOzonePlatform --ozone-platform=wayland \
+    "$opts"
