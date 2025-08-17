@@ -53,7 +53,7 @@ PROMPT_COMMAND='history -a; history -n'
 
 # General aliases and functions
 alias webshare='python3 -m http.server'
-alias x='TMUX="" startx &'
+alias x='wl-paste --watch cliphist store & TMUX="" dwl'
 alias xclip='xclip -selection clipboard -i'
 dud(){ du -hxd1 "${1:-.}" | sort -h; }
 exp(){ curl -Gs "https://www.mankier.com/api/explain/?cols="$(tput cols) --data-urlencode "q=$*"; }
