@@ -293,11 +293,8 @@ fi
 bind -x '"\C-g": sanj_rewrite'
 
 # Media
-alias d0='DISPLAY=":0.0"'
-alias d1='DISPLAY="localhost:10.0"'
-alias feh='feh -ZF'
-alias mpv='mpv --volume-max=1000'
 alias blu='systemctl start bluetooth.service; bluetoothctl; systemctl stop bluetooth.service'
+feh() { foot sh -c "chafa $@ && sleep inf" 2>/dev/null; }
 
 # Some escape sequences for colors.
 # Note the surrounding $'\001' and $'\002'  which tell readline the escape sequence has zero length.
