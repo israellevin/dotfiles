@@ -52,10 +52,10 @@ let lspOpts = #{
 \    aleSupport: v:true,
 \    autoComplete: v:true,
 \    autoHighlightDiags: v:true,
+\    autoPopulateDiags: v:true,
 \    completionMatcher: 'fuzzy',
 \    filterCompletionDuplicates: v:true,
 \    noNewlineInCompletion: v:true,
-\    omniComplete: v:true,
 \    usePopupInCodeAction: v:true,
 \    useBufferCompletion: v:true,
 \}

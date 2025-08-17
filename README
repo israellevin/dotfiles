@@ -21,6 +21,7 @@ Unlikely to be very useful to anyone else, but who knows.
 ./bin/blight.sh     - set and toggle backlight brightness
 ./bin/brows         - run my current browser of choice (vieb, sometimes nyxt)
 ./bin/chrootcrypt   - chroot into an encrypted partition
+./bin/clip          - CLI wayland clipboard manager with wl-paste and cliphist
 ./bin/flame         - flame graph generator, requires perf (really just a helper for the wonderful https://github.com/brendangregg/FlameGraph)
 ./bin/getwin.sh     - focus a window by name (on X)
 ./bin/lid_close.sh  - handler for lid close event (for X)
@@ -33,6 +34,7 @@ Unlikely to be very useful to anyone else, but who knows.
 ./bin/v             - pipe and size aware vim launcher
 ./bin/vid           - menu to list videos (with history) and play them
 ./bin/w             - simple web searches for the terminal (w3m powered)
+./bin/x             - launch dwl the way I like it
 ./bin/xchroot.sh    - chroot with x auth, proc, sys, dev and dev/pts
 ./bin/zebra.sh      - alternate line colors
 
