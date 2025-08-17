@@ -8,7 +8,7 @@ export EDITOR=vim
 export BROWSER=w3m
 
 # Multiplex
-if type tmux > /dev/null 2>&1 && [ ! "$TMUX" ]; then
+if type tmux >/dev/null 2>&1 && [ ! "$TMUX" ]; then
     unattached_sessions=("$(tmux list-sessions | grep -v '(attached)')")
     if [ ${#unattached_sessions[0]} -eq 0 ]; then
         tmux -TRGB new-session
@@ -101,7 +101,7 @@ cd(){
 ..(){
     newdir="${PWD/\/$1\/*/}/$1"
     [ -d "$newdir" ] && cd "$newdir" && return 0
-    [ $1 -ge 0 ] 2> /dev/null && x=$1 || x=1
+    [ $1 -ge 0 ] 2>/dev/null && x=$1 || x=1
     for(( i = 0; i < $x; i++ )); do cd ..; done;
 }
 mkcd(){ mkdir -p "$*"; cd "$*"; }
@@ -166,7 +166,7 @@ alias lld="ls $LS_OPTIONS -Ad */"
 alias lls="ls $LS_OPTIONS -ASr"
 
 # grep
-type rg > /dev/null 2>&1 && alias g='rg --smart-case' || alias g='grep --color=auto -i'
+type rg >/dev/null 2>&1 && alias g='rg --smart-case' || alias g='grep --color=auto -i'
 lg(){ ll "${2:-.}" | g "$1"; }
 fgg(){ find "${2:-.}" | g "$1"; }
 pg(){ g "$@" <<<"$(ps -eF --forest | sort)"; }
@@ -312,8 +312,8 @@ REVERSE=$'\001'"$(tput rev)"$'\002'
 RESET=$'\001'"$(tput sgr0)"$'\002'
 
 # Easy view
-type dircolors > /dev/null 2>&1 && eval "`dircolors`"
-type lesspipe > /dev/null 2>&1 && eval "`lesspipe`"
+type dircolors >/dev/null 2>&1 && eval "`dircolors`"
+type lesspipe >/dev/null 2>&1 && eval "`lesspipe`"
 export LESS=' -MRSXF '
 export LESS_TERMCAP_us=$GREEN
 export LESS_TERMCAP_ue=$RESET
@@ -325,10 +325,10 @@ alias pyg='pygmentize -gf terminal256 -O style=monokai'
 # Prompt
 gitstat(){
     orig_retcode=$?
-    branch=$(git symbolic-ref HEAD 2> /dev/null) || return $orig_retcode
+    branch=$(git symbolic-ref HEAD 2>/dev/null) || return $orig_retcode
     branch=${branch:11}
-    dirty=$(git status --porcelain 2> /dev/null | grep -v '^??' | wc -l)
-    ahead=$(git log origin/$branch..HEAD 2> /dev/null | grep '^commit' | wc -l)
+    dirty=$(git status --porcelain 2>/dev/null | grep -v '^??' | wc -l)
+    ahead=$(git log origin/$branch..HEAD 2>/dev/null | grep '^commit' | wc -l)
     echo -n "($branch"
     [ 0 = "$dirty" ] || echo -n " $RED$dirty$RESET"
     [ 0 = "$ahead" ] || echo -n " $GREEN$ahead$RESET"
