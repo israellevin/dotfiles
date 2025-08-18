@@ -3,9 +3,13 @@ maxfile=/sys/class/backlight/intel_backlight/max_brightness
 valfile=/sys/class/backlight/intel_backlight/brightness
 maxlight=$(cat $maxfile)
 
-blight() { echo "$maxlight / 10 * $1" | bc > "$valfile"; }
+if [ "$1" -eq "$1" ] 2> /dev/null; then
+    decilight=$1
+else
+    curlight=$(echo "10 * $(cat $valfile) / $maxlight" | bc)
+    [ $curlight -gt 3 ]&& decilight=2 || decilight=5
+fi
 
-[ "$1" -eq "$1" ] 2>/dev/null && blight "$1" && exit 0
+newlight=$(echo "$maxlight / 10 * $decilight" | bc)
 
-curlight=$(cat $valfile)
-[ $(echo "10 * $curlight / $maxlight" | bc) -gt 3 ] && $0 2 || $0 5
+echo "$newlight" | su -c "tee '$valfile'"
