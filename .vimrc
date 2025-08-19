@@ -69,8 +69,8 @@ let lspServers = [#{
 \    initializationOptions: {
 \        'pylsp': {
 \           'plugins': {
-\               'pycodestyle': {
-\                   'maxLineLength': 120,
+\               'ruff': {
+\                   'lineLength': 120,
 \               },
 \           },
 \        },
