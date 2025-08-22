@@ -28,7 +28,7 @@ fi
 python3 -m venv ~/bin/python
 . ~/bin/python/bin/activate
 pip install --upgrade pip setuptools
-pip install pygments python-lsp-server python-lsp-ruff shell-gpt
+pip install pygments python-lsp-server python-lsp-ruff shell-gpt uv
 
 
 [ -d ~/bin/n ] || \

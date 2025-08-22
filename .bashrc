@@ -67,19 +67,19 @@ connect(){
 venv() {
     local venv_dir="${1:-./venv}"
     if ! . ./"$venv_dir"/bin/activate 2>/dev/null; then
-        python3 -m venv "$venv_dir"
+        uv venv "$venv_dir"
         . ./"$venv_dir"/bin/activate
-        pip install --upgrade pip setuptools
+        uv pip install --upgrade pip setuptools
     fi
     if [ -f requirements.txt ]; then
-        missing_packages="$(comm -23 <(sort requirements.txt) <(pip freeze | grep -v '0.0.0' | sort))"
+        missing_packages="$(comm -23 <(sort requirements.txt) <(uv pip freeze | grep -v '0.0.0' | sort))"
         if [ "$missing_packages" ]; then
             read -p "$missing_packages - install (y/N)? " -n 1 -r
             echo
-            [[ $REPLY =~ ^[Yy]$ ]] && pip install -r requirements.txt
+            [[ $REPLY =~ ^[Yy]$ ]] && uv pip install -r requirements.txt
         fi
     fi
-    [ -f pyproject.toml ] && pip install -e --upgrade . || true
+    [ -f pyproject.toml ] && uv pip install -e --upgrade . || true
 }
 timediff(){
     diff="$(date -d @$(( $(date -d "$3 $4" +%s) - $(date -d "$1 $2" +%s) )) -u +%Y-%j-%T)"
