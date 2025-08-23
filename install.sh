@@ -12,11 +12,12 @@ EOF
         ca-certificates dhcpcd5 iproute2 netbase \
         aria2 curl iputils-ping iwd openssh-server rsync sshfs w3m wget \
         cliphist foot fonts-noto-color-emoji wl-clipboard wlsunset wlrctl \
-        make python3-pip python3-venv
+        make python3-pip python3-venv \
+        cliphist foot firefox grim slurp wl-clipboard wlsunset wlrctl wmenu \
+        fonts-noto fonts-noto-color-emoji
     echo en_US.UTF-8 UTF-8 > /etc/locale.gen
     locale-gen
 fi
-
 
 cd "$(dirname "$(realpath "$0")")" || exit 1
 if ! git remote show -n origin 2>/dev/null | grep -q '^ *Fetch URL:.*israellevin/dotfiles\(.git\)*$'; then
@@ -24,55 +25,57 @@ if ! git remote show -n origin 2>/dev/null | grep -q '^ *Fetch URL:.*israellevin
     cd dotfiles
 fi
 
+find . -maxdepth 1 -type f -name '.*' -exec cp -at ~ {} +
+cp -a ./bin ./.config ~/.
 
-python3 -m venv ~/bin/python
-. ~/bin/python/bin/activate
-pip install --upgrade pip setuptools
-pip install pygments python-lsp-server python-lsp-ruff shell-gpt uv
+if ! [ -e ~/bin/python ]; then
+    python3 -m venv ~/bin/python
+    . ~/bin/python/bin/activate
+    pip install --upgrade pip setuptools
+    pip install llm pygments python-lsp-server python-lsp-ruff shell-gpt uv
+fi
 
+if ! type -p n >/dev/null 2>&1; then
+    curl https://raw.githubusercontent.com/mklement0/n-install/stable/bin/n-install | \
+        N_PREFIX=~/bin bash -s -- -y
+    export PATH="$PATH:$HOME/bin/n/bin"
+fi
 
-[ -d ~/bin/n ] || \
-    curl https://raw.githubusercontent.com/mklement0/n-install/stable/bin/n-install | N_PREFIX=~/bin/n bash -s -- -y
-export PATH="$HOME/bin/n/bin:$PATH"
+if ! [ -e ~/bin/node_modules ]; then
+    npm --prefix ~/bin install \
+        npm@latest \
+        https://github.com/Jelmerro/Vieb \
+        webtorrent-cli \
+        typescript-language-server
+    rm ~/bin/package.json ~/bin/package-lock.json
+fi
 
-npm --prefix ~/bin install \
-    npm@latest \
-    https://github.com/Jelmerro/Vieb \
-    webtorrent-cli \
-    typescript-language-server
-rm ~/bin/package.json ~/bin/package-lock.json
-
-
-export CARGO_HOME=~/bin/cargo
-[ -d ~/bin/cargo ] || \
+if ! [ -e ~/bin/cargo ]; then
+    export CARGO_HOME=~/bin/cargo
     curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain stable --profile minimal --no-modify-path
-export PATH="$CARGO_HOME:$PATH"
-
+    "$CARGO_HOME/bin/rustup" component add rust-analyzer
+fi
 
 git clone https://github.com/clvv/fasd
-mv fasd/fasd ./bin/.
+mv fasd/fasd ~/bin/.
 rm -rf fasd
 
 git clone https://github.com/brendangregg/FlameGraph
 ( cd FlameGraph && rm -rf .git demos docs test example-* )
-mv FlameGraph ./bin/flamegraph
+mv FlameGraph ~/bin/flamegraph
 
 curl -sL https://archlinux.org/packages/extra/x86_64/wiremix/download/ | \
     tar x --zstd --strip-components=2 usr/bin/wiremix
-mv ./wiremix ./bin/.
+mv ./wiremix ~/bin/.
 
 wget git.io/trans
 chmod +x ./trans
-mv ./trans ./bin/.
+mv ./trans ~/bin/.
 
 mkdir -p ~/.local/share/fonts
 wget https://github.com/ryanoasis/nerd-fonts/releases/download/v3.4.0/0xProto.zip
 unzip -ud ~/.local/share/fonts 0xProto.zip
 rm 0xProto.zip
-
-
-find . -maxdepth 1 -type f -name '.*' -exec cp -at ~ {} +
-cp -a ./bin ./.config ~/.
 
 LC_ALL=en_US.UTF-8 vim +:qa
 [ "$1" = --non-interactive ] || . ~/.bashrc
