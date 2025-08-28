@@ -1,5 +1,5 @@
 #!/bin/sh
-statusfile=~/.status.txt
+statusfile="$HOME/.status.txt"
 
 # Supress ordinary output.
 exec 4<&1
@@ -16,48 +16,34 @@ fi
 (
     if ! timeout 2 curl google.com; then
         tmux set -g status-fg '#555555'
-    elif /etc/init.d/bluetooth status && echo 'info 2C:FD:B4:4F:C5:1B' | bluetoothctl | grep 'Connected: yes'; then
+    elif systemctl status bluetooth.service; then
         tmux set -g status-fg pink
     else
         tmux set -g status-fg white
     fi
-)&
+) &
 
 # Gather status line data.
-pdate="$(date '+%H:%M %F %a')"
-if acpi; then
-    if acpi | grep Discharging; then
-        pbatt=$(acpi | grep -Po '[[:digit:]]{2}:[[:digit:]]{2}')🔋
-        if expr "$pbatt" : '00:0'; then
-            tmux set -g status-bg red
-        else
-            tmux set -g status-bg black
-        fi
-    else
-        pbatt=$(acpi | grep -Po '[[:digit:]]{1,3}%')⌁
-        tmux set -g status-bg black
-    fi
-    pbatt="$pbatt"
+line="$(date '+%H:%M %F %a')"
+
+maxtemp=$(cat /sys/class/thermal/thermal_zone*/temp | sort -nr | head -n1)
+line="$line $(( maxtemp / 1000 ))°"
+
+vol="$(wpctl get-volume @DEFAULT_AUDIO_SINK@ | cut -d' ' -f2-)"
+line="$line ${vol% \[MUTED]}"
+echo "$vol" | grep -q MUTED && line="$line🔇" || line="$line📯"
+
+battdir=/sys/class/power_supply/BAT0
+battpercent=$(cat $battdir/capacity)
+line="$line ${battpercent}%"
+grep -q Discharging $battdir/status && line="$line🔋"
+
+# Strong visual alert on low batt or high temp.
+if [ $battpercent -lt 9 ] || [ $maxtemp -gt 90000 ]; then
+    tmux set -g status-bg red
 else
-    base=/sys/class/power_supply/BAT0
-    capacity=$(cat $base/capacity)
-    [ $capacity -lt 09 ] && tmux set -g status-bg red || tmux set -g status-bg '#000000'
-    grep 'Discharging' $base/status && pbatt="$capacity%🔋" || pbatt="$capacity%⌁"
-fi
-
-if sensors; then
-    psens=$(sensors | grep -o '[[:digit:]]\{2\}\.[[:digit:]]' | sort -n | tail -1)°
-fi
-
-if amixer; then
-    line="$(amixer get Master | grep 'Front Right: Playback ')"
-    grln() { echo "$line" | grep "$@"; }
-    pvolm="$(grln -Po '[[:digit:]]{1,3}(?=%)')$(grln -q '\[off\]' && echo 🔇 || echo 🔊)"
+    tmux set -g status-bg '#000000'
 fi
 
 # Write status line to stdout and to file.
-for item in "$pdate" $pvolm $psens $pbatt; do
-    echo -n "$item "
-done | awk '{if (length($0) > 60) print substr($0, 1, 59) "…"; else{sub(/.$/, ""); print;}}' | tee "$statusfile" 1>&4
-
-exit
+printf "%s\n" "$line" | tee "$statusfile" >&4
