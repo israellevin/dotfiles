@@ -42,6 +42,7 @@ if 1 == firstrun
 endif
 
 " Plugin configurations
+let g:matchparen_disable_cursor_hl = 0
 
 let g:ale_linters = {'python': ['ruff']}
 let g:ale_python_pycodestyle_options = '--max-line-length=120'
@@ -215,12 +216,10 @@ nnoremap <C-b>% :silent !tmux split-window -h<CR>
 
 inoremap jj <ESC>
 inoremap <expr> <Tab> pumvisible() ? "\<C-n>" : "\<C-g>u\<Tab>"
-nnoremap <C-M-j> :move +1<CR>
-nnoremap <C-M-k> :move -2<CR>
-vnoremap <C-M-j> :move '>+1<CR>gv
-vnoremap <C-M-k> :move '<-2<CR>gv
-inoremap <C-M-j> <Esc>:move +1<CR>a
-inoremap <C-M-k> <Esc>:move -2<CR>a
+vnoremap <C-j> :move '>+1<CR>gv
+vnoremap <C-k> :move '<-2<CR>gv
+inoremap <C-j> <Esc>:move +1<CR>a
+inoremap <C-k> <Esc>:move -2<CR>a
 
 vnoremap <Right> >gv
 vnoremap <Left> <gv
