@@ -93,16 +93,21 @@ timediff(){
 
 # Filesystem traversal
 alias b='popd'
-cd(){
-    [ "$1" = '--' ] && shift
-    dest="${1:-$HOME}"
-    [ "$(pwd)" != "$(readlink -f "$dest")" ] && pushd "$dest";
+c(){
+    local target="${1:-$HOME}"
+    [ "$(pwd)" == "$(readlink -f "$target")" ] && return 0
+    pushd "$target"
 }
 ..(){
-    newdir="${PWD/\/$1\/*/}/$1"
-    [ -d "$newdir" ] && cd "$newdir" && return 0
-    [ $1 -ge 0 ] 2>/dev/null && x=$1 || x=1
-    for(( i = 0; i < $x; i++ )); do cd ..; done;
+    local target="${1:-1}"
+    if [ "$target" -eq "$target" ] 2>/dev/null; then
+        for(( i = 0; i < $target; i++ )); do c .. || return 1; done;
+        return 0
+    else
+        target="${PWD%%$target*}$target*"
+        c "$target" && return 0
+    fi
+    return 1
 }
 mkcd(){ mkdir -p "$*"; cd "$*"; }
 xs(){
