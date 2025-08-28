@@ -21,7 +21,7 @@ if type tmux >/dev/null 2>&1 && [ ! "$TMUX" ]; then
 fi
 
 # Steal all tmux windows into current session
-muxjoin(){
+muxjoin() {
     for win in $(tmux list-windows -aF "#{session_name}:#{window_index}"); do
         [ $win = $(tmux display-message -p '#{session_name}:#{window_index}') ] && continue
         tmux move-window -ds "$win"
@@ -53,14 +53,14 @@ PROMPT_COMMAND='history -a; history -n'
 
 # General aliases and functions
 alias webshare='python3 -m http.server'
-dud(){ du -hxd1 "${1:-.}" | sort -h; }
-exp(){ curl -Gs "https://www.mankier.com/api/explain/?cols="$(tput cols) --data-urlencode "q=$*"; }
+dud() { du -hxd1 "${1:-.}" | sort -h; }
+exp() { curl -Gs "https://www.mankier.com/api/explain/?cols="$(tput cols) --data-urlencode "q=$*"; }
 from_json() { node -pe "JSON.parse(require('fs').readFileSync(0, 'utf-8'))$1"; }
-genpas(){ shuf -zern${1:-8} ':' ';' '<' '=' '>' '?' '@' '[' ']' '^' '_' '`' '{' '|' '}' '~' {0..9} {A..Z} {a..z} {a..z} {a..z}; echo; }
-log(){ $@ 2>&1 | tee log.txt; }
-sume(){ [ "$EUID" -ne 0 ] && sudo -E su -p; }
-til(){ sleep $(( $(date -d "$*" +%s) - $(date +%s) )); }
-connect(){
+genpas() { shuf -zern${1:-8} ':' ';' '<' '=' '>' '?' '@' '[' ']' '^' '_' '`' '{' '|' '}' '~' {0..9} {A..Z} {a..z} {a..z} {a..z}; echo; }
+log() { $@ 2>&1 | tee log.txt; }
+sume() { [ "$EUID" -ne 0 ] && sudo -E su -p; }
+til() { sleep $(( $(date -d "$*" +%s) - $(date +%s) )); }
+connect() {
     [ "$2" ] && wpa_supplicant -i wlan0 -c <(wpa_passphrase "$1" "$2") \
     || while :; do iw dev wlan0 link | g not\ connected && date && iw dev wlan0 connect "$1"; sleep 10; done
 }
@@ -81,7 +81,7 @@ venv() {
     fi
     [ -f pyproject.toml ] && uv pip install -e --upgrade . || true
 }
-timediff(){
+timediff() {
     diff="$(date -d @$(( $(date -d "$3 $4" +%s) - $(date -d "$1 $2" +%s) )) -u +%Y-%j-%T)"
     orig_ifs=$IFS
     IFS=-
@@ -93,12 +93,12 @@ timediff(){
 
 # Filesystem traversal
 alias b='popd'
-c(){
+c() {
     local target="${1:-$HOME}"
     [ "$(pwd)" == "$(readlink -f "$target")" ] && return 0
     pushd "$target"
 }
-..(){
+..() {
     local target="${1:-1}"
     if [ "$target" -eq "$target" ] 2>/dev/null; then
         for(( i = 0; i < $target; i++ )); do c .. || return 1; done;
@@ -109,8 +109,8 @@ c(){
     fi
     return 1
 }
-mkcd(){ mkdir -p "$*"; cd "$*"; }
-xs(){
+mkcd() { mkdir -p "$*"; cd "$*"; }
+xs() {
     [ -d "$@" ] 2>/dev/null && pushd "$@" && return
     dirs=()
     while read dir ;do
@@ -136,13 +136,13 @@ xs(){
 . /etc/bash_completion
 complete -W "$(grep -aPo '(?<=^ssh ).*$' ~/.bash_history_safe 2>/dev/null | sort -u | sed 's/\(.*\)/"\1"/')" ssh
 
-_w(){
+_w() {
     COMPREPLY=($(grep -h "^${COMP_WORDS[COMP_CWORD]}" /usr/share/dict/[ab]*))
     return 0
 }
 complete -F _w w
 
-_..(){
+_..() {
     local word=${COMP_WORDS[COMP_CWORD]}
     local list=$(pwd | cut -c 2- | sed -e 's#/[^/]*$##g' -e 's/\([ ()]\)/\\\\\1/g')
     IFS=/
@@ -172,9 +172,9 @@ alias lls="ls $LS_OPTIONS -ASr"
 
 # grep
 type rg >/dev/null 2>&1 && alias g='rg --smart-case' || alias g='grep --color=auto -i'
-lg(){ ll "${2:-.}" | g "$1"; }
-fgg(){ find "${2:-.}" | g "$1"; }
-pg(){ g "$@" <<<"$(ps -eF --forest | sort)"; }
+lg() { ll "${2:-.}" | g "$1"; }
+fgg() { find "${2:-.}" | g "$1"; }
+pg() { g "$@" <<<"$(ps -eF --forest | sort)"; }
 
 # fasd
 fasd_cache=~/.fasd-init-bash
@@ -182,7 +182,7 @@ if [ "$(command -v fasd)" -nt "$fasd_cache" -o ! -s "$fasd_cache" ]; then
     fasd --init bash-hook bash-ccomp bash-ccomp-install >| "$fasd_cache"
 fi
 . "$fasd_cache"
-fasd_cd(){ [ $# -gt 1 ] && cd "$(fasd -e echo "$@")" || fasd "$@"; }
+fasd_cd() { [ $# -gt 1 ] && cd "$(fasd -e echo "$@")" || fasd "$@"; }
 alias j='fasd_cd -d'
 alias f='fasd -f'
 alias d='fasd -d'
@@ -208,13 +208,13 @@ gresetlocal() { git reset --hard "$(gcur)"; }
 gresetremote() { git reset --hard "$(gremtrack)"; }
 
 # vim
-vj(){ vim -c'set bt=nofile| set fdm=indent| set fdl=5| set ft=json'; }
-vv(){ [ -z $1 ] && vim -c "normal '0" || vim -p *$**; } # Open last file or all filenames matching argument.
-vg(){ vim -p $(g -l "$*" *); } # Open all files containing argument.
-vd(){
+vj() { vim -c'set bt=nofile| set fdm=indent| set fdl=5| set ft=json'; }
+vv() { [ -z $1 ] && vim -c "normal '0" || vim -p *$**; } # Open last file or all filenames matching argument.
+vg() { vim -p $(g -l "$*" *); } # Open all files containing argument.
+vd() {
     diff -rq "$1" "$2" | sed -n 's/^Files \(.*\) and \(.*\) differ$/"\1" "\2"/p' | xargs -n2 vimdiff
 }
-vz(){
+vz() {
     bind '"\C-z":" \C-u fg\C-j"'
     trap "stty susp '^z'" DEBUG
     PROMPT_COMMAND="$PROMPT_COMMAND; stty susp ''"
@@ -299,7 +299,9 @@ bind -x '"\C-g": sanj_rewrite'
 
 # Media
 alias blu='systemctl start bluetooth.service; bluetoothctl; systemctl stop bluetooth.service'
+cap() { slurp | grim -g - ${1:-tmp}.png; }
 feh() { foot sh -c "chafa $@ && sleep inf" 2>/dev/null; }
+vol() { s=@DEFAULT_AUDIO_SINK@; [ "$1" ] && wpctl set-volume $s $1 || wpctl set-mute $s toggle; wpctl get-volume $s; }
 
 # Some escape sequences for colors.
 # Note the surrounding $'\001' and $'\002'  which tell readline the escape sequence has zero length.
@@ -328,7 +330,7 @@ export MANPAGER='vim +MANPAGER --not-a-term -c "nmap <buffer><nowait> q :q<CR>" 
 alias pyg='pygmentize -gf terminal256 -O style=monokai'
 
 # Prompt
-gitstat(){
+gitstat() {
     orig_retcode=$?
     branch=$(git symbolic-ref HEAD 2>/dev/null) || return $orig_retcode
     branch=${branch:11}
@@ -340,7 +342,7 @@ gitstat(){
     echo -n ')'
     return $orig_retcode
 }
-hasjobs(){
+hasjobs() {
     orig_retcode=$?
     pids=($(jobs -p))
     num_pids=${#pids[@]}
@@ -348,12 +350,12 @@ hasjobs(){
     [ $num_pids -gt 0 ] && echo $num_pids
     return $orig_retcode
 }
-retcode(){
+retcode() {
     orig_retcode=$?
     [ 0 != "$orig_retcode" ] && echo $orig_retcode
     return $orig_retcode
 }
-hostorchrootname(){
+hostorchrootname() {
     orig_retcode=$?
     ischroot && cat /etc/hostname || hostname
     return $orig_retcode
