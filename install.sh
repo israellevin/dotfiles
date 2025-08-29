@@ -35,25 +35,24 @@ if ! [ -e ~/bin/python ]; then
     pip install llm pygments python-lsp-server python-lsp-ruff shell-gpt uv
 fi
 
-if ! type -p n >/dev/null 2>&1; then
-    curl https://raw.githubusercontent.com/mklement0/n-install/stable/bin/n-install | \
-        N_PREFIX=~/bin bash -s -- -y
-    export PATH="$PATH:$HOME/bin/n/bin"
+if ! [ -e ~/bin/node ]; then
+    export N_PREFIX=~/bin/node
+    curl https://raw.githubusercontent.com/mklement0/n-install/stable/bin/n-install | bash -s -- -y
+    export PATH="$PATH:$N_PREFIX/bin"
 fi
 
-if ! [ -e ~/bin/node_modules ]; then
-    npm --prefix ~/bin install \
+if ! [ -e ~/bin/node/node_modules ]; then
+    npm --prefix ~/bin/node install \
+        bash-language-server \
         npm@latest \
         https://github.com/Jelmerro/Vieb \
         webtorrent-cli \
         typescript-language-server
-    rm ~/bin/package.json ~/bin/package-lock.json
 fi
 
 if ! [ -e ~/bin/cargo ]; then
     export CARGO_HOME=~/bin/cargo
     curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain stable --profile minimal --no-modify-path
-    "$CARGO_HOME/bin/rustup" component add rust-analyzer
 fi
 
 git clone https://github.com/clvv/fasd
