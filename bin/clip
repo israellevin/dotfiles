@@ -1,5 +1,6 @@
 #!/usr/bin/sh
 [ "$*" = --start ] && wl-paste --watch cliphist store && exit 0
+[ "$*" = - ] && cliphist list | menu --multi | cliphist delete
 [ -f "$1" ] && wl-copy < "$1" && exit 0
 [ "$1" ] && wl-copy "$*" && exit 0
 cliphist list | menu | cliphist decode | wl-copy
