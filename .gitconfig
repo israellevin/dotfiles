@@ -24,3 +24,5 @@
     hunk-header-line-number-style = "#067a00"
     hunk-header-style = file line-number syntax
     side-by-side = true
+[user]
+    email = 40337+israellevin@users.noreply.github.com
