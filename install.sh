@@ -50,6 +50,9 @@ if ! [ -e ~/bin/node/node_modules ]; then
         typescript-language-server
 fi
 
+# Fix Vieb app's index.js to work with our directory structure.
+sed --in-place -e 's|"\.\./node_modules/|"../../../node_modules/|' ~/bin/node/node_modules/vieb/app/index.js
+
 if ! [ -e ~/bin/cargo ]; then
     export CARGO_HOME=~/bin/cargo
     curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain stable --profile minimal --no-modify-path
