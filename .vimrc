@@ -63,6 +63,11 @@ let lspOpts = #{
 
 autocmd User LspSetup call LspOptionsSet(lspOpts)
 let lspServers = [#{
+\    name: 'bashls',
+\    filetype: 'sh',
+\    path: $HOME . '/bin/node/node_modules/.bin/bash-language-server',
+\    args: ['start'],
+\ }, #{
 \    name: 'pylsp',
 \    filetype: 'python',
 \    path: $HOME . '/bin/python/bin/pylsp',
