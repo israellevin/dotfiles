@@ -34,7 +34,6 @@ Unlikely to be very useful to anyone else, but who knows.
 ./bin/v             - pipe and size aware vim launcher
 ./bin/vid           - menu to list videos (with history) and play them
 ./bin/w             - simple web searches for the terminal (w3m powered)
-./bin/x             - launch dwl the way I like it
 ./bin/xchroot.sh    - chroot with x auth, proc, sys, dev and dev/pts
 ./bin/zebra.sh      - alternate line colors
 
