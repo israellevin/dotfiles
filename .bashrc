@@ -213,7 +213,8 @@ vj() { vim -c'set bt=nofile| set fdm=indent| set fdl=5| set ft=json'; }
 vv() { [ -z $1 ] && vim -c "normal '0" || vim -p *$**; } # Open last file or all filenames matching argument.
 vg() { vim -p $(g -l "$*" *); } # Open all files containing argument.
 vd() {
-    diff -rq "$1" "$2" | sed -n 's/^Files \(.*\) and \(.*\) differ$/"\1" "\2"/p' | xargs -n2 vimdiff
+    local pairs="$(diff -rq "$1" "$2" | sed -n 's/^Files \(.*\) and \(.*\) differ$/"\1" "\2"/p')"
+    [ -z "$pairs" ] && return || xargs -n2 vimdiff <<< "$pairs"
 }
 vz() {
     bind '"\C-z":" \C-u fg\C-j"'

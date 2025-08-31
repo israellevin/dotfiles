@@ -22,6 +22,7 @@ Unlikely to be very useful to anyone else, but who knows.
 ./bin/brows         - run my current browser of choice (vieb, sometimes nyxt)
 ./bin/chrootcrypt   - chroot into an encrypted partition
 ./bin/clip          - CLI wayland clipboard manager with wl-paste and cliphist
+./bin/dwlaunch.sh   - launch dwl the way I like it
 ./bin/flame         - flame graph generator, requires perf (really just a helper for the wonderful https://github.com/brendangregg/FlameGraph)
 ./bin/getwin.sh     - focus a window by name (on X)
 ./bin/lid_close.sh  - handler for lid close event (for X)
