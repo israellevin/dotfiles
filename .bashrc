@@ -1,4 +1,5 @@
 # Don't do shit if not connected to a terminal
+# shellcheck disable=SC1090,SC2015
 [ -t 0 ] || return
 
 # Truisms
@@ -15,8 +16,9 @@ if type tmux >/dev/null 2>&1 && [ ! "$TMUX" ]; then
         tmux -TRGB new-session
     else
         tmp_session=tmp$(tr -dc '0-9' < /dev/urandom | head -c4)
-        tmux new-session -ds $tmp_session "tmux choose-tree -s 'switch-client -t %%; kill-session -t $tmp_session'; exec bash"
-        tmux -TRBG attach-session -t $tmp_session
+        tmux new-session -ds "$tmp_session" \
+            "tmux choose-tree -s 'switch-client -t %%; kill-session -t $tmp_session'; exec bash"
+        tmux -TRBG attach-session -t "$tmp_session"
     fi
     [ -e ~/dontquit ] || exit 0
 fi
@@ -24,7 +26,7 @@ fi
 # Steal all tmux windows into current session
 muxjoin() {
     for win in $(tmux list-windows -aF "#{session_name}:#{window_index}"); do
-        [ $win = $(tmux display-message -p '#{session_name}:#{window_index}') ] && continue
+        [ "$win" = "$(tmux display-message -p '#{session_name}:#{window_index}')" ] && continue
         tmux move-window -ds "$win"
     done
 }
@@ -55,16 +57,12 @@ PROMPT_COMMAND='history -a; history -n'
 # General aliases and functions
 alias webshare='python3 -m http.server'
 dud() { du -hxd1 "${1:-.}" | sort -h; }
-exp() { curl -Gs "https://www.mankier.com/api/explain/?cols="$(tput cols) --data-urlencode "q=$*"; }
+exp() { curl -Gs "https://www.mankier.com/api/explain/?cols=$(tput cols)" --data-urlencode "q=$*"; }
 from_json() { node -pe "JSON.parse(require('fs').readFileSync(0, 'utf-8'))$1"; }
-genpas() { shuf -zern${1:-8} ':' ';' '<' '=' '>' '?' '@' '[' ']' '^' '_' '`' '{' '|' '}' '~' {0..9} {A..Z} {a..z} {a..z} {a..z}; echo; }
-log() { $@ 2>&1 | tee log.txt; }
+genpas() { shuf -zern"${1:-8}" ':' ';' '<' '=' '>' '?' '@' '[' ']' '^' '_' '`' '{' '|' '}' '~' {0..9} {A..Z} {a..z} {a..z} {a..z}; echo; }
+log() { "$@" 2>&1 | tee log.txt; }
 sume() { [ "$EUID" -ne 0 ] && sudo -E su -p; }
 til() { sleep $(( $(date -d "$*" +%s) - $(date +%s) )); }
-connect() {
-    [ "$2" ] && wpa_supplicant -i wlan0 -c <(wpa_passphrase "$1" "$2") \
-    || while :; do iw dev wlan0 link | g not\ connected && date && iw dev wlan0 connect "$1"; sleep 10; done
-}
 venv() {
     local venv_dir="${1:-./venv}"
     if ! . ./"$venv_dir"/bin/activate 2>/dev/null; then
@@ -82,12 +80,13 @@ venv() {
     fi
     [ -f pyproject.toml ] && uv pip install -e --upgrade . || true
 }
+
 timediff() {
     diff="$(date -d @$(( $(date -d "$3 $4" +%s) - $(date -d "$1 $2" +%s) )) -u +%Y-%j-%T)"
     orig_ifs=$IFS
     IFS=-
     while read -r y d t; do
-        echo $(($y - 1970)) $(($d - 1)) $t
+        echo $((y - 1970)) $((d - 1)) "$t"
     done <<< "$diff"
     IFS=$orig_ifs
 }
@@ -97,36 +96,36 @@ alias b='popd'
 c() {
     local target="${1:-$HOME}"
     [ "$(pwd)" == "$(readlink -f "$target")" ] && return 0
-    pushd "$target"
+    pushd "$target" || return 1
 }
 ..() {
     local target="${1:-1}"
     if [ "$target" -eq "$target" ] 2>/dev/null; then
-        for(( i = 0; i < $target; i++ )); do c .. || return 1; done;
+        for(( i = 0; i < target; i++ )); do c .. || return 1; done;
         return 0
     else
-        target="${PWD%%$target*}$target*"
+        target="${PWD%%"$target"*}$target*"
         c "$target" && return 0
     fi
     return 1
 }
-mkcd() { mkdir -p "$*"; cd "$*"; }
+mkcd() { mkdir -p "$*"; cd "$*" || return 1; }
 xs() {
-    [ -d "$@" ] 2>/dev/null && pushd "$@" && return
+    [ -d "$*" ] 2>/dev/null && pushd "$*" && return
     dirs=()
-    while read dir ;do
+    while read -r dir ;do
         dirs+=("$dir")
-    done < <(find -type d -iname "*${@%% }*" 2>/dev/null)
+    done < <(find . -type d -iname "*${*%% }*" 2>/dev/null)
     case ${#dirs[@]} in
         0)
             return 1
             ;;
         1)
-            pushd "${dirs[@]}"
+            pushd "${dirs[@]}" || return 1
             ;;
         *)
             select dir in "${dirs[@]}" ; do
-                pushd "$dir"
+                pushd "$dir" || return 1
                 break
             done
             ;;
@@ -138,38 +137,37 @@ xs() {
 complete -W "$(grep -aPo '(?<=^ssh ).*$' ~/.bash_history_safe 2>/dev/null | sort -u | sed 's/\(.*\)/"\1"/')" ssh
 
 _w() {
-    COMPREPLY=($(grep -h "^${COMP_WORDS[COMP_CWORD]}" /usr/share/dict/[ab]*))
-    return 0
+    mapfile -t COMPREPLY < <(grep -h "^${COMP_WORDS[COMP_CWORD]}" /usr/share/dict/[ab]*)
 }
 complete -F _w w
 
 _..() {
-    local word=${COMP_WORDS[COMP_CWORD]}
-    local list=$(pwd | cut -c 2- | sed -e 's#/[^/]*$##g' -e 's/\([ ()]\)/\\\\\1/g')
-    IFS=/
-    list=$(compgen -W "$list" -- "$word")
-    IFS=$'\n'
-    COMPREPLY=($list)
-    return 0
+    compopt -o filenames
+    IFS=/ read -ra parts <<< "$PWD"
+    unset 'parts[-1]'
+    mapfile -t COMPREPLY < <(printf '%s\n' "${parts[@]}" | grep "${COMP_WORDS[COMP_CWORD]}")
 }
 complete -F _.. ..
 
 _pip_completion()
 {
-    COMPREPLY=( $( COMP_WORDS="${COMP_WORDS[*]}" \
-                   COMP_CWORD=$COMP_CWORD \
-                   PIP_AUTO_COMPLETE=1 $1 ) )
+    mapfile -t COMPREPLY < <(
+        COMP_WORDS="${COMP_WORDS[*]}" \
+        COMP_CWORD=$COMP_CWORD \
+        PIP_AUTO_COMPLETE=1 \
+        "$1" 2>/dev/null
+    )
 }
 complete -o default -F _pip_completion pip
 
 # ls
 LS_OPTIONS='-lh --color=auto --quoting-style=shell'
-alias l="ls $LS_OPTIONS"
-alias ll="ls $LS_OPTIONS -A"
-alias lt="ls $LS_OPTIONS -tr"
-alias llt="ls $LS_OPTIONS -Atr"
-alias lld="ls $LS_OPTIONS -Ad */"
-alias lls="ls $LS_OPTIONS -ASr"
+alias l='ls $LS_OPTIONS'
+alias ll='ls $LS_OPTIONS -A'
+alias lt='ls $LS_OPTIONS -tr'
+alias llt='ls $LS_OPTIONS -Atr'
+alias lld='ls $LS_OPTIONS -Ad */'
+alias lls='ls $LS_OPTIONS -ASr'
 
 # grep
 type rg >/dev/null 2>&1 && alias g='rg --smart-case' || alias g='grep --color=auto -i'
@@ -179,7 +177,7 @@ pg() { g "$@" <<<"$(ps -eF --forest | sort)"; }
 
 # fasd
 fasd_cache=~/.fasd-init-bash
-if [ "$(command -v fasd)" -nt "$fasd_cache" -o ! -s "$fasd_cache" ]; then
+if [ "$(command -v fasd)" -nt "$fasd_cache" ] || [ ! -s "$fasd_cache" ]; then
     fasd --init bash-hook bash-ccomp bash-ccomp-install >| "$fasd_cache"
 fi
 . "$fasd_cache"
@@ -193,27 +191,28 @@ _fasd_bash_hook_cmd_complete j
 export FZF_DEFAULT_OPTS='-e -m --bind=ctrl-u:page-up,ctrl-d:page-down,alt-o:print-query,ctrl-o:replace-query'
 export FZF_CTRL_T_OPTS='--preview=~/.fzf/bin/fzf-preview.sh\ {}'
 export FZF_TMUX=1
-[ -f ~/.fzf.colors ] && source ~/.fzf.colors
+[ -f ~/.fzf.colors ] && . ~/.fzf.colors
 [ -f ~/.fzf.bash ] && . ~/.fzf.bash
 
 # git
 gitformat="%s %C(dim)%C(cyan)%ah %C(green)%al %C(magenta)%h%C(auto)%d"
-alias glg="git log --graph --abbrev-commit --pretty=format:'$gitformat'"
+alias gl='git log --graph --abbrev-commit --pretty=format:"$gitformat"'
+alias glg="gl --all"
 alias gll="glg --exclude=refs/remotes/** --all --decorate-refs=refs/heads/"
-alias gl="glg --all"
 alias gs="git status"
 gmb() { git merge-base "$(git branch --show-current)" "${1:-master}"; }
 gcur() { git branch --show-current; }
-gremtrack() { git rev-parse --abbrev-ref --symbolic-full-name @{u}; }
+gremtrack() { git rev-parse --abbrev-ref --symbolic-full-name '@{u}'; }
 gresetlocal() { git reset --hard "$(gcur)"; }
 gresetremote() { git reset --hard "$(gremtrack)"; }
 
 # vim
 vj() { vim -c'set bt=nofile| set fdm=indent| set fdl=5| set ft=json'; }
-vv() { [ -z $1 ] && vim -c "normal '0" || vim -p *$**; } # Open last file or all filenames matching argument.
-vg() { vim -p $(g -l "$*" *); } # Open all files containing argument.
+vv() { [ -z "$1" ] && vim -c "normal '0" || vim -p -- "*$**"; } # Open last file or all filenames matching argument.
+vg() { vim -p "$(g -l -- "$*" *)"; } # Open all files containing argument.
 vd() {
-    local pairs="$(diff -rq "$1" "$2" | sed -n 's/^Files \(.*\) and \(.*\) differ$/"\1" "\2"/p')"
+    local pairs
+    pairs="$(diff -rq "$1" "$2" | sed -n 's/^Files \(.*\) and \(.*\) differ$/"\1" "\2"/p')"
     [ -z "$pairs" ] && return || xargs -n2 vimdiff <<< "$pairs"
 }
 vz() {
@@ -226,7 +225,7 @@ vz() {
 # LLM
 export OPENAI_KEY=sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 llm_cmd=~/bin/python/bin/llm
-alias llm="$llm_cmd"
+alias llm="$\llm_cmd"
 generate_command() {
     $llm_cmd --system 'Provide just the one-line bash command for a debian system with no decorations' "$*"
 }
@@ -253,7 +252,7 @@ generate_image() {
     chafa "$file_name"
 }
 sanj() {
-    if [ "$1" = do ]; then
+    if [ "$1" = 'do' ]; then
         shift && (xdotool type "$(generate_command "$@")" &) && return
     elif [ "$1" = img ]; then
         shift && generate_image "$@" && return
@@ -286,24 +285,24 @@ sanj() {
         shift
     done
     if [ "$action" = chat ]; then
-        rlfe -h ~/.llm_history $llm_cmd chat "${llm_flags[@]}" --system "$*"
+        rlfe -h ~/.llm_history "$llm_cmd" chat "${llm_flags[@]}" --system "$*"
     else
         $llm_cmd "${llm_flags[@]}" "'$*'"
     fi
 }
 sanj_rewrite() {
-if [ -n "$READLINE_LINE" ]; then
-    READLINE_LINE="$(generate_command "$READLINE_LINE")"
-    READLINE_POINT=${#READLINE_LINE}
-fi
+    if [ -n "$READLINE_LINE" ]; then
+        READLINE_LINE="$(generate_command "$READLINE_LINE")"
+        READLINE_POINT=${#READLINE_LINE}
+    fi
 }
 bind -x '"\C-g": sanj_rewrite'
 
 # Media
-alias blu='systemctl start bluetooth.service; bluetoothctl; systemctl stop bluetooth.service'
-cap() { slurp | grim -g - ${1:-tmp}.png; }
-feh() { foot sh -c "chafa $@ && sleep inf" 2>/dev/null; }
-vol() { s=@DEFAULT_AUDIO_SINK@; [ "$1" ] && wpctl set-volume $s $1 || wpctl set-mute $s toggle; wpctl get-volume $s; }
+alias blu='sudo systemctl start bluetooth.service; bluetoothctl; sudo systemctl stop bluetooth.service'
+cap() { slurp | grim -g - "${1:-tmp}.png"; }
+feh() { foot sh -c "chafa '$*' && sleep inf" 2>/dev/null; }
+vol() { s=@DEFAULT_AUDIO_SINK@; [ "$1" ] && wpctl set-volume $s "$1" || wpctl set-mute $s toggle; wpctl get-volume $s; }
 
 # Some escape sequences for colors.
 # Note the surrounding $'\001' and $'\002'  which tell readline the escape sequence has zero length.
@@ -321,8 +320,8 @@ REVERSE=$'\001'"$(tput rev)"$'\002'
 RESET=$'\001'"$(tput sgr0)"$'\002'
 
 # Easy view
-type dircolors >/dev/null 2>&1 && eval "`dircolors`"
-type lesspipe >/dev/null 2>&1 && eval "`lesspipe`"
+type dircolors >/dev/null 2>&1 && eval "$(dircolors)"
+type lesspipe >/dev/null 2>&1 && eval "$(lesspipe)"
 export LESS=' -MRSXF '
 export LESS_TERMCAP_us=$GREEN
 export LESS_TERMCAP_ue=$RESET
@@ -333,11 +332,14 @@ alias pyg='pygmentize -gf terminal256 -O style=monokai'
 
 # Prompt
 gitstat() {
-    orig_retcode=$?
+    local orig_retcode=$?
+    local branch
+    local dirty
+    local ahead
     branch=$(git symbolic-ref HEAD 2>/dev/null) || return $orig_retcode
     branch=${branch:11}
-    dirty=$(git status --porcelain 2>/dev/null | grep -v '^??' | wc -l)
-    ahead=$(git log origin/$branch..HEAD 2>/dev/null | grep '^commit' | wc -l)
+    dirty=$(git status --porcelain 2>/dev/null | grep -vc '^??')
+    ahead=$(git log origin/"$branch"..HEAD 2>/dev/null | grep -c '^commit')
     echo -n "($branch"
     [ 0 = "$dirty" ] || echo -n " $RED$dirty$RESET"
     [ 0 = "$ahead" ] || echo -n " $GREEN$ahead$RESET"
@@ -345,32 +347,34 @@ gitstat() {
     return $orig_retcode
 }
 hasjobs() {
-    orig_retcode=$?
-    pids=($(jobs -p))
+    local orig_retcode=$?
+    local pids
+    local num_pids
+    mapfile -t pids < <(jobs -p)
     num_pids=${#pids[@]}
-    let num_pids--
+    ((num_pids--))
     [ $num_pids -gt 0 ] && echo $num_pids
     return $orig_retcode
 }
 retcode() {
-    orig_retcode=$?
+    local orig_retcode=$?
     [ 0 != "$orig_retcode" ] && echo $orig_retcode
     return $orig_retcode
 }
 hostorchrootname() {
-    orig_retcode=$?
+    local orig_retcode=$?
     ischroot && cat /etc/hostname || hostname
     return $orig_retcode
 }
 
 # Single line version
-PS1="$RED$REVERSE\$(retcode)$RESET$RED\u@\$(hostorchrootname):$RESET"
+PS1="$MAGENTA$REVERSE\$(retcode)$RESET$RED\u@\$(hostorchrootname):$RESET"
 PS1+="$GREEN\W$RESET$YELLOW\$(gitstat)$RESET$CYAN$REVERSE\$(hasjobs)$RESET\$ "
 
 # Multiline version
 PS0="$BLUE/ \D{%d-%b-%y %H:%M:%S} \\$RESET\n"
 PS1="$BLUE\\\\ \D{%d-%b-%y %H:%M:%S} /$RESET\n"
 PS1+="$RED\u@\$(hostorchrootname)(\!):$RESET$GREEN\w$RESET$YELLOW\$(gitstat)$RESET\n"
-PS1+="$RED$REVERSE\$(retcode)$RESET$CYAN$REVERSE\$(hasjobs)$RESET\$ "
+PS1+="$MAGENTA$REVERSE\$(retcode)$RESET$CYAN$REVERSE\$(hasjobs)$RESET\$ "
 
 lt
