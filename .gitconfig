@@ -25,4 +25,11 @@
     hunk-header-style = file line-number syntax
     side-by-side = true
 [user]
-    email = 40337+israellevin@users.noreply.github.com
+    email = 
+    signingkey = 
+[gpg]
+    format = ssh
+[commit]
+    gpgsign = true
+[tag]
+    gpgSign = true
