@@ -224,77 +224,11 @@ vz() {
 
 # LLM
 export OPENAI_KEY=sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-llm_cmd=~/bin/python/bin/llm
-alias llm="$\llm_cmd"
-generate_command() {
-    $llm_cmd --system 'Provide just the one-line bash command for a debian system with no decorations' "$*"
-}
-generate_image() {
-    local size=256x256
-    if [ "$1" = '-l' ]; then
-        shift
-        size=512x512
-    elif [ "$1" = '-x' ]; then
-        shift
-        size=1024x1024
-    fi
-    local prompt="$*"
-    img_url=$(curl https://api.openai.com/v1/images/generations -sS \
-        -H 'Content-Type: application/json' \
-        -H "Authorization: Bearer $OPENAI_API_KEY" \
-        -d '{
-            "prompt": "'"$prompt"'",
-            "n": 1,
-            "size": "'"$size"'"
-        }' | from_json .data[0].url)
-    file_name="${prompt// /_}.png"
-    curl -sS "$img_url" -o "$file_name"
-    chafa "$file_name"
-}
-sanj() {
-    if [ "$1" = 'do' ]; then
-        shift && (xdotool type "$(generate_command "$@")" &) && return
-    elif [ "$1" = img ]; then
-        shift && generate_image "$@" && return
-    fi
-
-    local llm_flags=(--model o3-mini)
-    if [ "$1" = - ]; then
-        llm_flags=(--model gpt-4o-mini)
-        shift
-    elif [ "$1" = -- ]; then
-        llm_flags=(--model gpt-4o)
-        shift
-    elif [ "$1" = --- ]; then
-        llm_flags=(--model gpt-4.5-preview)
-        shift
-    fi
-
-    if [ "$1" = dump ]; then
-        shift
-    else
-        action=chat
-        if [ "$1" = cont ]; then
-            llm_flags+=(--continue)
-            shift
-        fi
-    fi
-
-    while [ -f "$1" ]; do
-        llm_flags+=(--fragment "$1")
-        shift
-    done
-    if [ "$action" = chat ]; then
-        rlfe -h ~/.llm_history "$llm_cmd" chat "${llm_flags[@]}" --system "$*"
-    else
-        $llm_cmd "${llm_flags[@]}" "'$*'"
-    fi
-}
 sanj_rewrite() {
-    if [ -n "$READLINE_LINE" ]; then
-        READLINE_LINE="$(generate_command "$READLINE_LINE")"
-        READLINE_POINT=${#READLINE_LINE}
-    fi
+if [ -n "$READLINE_LINE" ]; then
+    READLINE_LINE="$(sgpt --shell --no-interaction "$READLINE_LINE")"
+    READLINE_POINT=${#READLINE_LINE}
+fi
 }
 bind -x '"\C-g": sanj_rewrite'
 
@@ -329,6 +263,7 @@ export LESS_TERMCAP_md=$RED
 export LESS_TERMCAP_me=$RESET
 export MANPAGER='vim +MANPAGER --not-a-term -c "nmap <buffer><nowait> q :q<CR>" -'
 alias pyg='pygmentize -gf terminal256 -O style=monokai'
+pygl() { pyg "$@" | less; }
 
 # Prompt
 gitstat() {

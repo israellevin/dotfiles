@@ -1,0 +1,122 @@
+#!/usr/bin/bash
+
+[ "$OPENAI_API_KEY" ] || { echo "Set OPENAI_API_KEY env var"; exit 1; }
+
+generate_command() {
+    sgpt --shell --no-interaction "$*"
+}
+
+generate_image() {
+    local size=256x256
+    if [ "$1" = '-l' ]; then
+        shift
+        size=512x512
+    elif [ "$1" = '-x' ]; then
+        shift
+        size=1024x1024
+    fi
+    local prompt="$*"
+    img_url=$(curl https://api.openai.com/v1/images/generations -sS \
+        -H 'Content-Type: application/json' \
+        -H "Authorization: Bearer $OPENAI_API_KEY" \
+        -d '{
+            "prompt": "'"$prompt"'",
+            "n": 1,
+            "size": "'"$size"'"
+        }' | node -pe 'JSON.parse(require("fs").readFileSync(0, "utf-8")).data[0].url')
+    file_name="${prompt// /_}.png"
+    curl -sS "$img_url" -o "$file_name"
+    chafa "$file_name"
+}
+
+# Handle special commands.
+if [ "$1" = 'do' ]; then
+    wlrctl keyboard type "$(generate_command "$*")"
+    exit 0
+elif [ "$1" = 'img' ]; then
+    generate_image "$@"
+    exit 0
+elif [ "$1" = 'code' ]; then
+    sgpt --code "$*"
+    exit 0
+elif [ "$1" = 'dump' ]; then
+    llm --model gpt-5-nano "$*"
+    exit 0
+elif [ "$1" = 'list' ]; then
+    sgpt --list-chats
+    exit 0
+elif [ "$1" = 'show' ]; then
+    sgpt --show-chat "$2"
+    exit 0
+fi
+
+# Model selection.
+if [ "$1" = - ]; then
+    sgpt_flags=(--model gpt-4.1)
+    shift
+elif [ "$1" = -- ]; then
+    sgpt_flags=(--model o3-mini --temperature=1.0 --no-functions)
+    shift
+elif [ "$1" = --- ]; then
+    sgpt_flags=(--model gpt-5-nano --temperature=1.0 --no-functions)
+    shift
+else
+    sgpt_flags=(--model o3)
+fi
+
+# Post dashes commands that never uses o3.
+if [ "$1" = dump ]; then
+    shift
+elif [ "$1" = 'loop' ]; then
+    shift
+    current="$*"
+    while true; do
+        response="$(
+            sgpt "${sgpt_flags[@]}" --no-functions --role sanjer "$current" | \
+                tee >(sed 's/\x1b\[[0-9;]*m//g' >&2)
+        )"
+        command="$(sed -n '/^command$/,$p' <<<"$response" | tail -n +2)"
+        [ -z "$command" ] && break
+        read -rp "Execute command: $command ? (y/n) " yn
+        [ "$yn" != y ] && break
+        output="$(eval "$command" 2>&1)"
+        current="$response\noutput:\n$output"
+    done
+    exit 0
+else
+    sgpt_flags+=(--repl "${1:-temp}")
+fi
+
+# If input is from pipe, read it all.
+if [ ! -t 0 ]; then
+    export TERM=dumb
+    lines=()
+    while IFS='' read -r line; do
+        lines+=("$line")
+    done
+fi
+
+# Collect readable files from args.
+files=()
+for argument in "$@"; do
+    if [ -r "$argument" ]; then
+        files+=("$argument")
+    fi
+done
+
+# Construct prompt.
+prompt="$*"
+if [ ${#files[@]} -gt 0 ]; then
+    prompt+='\nFiles:'
+fi
+for input_file in "${files[@]}"; do
+    prompt+="\n$input_file:\n$(<"$input_file")"
+done
+if [ ${#lines[@]} -gt 0 ]; then
+    prompt+='\nstdin:\n'
+fi
+for line in "${lines[@]}"; do
+    prompt+='\n'"$line"
+done
+
+sgpt "${sgpt_flags[@]}" "$prompt"
