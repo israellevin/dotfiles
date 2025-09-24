@@ -1,7 +1,6 @@
 #!/bin/sh
-DISPLAY="$(ps -euww | grep -Po '(?<=DISPLAY=)[^ ]*' | tail -1)"
-XAUTHORITY="$(ps -euww | grep -Po '(?<=XAUTHORITY=)[^ ]*' | tail -1)"
-export DISPLAY
-export XAUTHORITY
-xdotool key 'alt+ctrl+F1'
-echo mem > /sys/power/state
+[ "$1" = pre ] || exit 0
+
+bluetoothctl show | grep -q '^[[:space:]]*Powered: yes' && exit 1
+
+pw-cli ls Node | grep -q '^[[:space:]]*application\.name = ' && exit 1

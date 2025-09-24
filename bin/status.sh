@@ -16,7 +16,7 @@ fi
 (
     if ! timeout 2 curl google.com; then
         tmux set -g status-fg '#555555'
-    elif [ "$(bluetoothctl show | grep '^[[:space:]]*Powered: ' | cut -d' ' -f2)" = yes ]; then
+    elif bluetoothctl show | grep '^[[:space:]]*Powered: yes'; then
         tmux set -g status-fg pink
     else
         tmux set -g status-fg white
