@@ -233,7 +233,7 @@ fi
 bind -x '"\C-g": sanj_rewrite'
 
 # Media
-alias blu='sudo systemctl start bluetooth.service; bluetoothctl; sudo systemctl stop bluetooth.service'
+alias blu='bluetoothctl power on; bluetoothctl; bluetoothctl power off'
 cap() { slurp | grim -g - "${1:-tmp}.png"; }
 feh() { foot sh -c "chafa '$*' && sleep inf" 2>/dev/null; }
 vol() { s=@DEFAULT_AUDIO_SINK@; [ "$1" ] && wpctl set-volume $s "$1" || wpctl set-mute $s toggle; wpctl get-volume $s; }

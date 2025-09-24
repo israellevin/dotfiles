@@ -16,7 +16,7 @@ fi
 (
     if ! timeout 2 curl google.com; then
         tmux set -g status-fg '#555555'
-    elif systemctl status bluetooth.service; then
+    elif [ "$(bluetoothctl show | grep '^[[:space:]]*Powered: ' | cut -d' ' -f2)" = yes ]; then
         tmux set -g status-fg pink
     else
         tmux set -g status-fg white
@@ -39,7 +39,7 @@ line="$line ${battpercent}%"
 grep -q Discharging $battdir/status && line="$line🔋"
 
 # Strong visual alert on low batt or high temp.
-if [ $battpercent -lt 9 ] || [ $maxtemp -gt 90000 ]; then
+if [ "$battpercent" -lt 9 ] || [ "$maxtemp" -gt 90000 ]; then
     tmux set -g status-bg red
 else
     tmux set -g status-bg '#000000'
