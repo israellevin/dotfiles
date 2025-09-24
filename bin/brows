@@ -1,4 +1,6 @@
 #!/usr/bin/sh
-[ "$1" ] && opts="$@" || opts="vieb://history"
-dbus-run-session electron ~/bin/node/node_modules/vieb/app \
-    --enable-features=UseOzonePlatform --ozone-platform=wayland "$opts"
+[ "$1" = --wait-till-online ] && while ! timeout 2 curl -s google.com >/dev/null; do
+    echo Waiting for network...
+    sleep 1
+done
+electron ~/bin/node/node_modules/vieb/app --enable-features=UseOzonePlatform --ozone-platform=wayland "$@"

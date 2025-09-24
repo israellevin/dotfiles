@@ -26,6 +26,6 @@ export WLR_BACKENDS
 exec dwl -s ' \
     red & \
     foot & \
-    brows & \
     clip --start & \
+    brows --wait-till-online & \
     wait'
