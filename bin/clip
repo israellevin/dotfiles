@@ -3,4 +3,5 @@
 [ "$*" = - ] && cliphist list | menu --multi | cliphist delete && exit 0
 [ -f "$1" ] && wl-copy < "$1" && exit 0
 [ "$1" ] && wl-copy "$*" && exit 0
+[ ! -t 0 ] && readlink /proc/self/fd/0 | grep -q '^pipe:' && exec wl-copy
 cliphist list | menu | cliphist decode | wl-copy
