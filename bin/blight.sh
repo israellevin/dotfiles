@@ -4,12 +4,12 @@ valfile=/sys/class/backlight/intel_backlight/brightness
 maxlight=$(cat $maxfile)
 
 if [ "$1" -eq "$1" ] 2> /dev/null; then
-    decilight=$1
+    centilight=$1
 else
-    curlight=$(echo "10 * $(cat $valfile) / $maxlight" | bc)
-    [ $curlight -gt 3 ]&& decilight=2 || decilight=5
+    curlight=$(echo "100 * $(cat $valfile) / $maxlight" | bc)
+    [ "$curlight" -gt 30 ]&& centilight=20 || centilight=50
 fi
 
-newlight=$(echo "$maxlight / 10 * $decilight" | bc)
+newlight=$(echo "$maxlight / 100 * $centilight" | bc)
 
 echo "$newlight" | su -c "tee '$valfile'"
