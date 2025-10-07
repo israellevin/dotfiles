@@ -233,10 +233,18 @@ fi
 bind -x '"\C-g": sanj_rewrite'
 
 # Media
-alias blu='bluetoothctl power on; bluetoothctl; bluetoothctl power off'
 cap() { slurp | grim -g - "${1:-tmp}.png"; }
 feh() { foot sh -c "chafa '$*' && sleep inf" 2>/dev/null; }
 vol() { s=@DEFAULT_AUDIO_SINK@; [ "$1" ] && wpctl set-volume $s "$1" || wpctl set-mute $s toggle; wpctl get-volume $s; }
+blu() {
+    local bluetooth_id
+    bluetooth_id=$(rfkill list | grep -Po '^\d(?=: hci\d: Bluetooth)')
+    rfkill unblock "$bluetooth_id"
+    bluetoothctl power on
+    bluetoothctl
+    bluetoothctl power off
+    rfkill block "$bluetooth_id"
+}
 
 # Some escape sequences for colors.
 # Note the surrounding $'\001' and $'\002'  which tell readline the escape sequence has zero length.
