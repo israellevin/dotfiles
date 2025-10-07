@@ -61,6 +61,8 @@ exp() { curl -Gs "https://www.mankier.com/api/explain/?cols=$(tput cols)" --data
 from_json() { node -pe "JSON.parse(require('fs').readFileSync(0, 'utf-8'))$1"; }
 genpas() { shuf -zern"${1:-8}" ':' ';' '<' '=' '>' '?' '@' '[' ']' '^' '_' '`' '{' '|' '}' '~' {0..9} {A..Z} {a..z} {a..z} {a..z}; echo; }
 log() { "$@" 2>&1 | tee log.txt; }
+slp() { echo mem > /sys/power/state; }
+noslp() { systemd-inhibit --what=handle-lid-switch:sleep:shutdown --why='manual inhibition' sleep infinity; }
 sume() { [ "$EUID" -ne 0 ] && sudo -E su -p; }
 til() { sleep $(( $(date -d "$*" +%s) - $(date +%s) )); }
 venv() {
