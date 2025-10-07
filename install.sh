@@ -1,4 +1,5 @@
 #!/bin/bash
+# shellcheck disable=SC1090
 
 if [ "$EUID" = 0 ]; then
     cat > ./etc/apt/apt.conf <<EOF
@@ -6,15 +7,13 @@ APT::Install-Recommends "0";
 APT::Install-Suggests "0";
 EOF
     DEBIAN_FRONTEND=noninteractive apt -y install \
+        bc bsdextrautils bsdutils jq linux-perf mawk moreutils pciutils psmisc pv sed ripgrep usbutils \
         bash-completion chafa console-setup git git-delta less locales man mc tmux vim \
         cpio gzip tar unrar unzip zstd \
-        bc bsdextrautils bsdutils jq linux-perf mawk moreutils pciutils psmisc pv sed ripgrep usbutils \
         ca-certificates dhcpcd5 iproute2 netbase \
-        aria2 curl iputils-ping iwd openssh-server rsync sshfs w3m wget \
-        cliphist foot fonts-noto-color-emoji wl-clipboard wlsunset wlrctl \
-        make python3-pip python3-venv \
-        cliphist foot firefox grim slurp wl-clipboard wlsunset wlrctl wmenu \
-        fonts-noto fonts-noto-color-emoji
+        aria2 curl iputils-ping iwd openssh-server rfkill rsync sshfs w3m wget \
+        debootstrap make python3-pip python3-venv shellcheck \
+        cliphist fonts-noto fonts-noto-color-emoji grim slurp wl-clipboard wlsunset wlrctl wmenu
     echo en_US.UTF-8 UTF-8 > /etc/locale.gen
     locale-gen
 fi
@@ -22,7 +21,7 @@ fi
 cd "$(dirname "$(realpath "$0")")" || exit 1
 if ! git remote show -n origin 2>/dev/null | grep -q '^ *Fetch URL:.*israellevin/dotfiles\(.git\)*$'; then
     git clone https://israellevin@github.com/israellevin/dotfiles
-    cd dotfiles
+    cd dotfiles || exit 1
 fi
 
 find . -maxdepth 1 -type f -name '.*' -exec cp -at ~ {} +
@@ -61,6 +60,9 @@ fi
 git clone https://github.com/clvv/fasd
 mv fasd/fasd ~/bin/.
 rm -rf fasd
+
+git clone https://github.com/laktak/extrakto
+mv extrakto ~/bin/.
 
 git clone https://github.com/brendangregg/FlameGraph
 ( cd FlameGraph && rm -rf .git demos docs test example-* )
