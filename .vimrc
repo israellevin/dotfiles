@@ -17,7 +17,6 @@ Plug 'tommcdo/vim-exchange'
 Plug 'tpope/vim-fugitive'
 Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': 'yes \| ./install' }
 Plug 'junegunn/fzf.vim'
-Plug 'junegunn/gv.vim'
 Plug 'yegappan/lsp'
 Plug 'vim-utils/vim-husk'
 Plug 'michaeljsmith/vim-indent-object'
