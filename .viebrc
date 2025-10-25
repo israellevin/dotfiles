@@ -1,7 +1,7 @@
 " Options
 set adblocker=update
 set devtoolsposition=split
-set guihidetimeout=1000
+set guihidetimeout=10000
 set guiscrollbar=onscroll
 set noquitonlasttabclose
 set pdfbehavior=view
