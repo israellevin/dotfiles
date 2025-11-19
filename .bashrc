@@ -111,7 +111,7 @@ c() {
     fi
     return 1
 }
-mkcd() { mkdir -p "$*"; cd "$*" || return 1; }
+mkcd() { mkdir -p "$*"; c "$*" || return 1; }
 xs() {
     [ -d "$*" ] 2>/dev/null && pushd "$*" && return
     dirs=()
@@ -183,7 +183,7 @@ if [ "$(command -v fasd)" -nt "$fasd_cache" ] || [ ! -s "$fasd_cache" ]; then
     fasd --init bash-hook bash-ccomp bash-ccomp-install >| "$fasd_cache"
 fi
 . "$fasd_cache"
-fasd_cd() { [ $# -gt 1 ] && cd "$(fasd -e echo "$@")" || fasd "$@"; }
+fasd_cd() { [ $# -gt 1 ] && c "$(fasd -e echo "$@")" || fasd "$@"; }
 alias j='fasd_cd -d'
 alias f='fasd -f'
 alias d='fasd -d'
