@@ -1,13 +1,9 @@
-# Don't do shit if not connected to a terminal
 # shellcheck disable=SC1090,SC2015
+# Don't do shit if not connected to a terminal
 [ -t 0 ] || return
 
-# Truisms
-user_path="$HOME/bin:$HOME/bin/python/bin:$HOME/bin/cargo/bin:$HOME/bin/node/bin:$HOME/bin/node/node_modules/.bin"
-export PATH="$user_path:$PATH:/sbin"
-export LANG=en_US.UTF-8
-export EDITOR=vim
-export BROWSER=w3m
+# Launch graphical environment if attached to tty1
+[ "$(tty)" = /dev/tty1 ] && "$HOME/bin/dwlaunch.sh"
 
 # Multiplex
 if type tmux >/dev/null 2>&1 && [ ! "$TMUX" ]; then
@@ -30,6 +26,13 @@ muxjoin() {
         tmux move-window -ds "$win"
     done
 }
+
+# Truisms
+user_path="$HOME/bin:$HOME/bin/python/bin:$HOME/bin/cargo/bin:$HOME/bin/node/bin:$HOME/bin/node/node_modules/.bin"
+export PATH="$user_path:$PATH:/sbin"
+export LANG=en_US.UTF-8
+export EDITOR=vim
+export BROWSER=w3m
 
 # Shell options
 shopt -s autocd
