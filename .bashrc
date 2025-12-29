@@ -75,6 +75,7 @@ venv() {
         . ./"$venv_dir"/bin/activate
         uv pip install --upgrade pip setuptools
     fi
+    alias pip='uv pip'
     if [ -f requirements.txt ]; then
         missing_packages="$(comm -23 <(sort requirements.txt) <(uv pip freeze | grep -v '0.0.0' | sort))"
         if [ "$missing_packages" ]; then
@@ -83,7 +84,11 @@ venv() {
             [[ $REPLY =~ ^[Yy]$ ]] && uv pip install -r requirements.txt
         fi
     fi
-    [ -f pyproject.toml ] && uv pip install -e --upgrade . || true
+    if [ -f pyproject.toml ]; then
+        read -p "found pyproject.toml - install (y/N)? " -n 1 -r
+        echo
+        [[ $REPLY =~ ^[Yy]$ ]] && uv pip install --upgrade -e .
+    fi
 }
 
 timediff() {
