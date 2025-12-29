@@ -1,22 +1,25 @@
 " Options
 set adblocker=update
 set devtoolsposition=split
-set guihidetimeout=10000
-set guiscrollbar=onscroll
+set guihidetimeout=0
+set guifullscreentabbar=always
+set guiscrollbar=always
 set noquitonlasttabclose
 set pdfbehavior=view
 set redirects+=https://www\.google\.com/url\?q=(.*)~$1
 set searchwords={}
-set searchwords+=w~en.wikipedia.org/wiki/Special:Search/%s
 set searchwords+=d~en.wiktionary.org/wiki/Special:Search?search=%s
 set searchwords+=g~encrypted.google.com/search?q=%s
 set searchwords+=l~google.com/search?q=%s&btnI
+set searchwords+=w~en.wikipedia.org/wiki/Special:Search/%s
 set searchwords+=yt~youtube.com/results?search_query=%s,imdb~imdb.com/find?q=%s
+set suggesttopsites=0
 set tabclosefocus=previous
 set vimcommand="foot -e vim"
 
 " Mappings
 nmap <Space> <scrollPageDown>
+nmap <C-l> <:set guifullscreentabbar!always|never><:set guiscrollbar!always|never>
 cmap <C-a> <Home>
 emap <C-a> <Home>
 smap <C-a> <Home>
