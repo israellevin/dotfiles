@@ -245,7 +245,16 @@ bind -x '"\C-g": sanj_rewrite'
 # Media
 cap() { slurp | grim -g - "${1:-tmp}.png"; }
 feh() { foot sh -c "chafa --duration inf '$*'" 2> /dev/null; }
-vol() { s=@DEFAULT_AUDIO_SINK@; [ "$1" ] && wpctl set-volume $s "$1" || wpctl set-mute $s toggle; wpctl get-volume $s; }
+vol() {
+    local sink=@DEFAULT_AUDIO_SINK@;
+    if [ "$1" ]; then
+        wpctl set-mute $sink 0
+        wpctl set-volume $sink "$1"
+    else
+        wpctl set-mute $sink toggle
+    fi
+    wpctl get-volume $sink
+}
 blu() {
     local bluetooth_id
     bluetooth_id=$(rfkill list | grep -Po '^\d(?=: hci\d: Bluetooth)')
