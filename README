@@ -14,6 +14,7 @@ Unlikely to be very useful to anyone else, but who knows.
 
 .config/user-dirs.dirs
 .config/foot
+.config/mango
 
 ## Scripts
 
@@ -22,9 +23,9 @@ Unlikely to be very useful to anyone else, but who knows.
 ./bin/brows         - run my current browser of choice (vieb, sometimes nyxt)
 ./bin/chrootcrypt   - chroot into an encrypted partition
 ./bin/clip          - CLI wayland clipboard manager with wl-paste and cliphist
-./bin/dwlaunch.sh   - launch dwl the way I like it
 ./bin/flame         - flame graph generator, requires perf (really just a helper for the wonderful https://github.com/brendangregg/FlameGraph)
 ./bin/getwin.sh     - focus a window by name (on X)
+./bin/gomango.sh    - launch mangowc the way I like it
 ./bin/menu          - dmenu replacement for the terminal, using fzf-tmux under tmux or a spawned terminal with fzf
 ./bin/menu_run      - dmenu_run replacement using the above
 ./bin/red           - automatic wlsunset (nee xsct nee redshift) configuration and launch

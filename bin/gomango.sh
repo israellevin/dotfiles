@@ -15,9 +15,4 @@ export PATH LANG EDITOR BROWSER WAYLAND_DISPLAY XDG_CURRENT_DESKTOP WLR_BACKENDS
 systemctl --user import-environment WAYLAND_DISPLAY XDG_CURRENT_DESKTOP
 dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP
 
-exec dwl -s ' \
-    red & \
-    foot & \
-    clip --start & \
-    brows --wait-till-online & \
-    wait'
+exec mango -c "$HOME/.config/mango/main.conf"
