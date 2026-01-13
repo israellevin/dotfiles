@@ -3,7 +3,7 @@
 [ -t 0 ] || return
 
 # Launch graphical environment if attached to tty1
-[ "$(tty)" = /dev/tty1 ] && exec ~/bin/gomango.sh
+[ "$(tty)" = /dev/tty1 ] && exec ~/bin/wayland.sh
 
 # Multiplex
 if type tmux >/dev/null 2>&1 && [ ! "$TMUX" ]; then

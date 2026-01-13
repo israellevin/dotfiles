@@ -1,0 +1,170 @@
+input {
+    keyboard {
+        xkb {
+            layout "us,il"
+            options "grp:caps toggle"
+        }
+        numlock
+        repeat-delay 1000
+        repeat-rate 1
+    }
+
+    touchpad { tap; }
+}
+
+layout {
+    gaps 0
+    empty-workspace-above-first
+    preset-column-widths {
+        proportion 0.2
+        proportion 0.5
+        proportion 0.8
+        proportion 1.0
+    }
+    preset-window-heights {
+        proportion 0.3
+        proportion 0.5
+        proportion 0.7
+    }
+    default-column-width { proportion 1.0; }
+    focus-ring {
+        off
+        width 1
+        active-gradient from="#00ff00" to="#00ffff" angle=45
+        inactive-gradient from="#005000" to="#0050ff" angle=45 relative-to="workspace-view"
+    }
+}
+
+window-rule {
+    match is-focused=true
+    opacity 1.0
+}
+
+window-rule {
+    match is-focused=false
+    opacity 0.6
+}
+
+// animations { off; }
+prefer-no-csd
+hotkey-overlay { skip-at-startup; }
+
+spawn-at-startup "red"
+spawn-at-startup "xwayland-satellite"
+spawn-sh-at-startup "foot"
+spawn-sh-at-startup "clip --start"
+spawn-sh-at-startup "brows --wait-till-online"
+
+screenshot-path "~/Screenshot.%Y-%m-%d.%H-%M-%S.png"
+
+binds {
+    Mod+Shift+Return { spawn "foot"; }
+    Mod+Space { spawn "menu_run"; }
+    Mod+B { spawn "brows"; }
+    Mod+C { spawn "clip"; }
+
+    Mod+Q repeat=false { close-window; }
+    Mod+Shift+Q { quit; }
+    Mod+Shift+P { power-off-monitors; }
+
+    Mod+Return { focus-window-previous; }
+    Alt+Tab repeat=false { toggle-overview; }
+
+    Mod+H     { focus-column-left; }
+    Mod+J     { focus-window-or-workspace-down; }
+    Mod+K     { focus-window-or-workspace-up; }
+    Mod+L     { focus-column-right-or-first; }
+
+    Mod+Ctrl+H     { move-column-left; }
+    Mod+Ctrl+J     { move-window-down-or-to-workspace-down; }
+    Mod+Ctrl+K     { move-window-up-or-to-workspace-up; }
+    Mod+Ctrl+L     { move-column-right; }
+
+    Mod+Alt+H { focus-column-first; }
+    Mod+Alt+L  { focus-column-last; }
+    Mod+Shift+H { move-column-to-first; }
+    Mod+Shift+L  { move-column-to-last; }
+
+    Mod+BracketLeft  { consume-or-expel-window-left; }
+    Mod+BracketRight { consume-or-expel-window-right; }
+    Mod+Comma  { consume-window-into-column; }
+    Mod+Period { expel-window-from-column; }
+
+    Mod+M { maximize-window-to-edges; }
+    Mod+F { maximize-column; }
+    Mod+Ctrl+F { expand-column-to-available-width; }
+    Mod+Shift+F { fullscreen-window; }
+    Mod+R { switch-preset-column-width; }
+    Mod+Shift+R { switch-preset-window-height; }
+    Mod+Ctrl+R { reset-window-height; }
+    Mod+Minus { set-column-width "-10%"; }
+    Mod+Equal { set-column-width "+10%"; }
+    Mod+Shift+Minus { set-window-height "-10%"; }
+    Mod+Shift+Equal { set-window-height "+10%"; }
+
+    Mod+V       { toggle-window-floating; }
+    Mod+Shift+V { switch-focus-between-floating-and-tiling; }
+    Mod+W { toggle-column-tabbed-display; }
+    Mod+Shift+C { center-column; }
+    Mod+Ctrl+C { center-visible-columns; }
+
+    Mod+Left  { focus-monitor-left; }
+    Mod+Down  { focus-monitor-down; }
+    Mod+Up    { focus-monitor-up; }
+    Mod+Right { focus-monitor-right; }
+
+    Mod+Ctrl+Left  { move-column-to-monitor-left; }
+    Mod+Ctrl+Down  { move-column-to-monitor-down; }
+    Mod+Ctrl+Up    { move-column-to-monitor-up; }
+    Mod+Ctrl+Right { move-column-to-monitor-right; }
+
+    Print { screenshot; }
+    Ctrl+Print { screenshot-screen; }
+    Alt+Print { screenshot-window; }
+
+    Mod+TouchpadScrollDown { spawn-sh "wpctl set-volume @DEFAULT_AUDIO_SINK@ 0.02-"; }
+    Mod+TouchpadScrollUp   { spawn-sh "wpctl set-volume @DEFAULT_AUDIO_SINK@ 0.02+"; }
+
+    XF86AudioRaiseVolume allow-when-locked=true { spawn-sh "wpctl set-volume @DEFAULT_AUDIO_SINK@ 0.1+ -l 1.0"; }
+    XF86AudioLowerVolume allow-when-locked=true { spawn-sh "wpctl set-volume @DEFAULT_AUDIO_SINK@ 0.1-"; }
+    XF86AudioMute        allow-when-locked=true { spawn-sh "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle"; }
+    XF86AudioMicMute     allow-when-locked=true { spawn-sh "wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle"; }
+    XF86MonBrightnessUp allow-when-locked=true { spawn "blight.sh" "up"; }
+    XF86MonBrightnessDown allow-when-locked=true { spawn "blight.sh" "down"; }
+
+    Mod+1 { focus-workspace 1; }
+    Mod+2 { focus-workspace 2; }
+    Mod+3 { focus-workspace 3; }
+    Mod+4 { focus-workspace 4; }
+    Mod+5 { focus-workspace 5; }
+    Mod+6 { focus-workspace 6; }
+    Mod+7 { focus-workspace 7; }
+    Mod+8 { focus-workspace 8; }
+    Mod+9 { focus-workspace 9; }
+    Mod+Ctrl+1 { move-column-to-workspace 1; }
+    Mod+Ctrl+2 { move-column-to-workspace 2; }
+    Mod+Ctrl+3 { move-column-to-workspace 3; }
+    Mod+Ctrl+4 { move-column-to-workspace 4; }
+    Mod+Ctrl+5 { move-column-to-workspace 5; }
+    Mod+Ctrl+6 { move-column-to-workspace 6; }
+    Mod+Ctrl+7 { move-column-to-workspace 7; }
+    Mod+Ctrl+8 { move-column-to-workspace 8; }
+    Mod+Ctrl+9 { move-column-to-workspace 9; }
+
+    // Usually scrolling up and down with Shift in applications results in
+    // horizontal scrolling; these binds replicate that.
+    Mod+Shift+WheelScrollDown      { focus-column-right; }
+    Mod+Shift+WheelScrollUp        { focus-column-left; }
+    Mod+Ctrl+Shift+WheelScrollDown { move-column-right; }
+    Mod+Ctrl+Shift+WheelScrollUp   { move-column-left; }
+
+    // Applications such as remote-desktop clients and software KVM switches may
+    // request that niri stops processing the keyboard shortcuts defined here
+    // so they may, for example, forward the key presses as-is to a remote machine.
+    // It's a good idea to bind an escape hatch to toggle the inhibitor,
+    // so a buggy application can't hold your session hostage.
+    //
+    // The allow-inhibiting=false property can be applied to other binds as well,
+    // which ensures niri always processes them, even when an inhibitor is active.
+    Mod+Escape allow-inhibiting=false { toggle-keyboard-shortcuts-inhibit; }
+}
