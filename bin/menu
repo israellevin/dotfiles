@@ -9,5 +9,5 @@ outfifo="$tmpdir/out"
 mkfifo "$infifo" "$outfifo"
 
 cat "$outfifo" &
-foot sh -c "fzf $@ < '$infifo' > '$outfifo'" &
+foot -a menu_run sh -c "fzf $* < '$infifo' > '$outfifo'" &
 cat - > "$infifo"
