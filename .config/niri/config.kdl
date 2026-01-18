@@ -2,31 +2,40 @@ input {
     keyboard {
         xkb {
             layout "us,il"
-            options "grp:caps toggle"
+            options "grp:caps_toggle"
         }
         numlock
         repeat-delay 1000
         repeat-rate 1
     }
-
     touchpad { tap; }
+}
+
+cursor {
+    hide-after-inactive-ms 1000
 }
 
 layout {
     gaps 0
     empty-workspace-above-first
+    default-column-width { proportion 1.0; }
+    background-color "#000000"
     preset-column-widths {
-        proportion 0.2
-        proportion 0.5
         proportion 0.8
-        proportion 1.0
+        proportion 0.5
+        proportion 0.2
     }
     preset-window-heights {
-        proportion 0.3
-        proportion 0.5
         proportion 0.7
+        proportion 0.5
+        proportion 0.3
     }
-    default-column-width { proportion 1.0; }
+    tab-indicator {
+        position "right"
+        place-within-column
+        hide-when-single-tab
+        length total-proportion=1.0
+    }
     focus-ring {
         off
         width 1
@@ -45,8 +54,25 @@ window-rule {
     opacity 0.6
 }
 
-// animations { off; }
+window-rule {
+    match app-id="menu_run"
+    open-floating true
+    opacity 0.7
+    default-column-width { proportion 0.9; }
+    default-window-height { proportion 0.9; }
+    geometry-corner-radius 20
+    clip-to-geometry true
+    focus-ring {
+        on
+        width 0
+        active-gradient from="#00ff00ff" to="#00000000" angle=60
+    }
+}
+
+animations { off; }
 prefer-no-csd
+overview { zoom 0.10; }
+gestures { hot-corners { top-right; }; }
 hotkey-overlay { skip-at-startup; }
 
 spawn-at-startup "red"
@@ -58,37 +84,42 @@ spawn-sh-at-startup "brows --wait-till-online"
 screenshot-path "~/Screenshot.%Y-%m-%d.%H-%M-%S.png"
 
 binds {
+
     Mod+Shift+Return { spawn "foot"; }
-    Mod+Space { spawn "menu_run"; }
-    Mod+B { spawn "brows"; }
+    Mod+Shift+Z { spawn "foot"; }
+    Mod+P { spawn "menu_run"; }
+    Mod+Space { spawn "brows"; }
     Mod+C { spawn "clip"; }
+    Alt+Tab { spawn "getwin.sh"; }
 
     Mod+Q repeat=false { close-window; }
-    Mod+Shift+Q { quit; }
     Mod+Shift+P { power-off-monitors; }
+    Mod+Shift+Q { quit; }
 
     Mod+Return { focus-window-previous; }
-    Alt+Tab repeat=false { toggle-overview; }
-
-    Mod+H     { focus-column-left; }
-    Mod+J     { focus-window-or-workspace-down; }
-    Mod+K     { focus-window-or-workspace-up; }
-    Mod+L     { focus-column-right-or-first; }
-
-    Mod+Ctrl+H     { move-column-left; }
-    Mod+Ctrl+J     { move-window-down-or-to-workspace-down; }
-    Mod+Ctrl+K     { move-window-up-or-to-workspace-up; }
-    Mod+Ctrl+L     { move-column-right; }
+    Mod+J { focus-window-down-or-column-right; }
+    Mod+K { focus-window-up-or-column-left; }
+    Mod+Shift+J { consume-or-expel-window-right; }
+    Mod+Shift+K { consume-or-expel-window-left; }
 
     Mod+Alt+H { focus-column-first; }
-    Mod+Alt+L  { focus-column-last; }
-    Mod+Shift+H { move-column-to-first; }
-    Mod+Shift+L  { move-column-to-last; }
+    Mod+Alt+L { focus-column-last; }
+    Mod+Control+H { move-column-to-first; }
+    Mod+Control+L { move-column-to-last; }
+    Mod+Shift+C { center-column; }
+    Mod+Ctrl+C { center-visible-columns; }
+    Mod+W { toggle-column-tabbed-display; }
 
-    Mod+BracketLeft  { consume-or-expel-window-left; }
-    Mod+BracketRight { consume-or-expel-window-right; }
-    Mod+Comma  { consume-window-into-column; }
-    Mod+Period { expel-window-from-column; }
+    Mod+Shift+L { move-window-down-or-to-workspace-down; }
+    Mod+Shift+H { move-window-up-or-to-workspace-up; }
+
+    Ctrl+Grave repeat=false { toggle-overview; }
+    Super+T { spawn-sh "niriu.sh tile --workspace focused"; }
+    Super+Shift+T { spawn-sh "niriu.sh tile"; }
+    Super+S { spawn-sh "niriu.sh spread --workspace focused"; }
+    Super+Shift+S { spawn-sh "niriu.sh spread"; }
+    Mod+L { spawn-sh "niriu.sh windo --workspace focused set-window-width '100%'"; }
+    Mod+H { spawn-sh "niriu.sh windo --workspace focused set-window-width '-10%'"; }
 
     Mod+M { maximize-window-to-edges; }
     Mod+F { maximize-column; }
@@ -101,29 +132,29 @@ binds {
     Mod+Equal { set-column-width "+10%"; }
     Mod+Shift+Minus { set-window-height "-10%"; }
     Mod+Shift+Equal { set-window-height "+10%"; }
-
-    Mod+V       { toggle-window-floating; }
+    Mod+V { toggle-window-floating; }
     Mod+Shift+V { switch-focus-between-floating-and-tiling; }
-    Mod+W { toggle-column-tabbed-display; }
-    Mod+Shift+C { center-column; }
-    Mod+Ctrl+C { center-visible-columns; }
 
-    Mod+Left  { focus-monitor-left; }
-    Mod+Down  { focus-monitor-down; }
-    Mod+Up    { focus-monitor-up; }
+    Mod+Left { focus-monitor-left; }
+    Mod+Down { focus-monitor-down; }
+    Mod+Up { focus-monitor-up; }
     Mod+Right { focus-monitor-right; }
 
-    Mod+Ctrl+Left  { move-column-to-monitor-left; }
-    Mod+Ctrl+Down  { move-column-to-monitor-down; }
-    Mod+Ctrl+Up    { move-column-to-monitor-up; }
-    Mod+Ctrl+Right { move-column-to-monitor-right; }
+    Mod+Shift+Left { move-column-to-monitor-left; }
+    Mod+Shift+Down { move-column-to-monitor-down; }
+    Mod+Shift+Up { move-column-to-monitor-up; }
+    Mod+Shift+Right { move-column-to-monitor-right; }
+
+    Super+D { spawn-sh "niriu.sh windo --workspace focused toggle-window-rule-opacity"; }
+    Super+A { spawn-sh "niriu.sh sedconf 's|^animations { on; }|animations { off; }|'"; }
+    Super+Shift+A { spawn-sh "niriu.sh sedconf 's|^animations { off; }|animations { on; }|'"; }
 
     Print { screenshot; }
     Ctrl+Print { screenshot-screen; }
     Alt+Print { screenshot-window; }
 
     Mod+TouchpadScrollDown { spawn-sh "wpctl set-volume @DEFAULT_AUDIO_SINK@ 0.02-"; }
-    Mod+TouchpadScrollUp   { spawn-sh "wpctl set-volume @DEFAULT_AUDIO_SINK@ 0.02+"; }
+    Mod+TouchpadScrollUp { spawn-sh "wpctl set-volume @DEFAULT_AUDIO_SINK@ 0.02+"; }
 
     XF86AudioRaiseVolume allow-when-locked=true { spawn-sh "wpctl set-volume @DEFAULT_AUDIO_SINK@ 0.1+ -l 1.0"; }
     XF86AudioLowerVolume allow-when-locked=true { spawn-sh "wpctl set-volume @DEFAULT_AUDIO_SINK@ 0.1-"; }
@@ -141,22 +172,15 @@ binds {
     Mod+7 { focus-workspace 7; }
     Mod+8 { focus-workspace 8; }
     Mod+9 { focus-workspace 9; }
-    Mod+Ctrl+1 { move-column-to-workspace 1; }
-    Mod+Ctrl+2 { move-column-to-workspace 2; }
-    Mod+Ctrl+3 { move-column-to-workspace 3; }
-    Mod+Ctrl+4 { move-column-to-workspace 4; }
-    Mod+Ctrl+5 { move-column-to-workspace 5; }
-    Mod+Ctrl+6 { move-column-to-workspace 6; }
-    Mod+Ctrl+7 { move-column-to-workspace 7; }
-    Mod+Ctrl+8 { move-column-to-workspace 8; }
-    Mod+Ctrl+9 { move-column-to-workspace 9; }
-
-    // Usually scrolling up and down with Shift in applications results in
-    // horizontal scrolling; these binds replicate that.
-    Mod+Shift+WheelScrollDown      { focus-column-right; }
-    Mod+Shift+WheelScrollUp        { focus-column-left; }
-    Mod+Ctrl+Shift+WheelScrollDown { move-column-right; }
-    Mod+Ctrl+Shift+WheelScrollUp   { move-column-left; }
+    Mod+Shift+1 { move-column-to-workspace 1; }
+    Mod+Shift+2 { move-column-to-workspace 2; }
+    Mod+Shift+3 { move-column-to-workspace 3; }
+    Mod+Shift+4 { move-column-to-workspace 4; }
+    Mod+Shift+5 { move-column-to-workspace 5; }
+    Mod+Shift+6 { move-column-to-workspace 6; }
+    Mod+Shift+7 { move-column-to-workspace 7; }
+    Mod+Shift+8 { move-column-to-workspace 8; }
+    Mod+Shift+9 { move-column-to-workspace 9; }
 
     // Applications such as remote-desktop clients and software KVM switches may
     // request that niri stops processing the keyboard shortcuts defined here

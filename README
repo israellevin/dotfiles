@@ -13,8 +13,8 @@ Unlikely to be very useful to anyone else, but who knows.
 .vimrc
 
 .config/user-dirs.dirs
-.config/foot
-.config/mango
+.config/foot/foot.ini
+.config/niri/config.kdl
 
 ## Scripts
 
