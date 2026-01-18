@@ -13,6 +13,7 @@ set searchwords+=yt~youtube.com/results?search_query=%s,imdb~imdb.com/find?q=%s
 set suggesttopsites=0
 set tabclosefocus=previous
 set vimcommand="foot -e vim"
+set useragent="Mozilla/5.0 (X11; Linux x86_64; rv:146.0) Gecko/20100101 Firefox/146.0"
 
 set guihidetimeout=0
 set guinavbar=oninput
