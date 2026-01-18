@@ -25,7 +25,7 @@ Unlikely to be very useful to anyone else, but who knows.
 ./bin/clip          - CLI wayland clipboard manager with wl-paste and cliphist
 ./bin/flame         - flame graph generator, requires perf (really just a helper for the wonderful https://github.com/brendangregg/FlameGraph)
 ./bin/getwin.sh     - focus a window by title on niri
-./bin/wayland.sh    - launch wayland with my preferred compositor (niri)
+./bin/niri.sh       - launch the niri Wayland compositor from TTY
 ./bin/menu          - dmenu replacement for the terminal, using fzf-tmux under tmux or a spawned terminal with fzf
 ./bin/menu_run      - dmenu_run replacement using the above
 ./bin/red           - automatic wlsunset (nee xsct nee redshift) configuration and launch

@@ -5,5 +5,8 @@ PATH="$user_path:$PATH:/sbin:$HOME/bin/node/bin:$HOME/.fzf/bin"
 LANG=en_US.UTF-8
 EDITOR=vim
 BROWSER=brows
-export PATH LANG EDITOR BROWSER
+XDG_CONFIG_HOME="$HOME/.config"
+XDG_CACHE_HOME="$HOME/.cache"
+XDG_DATA_HOME="$HOME/.local/share"
+export PATH LANG EDITOR BROWSER XDG_CONFIG_HOME XDG_CACHE_HOME XDG_DATA_HOME
 exec niri
