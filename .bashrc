@@ -144,6 +144,9 @@ xs() {
 
 # Completion
 . /etc/bash_completion
+. <(pip completion --bash)
+. <(niri completions bash)
+
 complete -W "$(grep -aPo '(?<=^ssh ).*$' ~/.bash_history_safe 2>/dev/null | sort -u | sed 's/\(.*\)/"\1"/')" ssh
 
 _w() {
@@ -158,17 +161,6 @@ _..() {
     mapfile -t COMPREPLY < <(printf '%s\n' "${parts[@]}" | grep "${COMP_WORDS[COMP_CWORD]}")
 }
 complete -F _.. ..
-
-_pip_completion()
-{
-    mapfile -t COMPREPLY < <(
-        COMP_WORDS="${COMP_WORDS[*]}" \
-        COMP_CWORD=$COMP_CWORD \
-        PIP_AUTO_COMPLETE=1 \
-        "$1" 2>/dev/null
-    )
-}
-complete -o default -F _pip_completion pip
 
 # ls
 LS_OPTIONS='-lh --color=auto --quoting-style=shell'
