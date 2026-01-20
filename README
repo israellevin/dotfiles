@@ -15,6 +15,7 @@ Unlikely to be very useful to anyone else, but who knows.
 .config/user-dirs.dirs
 .config/foot/foot.ini
 .config/niri/config.kdl
+.config/xdg-desktop-portal/portals.conf
 
 ## Scripts
 
