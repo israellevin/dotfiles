@@ -28,7 +28,11 @@ muxjoin() {
 }
 
 # Truisms
-user_path="$HOME/bin:$HOME/bin/python/bin:$HOME/bin/cargo/bin:$HOME/bin/node/bin:$HOME/bin/node/node_modules/.bin"
+user_path="$HOME/bin"
+user_path="$user_path:$HOME/bin/python/bin"
+user_path="$user_path:$HOME/bin/cargo/bin"
+user_path="$user_path:$HOME/bin/node/bin"
+user_path="$user_path:$HOME/bin/node/node_modules/.bin"
 export PATH="$user_path:$PATH:/sbin"
 export LANG=en_US.UTF-8
 export EDITOR=vim
