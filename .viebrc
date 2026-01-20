@@ -1,6 +1,7 @@
 " Options
 set adblocker=update
 set devtoolsposition=split
+set mouse-=leaveinput
 set noquitonlasttabclose
 set pdfbehavior=view
 set redirects+=https://www\.google\.com/url\?q=(.*)~$1
