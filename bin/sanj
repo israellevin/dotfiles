@@ -1,122 +1,137 @@
 #!/usr/bin/bash
 
-[ "$OPENAI_API_KEY" ] || { echo "Set OPENAI_API_KEY env var"; exit 1; }
+[ "$OPENAI_API_KEY" ] || { echo "Set OPENAI_API_KEY env var"; return 1; }
 
 generate_command() {
-    sgpt --shell --no-interaction "$*"
+    llm --system 'Provide just the one-line bash command for a debian system with no decorations' "$*"
 }
 
-generate_image() {
-    local size=256x256
-    if [ "$1" = '-l' ]; then
-        shift
-        size=512x512
-    elif [ "$1" = '-x' ]; then
-        shift
-        size=1024x1024
-    fi
-    local prompt="$*"
-    img_url=$(curl https://api.openai.com/v1/images/generations -sS \
-        -H 'Content-Type: application/json' \
-        -H "Authorization: Bearer $OPENAI_API_KEY" \
-        -d '{
-            "prompt": "'"$prompt"'",
-            "n": 1,
-            "size": "'"$size"'"
-        }' | node -pe 'JSON.parse(require("fs").readFileSync(0, "utf-8")).data[0].url')
-    file_name="${prompt// /_}.png"
-    curl -sS "$img_url" -o "$file_name"
-    chafa "$file_name"
-}
+# If we are being sourced, set up the keybinding and return, we are done.
+if [ "${BASH_SOURCE[0]}" != "$0" ]; then
+    rewrite_command() {
+        [ "$READLINE_LINE" ] || return 0
+        READLINE_LINE="$(generate_command "$READLINE_LINE")"
+        READLINE_POINT=${#READLINE_LINE}
+    }
+    bind -x '"\C-g": rewrite_command'
+    echo Bound Ctrl-G to sanj command rewriting
+    return 0
+fi
 
-# Handle special commands.
+# Manual invocations.
+
+# Type command from prompt.
 if [ "$1" = 'do' ]; then
-    wlrctl keyboard type "$(generate_command "$*")"
+    ydotool type "$(generate_command "$*")"
     exit 0
-elif [ "$1" = 'img' ]; then
+fi
+
+# Continue previous chat.
+if [ "$1" = 'cont' ]; then
+    llm chat --continue
+    exit 0
+fi
+
+# Generate image from prompt.
+if [ "$1" = 'img' ]; then
+    generate_image() {
+        local size=256x256
+        if [ "$1" = '-l' ]; then
+            shift
+            size=512x512
+        elif [ "$1" = '-x' ]; then
+            shift
+            size=1024x1024
+        fi
+        local prompt="$*"
+        img_url=$(curl https://api.openai.com/v1/images/generations -sS \
+            -H 'Content-Type: application/json' \
+            -H "Authorization: Bearer $OPENAI_API_KEY" \
+            -d '{
+                "prompt": "'"$prompt"'",
+                "n": 1,
+                "size": "'"$size"'"
+            }' | node -pe 'JSON.parse(require("fs").readFileSync(0, "utf-8")).data[0].url')
+        file_name="${prompt// /_}.png"
+        curl -sS "$img_url" -o "$file_name"
+        chafa "$file_name"
+    }
     generate_image "$@"
     exit 0
-elif [ "$1" = 'code' ]; then
-    sgpt --code "$*"
-    exit 0
-elif [ "$1" = 'dump' ]; then
-    llm --model gpt-5-nano "$*"
-    exit 0
-elif [ "$1" = 'list' ]; then
-    sgpt --list-chats
-    exit 0
-elif [ "$1" = 'show' ]; then
-    sgpt --show-chat "$2"
-    exit 0
 fi
 
-# Model selection.
-if [ "$1" = - ]; then
-    sgpt_flags=(--model gpt-4.1)
-    shift
-elif [ "$1" = -- ]; then
-    sgpt_flags=(--model o3-mini --temperature=1.0 --no-functions)
-    shift
-elif [ "$1" = --- ]; then
-    sgpt_flags=(--model gpt-5-nano --temperature=1.0 --no-functions)
-    shift
-else
-    sgpt_flags=(--model o3)
-fi
+# Syntactic sugar for llm command.
+sanj() {
+    local action=chat  # Default action is chat, but if a lone dash is provided, switch to prompt mode.
+    local llm_arguments=()  # Pass through arguments to llm.
+    local fragment_arguments=()  # File fragments to pass to llm.
+    local prompt  # Prompt to send to llm.
+    local system_prompt_override # System prompt override:
+                                 # 1) Anything after -- is passed as system prompt.
+                                 # 2) Any provided prompt is treated as system prompt if input is piped in.
 
-# Post dashes commands that never uses o3.
-if [ "$1" = dump ]; then
-    shift
-elif [ "$1" = 'loop' ]; then
-    shift
-    current="$*"
-    while true; do
-        response="$(
-            sgpt "${sgpt_flags[@]}" --no-functions --role sanjer "$current" | \
-                tee >(sed 's/\x1b\[[0-9;]*m//g' >&2)
-        )"
-        command="$(sed -n '/^command$/,$p' <<<"$response" | tail -n +2)"
-        [ -z "$command" ] && break
-        read -rp "Execute command: $command ? (y/n) " yn
-        [ "$yn" != y ] && break
-        output="$(eval "$command" 2>&1)"
-        current="$response\noutput:\n$output"
+    # Scan arguments.
+    local argument_index=1
+    while [ $argument_index -le $# ]; do
+        if [ -f "${!argument_index}" ]; then
+            fragment_arguments+=("--fragment" "${!argument_index}")
+            argument_index=$((argument_index + 1))
+            continue
+        fi
+        case "${!argument_index}" in
+            -) action=prompt;;
+            --) system_prompt_override="${*:$((argument_index + 1))}"; break;;
+            ---) action=loop;;
+            -*)
+                llm_arguments+=("${!argument_index}");
+                argument_index=$((argument_index + 1))
+                llm_arguments+=("${!argument_index}");;
+            *) prompt+=" ${!argument_index}";;
+        esac
+        argument_index=$((argument_index + 1))
     done
-    exit 0
-else
-    sgpt_flags+=(--repl "${1:-temp}")
-fi
 
-# If input is from pipe, read it all.
-if [ ! -t 0 ]; then
-    export TERM=dumb
-    lines=()
-    while IFS='' read -r line; do
-        lines+=("$line")
-    done
-fi
-
-# Collect readable files from args.
-files=()
-for argument in "$@"; do
-    if [ -r "$argument" ]; then
-        files+=("$argument")
+    # If input is being piped in, assume it's the prompt and the provided prompt is the system prompt.
+    if [ ! -t 0 ]; then
+        system_prompt_override+=" $prompt"
+        prompt=''
     fi
-done
 
-# Construct prompt.
-prompt="$*"
-if [ ${#files[@]} -gt 0 ]; then
-    prompt+='\nFiles:'
-fi
-for input_file in "${files[@]}"; do
-    prompt+="\n$input_file:\n$(<"$input_file")"
-done
-if [ ${#lines[@]} -gt 0 ]; then
-    prompt+='\nstdin:\n'
-fi
-for line in "${lines[@]}"; do
-    prompt+='\n'"$line"
-done
+    if [ "$system_prompt_override" ]; then
+        llm_arguments+=("--system" "$system_prompt_override")
+    fi
 
-sgpt "${sgpt_flags[@]}" "$prompt"
+    if [ $action = chat ]; then
+        (
+            sleep 1
+            ydotool type "$prompt"
+            ydotool key 28:1
+            ydotool key 28:0
+        ) &
+        llm $action "${llm_arguments[@]}" "${fragment_arguments[@]}"
+    elif [ $action = loop ]; then
+        if ! [ "$system_prompt_override" ]; then
+            llm_arguments+=('--system' ' \
+                You are an AI agent. Complete complicated tasks by using the "command" keyword. \
+                Everything in your response following a line with only the word "command" in it \
+                will be executed as is (so no formatting or fencing) on a bash shell \
+                of the hosting debian system. The output along with the complete history \
+                will be passed back to you.')
+        fi
+        while true; do
+            response="$(llm prompt "$prompt" "${llm_arguments[@]}" "${fragment_arguments[@]}")"
+            printf "\n=== Response ===\n%s\n" "$response"
+            command="$(sed -n '/^command$/,$p' <<<"$response" | tail -n +2)"
+            [ -z "$command" ] && break
+            read -rp "Execute command: $command ? (y/n) " yn
+            [ "$yn" != y ] && break
+            output="$(eval "$command" 2>&1)"
+            prompt="$prompt\nresponse:$response\noutput:\n$output\n\n"
+
+        done
+        return 0
+    fi
+    llm $action "$prompt" "${llm_arguments[@]}" "${fragment_arguments[@]}"
+}
+
+sanj "$@"

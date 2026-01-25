@@ -230,13 +230,7 @@ vz() {
 
 # LLM
 export OPENAI_KEY=sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-sanj_rewrite() {
-if [ -n "$READLINE_LINE" ]; then
-    READLINE_LINE="$(sgpt --shell --no-interaction "$READLINE_LINE")"
-    READLINE_POINT=${#READLINE_LINE}
-fi
-}
-bind -x '"\C-g": sanj_rewrite'
+. ~/bin/sanj
 
 # Media
 cap() { slurp | grim -g - "${1:-tmp}.png"; }
