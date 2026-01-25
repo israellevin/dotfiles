@@ -77,6 +77,8 @@ hotkey-overlay { skip-at-startup; }
 
 spawn-at-startup "red"
 spawn-at-startup "xwayland-satellite"
+spawn-at-startup "ydotoold"
+spawn-sh-at-startup "fnott"
 spawn-sh-at-startup "foot"
 spawn-sh-at-startup "clip --start"
 spawn-sh-at-startup "brows --wait-till-online"
@@ -93,8 +95,9 @@ binds {
     Alt+Tab { spawn "getwin.sh"; }
 
     Mod+Q repeat=false { close-window; }
-    Mod+Shift+P { power-off-monitors; }
     Mod+Shift+Q { quit; }
+    Mod+Shift+P { power-off-monitors; }
+    Mod+I { spawn-sh "fnottctl dismiss"; }
 
     Mod+Return { focus-window-previous; }
     Mod+J { focus-window-down-or-column-right; }
@@ -114,12 +117,12 @@ binds {
     Mod+Shift+H { move-window-up-or-to-workspace-up; }
 
     Ctrl+Grave repeat=false { toggle-overview; }
-    Super+T { spawn-sh "niriu.sh tile --workspace focused"; }
-    Super+Shift+T { spawn-sh "niriu.sh tile"; }
-    Super+S { spawn-sh "niriu.sh spread --workspace focused"; }
+    Super+T { spawn-sh "niriu.sh fetch"; }
+    Super+Shift+T { spawn-sh "niriu.sh fetch --tile"; }
+    Super+S { spawn-sh "niriu.sh scatter --workspace focused"; }
     Super+Shift+S { spawn-sh "niriu.sh spread"; }
     Mod+L { spawn-sh "niriu.sh windo --workspace focused set-window-width '100%'"; }
-    Mod+H { spawn-sh "niriu.sh windo --workspace focused set-window-width '-10%'"; }
+    Mod+H { spawn-sh "niriu.sh windo --workspace focused set-window-width '-20%'"; }
 
     Mod+M { maximize-window-to-edges; }
     Mod+F { maximize-column; }
@@ -146,8 +149,8 @@ binds {
     Mod+Shift+Right { move-column-to-monitor-right; }
 
     Super+D { spawn-sh "niriu.sh windo --workspace focused toggle-window-rule-opacity"; }
-    Super+A { spawn-sh "niriu.sh sedconf 's|^animations { on; }|animations { off; }|'"; }
-    Super+Shift+A { spawn-sh "niriu.sh sedconf 's|^animations { off; }|animations { on; }|'"; }
+    Super+A { spawn-sh "niriu.sh addconf 'animations { on; }'"; }
+    Super+Shift+A { spawn-sh "niriu.sh rmconf 'animations { on; }'"; }
 
     Print { screenshot; }
     Ctrl+Print { screenshot-screen; }
@@ -192,3 +195,5 @@ binds {
     // which ensures niri always processes them, even when an inhibitor is active.
     Mod+Escape allow-inhibiting=false { toggle-keyboard-shortcuts-inhibit; }
 }
+
+include "/home/i/.config/niri/niriush.kdl"
