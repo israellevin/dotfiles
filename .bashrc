@@ -3,7 +3,7 @@
 [ -t 0 ] || return
 
 # Launch graphical environment if attached to tty1
-[ "$(tty)" = /dev/tty1 ] && exec ~/bin/niri.sh
+[ "$(tty)" = /dev/tty1 ] && [ -z "$TMUX" ] && exec ~/bin/niri.sh
 
 # Multiplex
 if type tmux >/dev/null 2>&1 && [ ! "$TMUX" ]; then
@@ -37,6 +37,9 @@ export PATH="$user_path:$PATH:/sbin"
 export LANG=en_US.UTF-8
 export EDITOR=vim
 export BROWSER=w3m
+export XDG_CONFIG_HOME="$HOME/.config"
+export XDG_CACHE_HOME="$HOME/.cache"
+export XDG_DATA_HOME="$HOME/.local/share"
 
 # Shell options
 shopt -s autocd
