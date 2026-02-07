@@ -126,7 +126,7 @@ sanj() {
             read -rp "Execute command: $command ? (y/n) " yn
             [ "$yn" != y ] && break
             output="$(eval "$command" 2>&1)"
-            prompt="$prompt\nresponse:$response\noutput:\n$output\n\n"
+            prompt="$prompt\nresponse:\n$response\noutput:\n$output\n\n"
 
         done
         return 0
