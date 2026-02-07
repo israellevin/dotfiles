@@ -8,7 +8,7 @@ input {
         repeat-delay 1000
         repeat-rate 1
     }
-    touchpad { tap; }
+    touchpad { tap; dwt; dwtp; }
 }
 
 cursor {
@@ -71,7 +71,7 @@ window-rule {
 
 animations { off; }
 prefer-no-csd
-overview { zoom 0.10; }
+overview { zoom 0.25; }
 gestures { hot-corners { top-right; }; }
 hotkey-overlay { skip-at-startup; }
 
@@ -104,25 +104,29 @@ binds {
     Mod+K { focus-window-up-or-column-left; }
     Mod+Shift+J { consume-or-expel-window-right; }
     Mod+Shift+K { consume-or-expel-window-left; }
+    Mod+Control+J { move-window-down-or-to-workspace-down; }
+    Mod+Control+K { move-window-up-or-to-workspace-up; }
 
-    Mod+Alt+H { focus-column-first; }
-    Mod+Alt+L { focus-column-last; }
+    Mod+H { focus-column-first; }
+    Mod+L { focus-column-last; }
     Mod+Control+H { move-column-to-first; }
     Mod+Control+L { move-column-to-last; }
     Mod+Shift+C { center-column; }
     Mod+Ctrl+C { center-visible-columns; }
     Mod+W { toggle-column-tabbed-display; }
 
-    Mod+Shift+L { move-window-down-or-to-workspace-down; }
-    Mod+Shift+H { move-window-up-or-to-workspace-up; }
-
     Ctrl+Grave repeat=false { toggle-overview; }
-    Super+T { spawn-sh "niriu.sh fetch"; }
-    Super+Shift+T { spawn-sh "niriu.sh fetch --tile"; }
-    Super+S { spawn-sh "niriu.sh scatter --workspace focused"; }
-    Super+Shift+S { spawn-sh "niriu.sh spread"; }
-    Mod+L { spawn-sh "niriu.sh windo --workspace focused set-window-width '100%'"; }
-    Mod+H { spawn-sh "niriu.sh windo --workspace focused set-window-width '-20%'"; }
+    Mod+T { spawn-sh "niriu.sh flock"; }
+    Mod+Shift+T { spawn-sh "niriu.sh flock --mode fit"; }
+    Mod+S { spawn-sh "niriu.sh flock --workspace focused --mode up"; }
+    Mod+Shift+S { spawn-sh "niriu.sh flock --mode up"; }
+    Mod+Shift+L { spawn-sh "niriu.sh windo --workspace focused maximize-window-to-edges"; }
+    Mod+Shift+H { spawn-sh "niriu.sh windo --workspace focused set-window-width '-20%'"; }
+
+    Mod+D { spawn-sh "niriu.sh windo toggle-window-rule-opacity"; }
+    Mod+A { spawn-sh "niriu.sh conf --toggle 'animations { on; }'"; }
+    Mod+Shift+A { spawn-sh "niriu.sh conf --toggle 'output \"eDP-1\" { scale 2.0; }'"; }
+    Mod+Ctrl+A { spawn-sh "niriu.sh conf --reset"; }
 
     Mod+M { maximize-window-to-edges; }
     Mod+F { maximize-column; }
@@ -147,10 +151,6 @@ binds {
     Mod+Shift+Down { move-column-to-monitor-down; }
     Mod+Shift+Up { move-column-to-monitor-up; }
     Mod+Shift+Right { move-column-to-monitor-right; }
-
-    Super+D { spawn-sh "niriu.sh windo --workspace focused toggle-window-rule-opacity"; }
-    Super+A { spawn-sh "niriu.sh addconf 'animations { on; }'"; }
-    Super+Shift+A { spawn-sh "niriu.sh rmconf 'animations { on; }'"; }
 
     Print { screenshot; }
     Ctrl+Print { screenshot-screen; }
