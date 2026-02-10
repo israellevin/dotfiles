@@ -29,6 +29,7 @@ Plug 'tpope/vim-surround'
 Plug 'florentc/vim-tla'
 Plug 'puremourning/vimspector'
 Plug 'jasonccox/vim-wayland-clipboard'
+Plug 'mbbill/undotree'
 Plug 'maxbrunsfeld/vim-yankstack'
 
 Plug 'w0ng/vim-hybrid'
@@ -143,7 +144,7 @@ set switchbuf=usetab
 
 " History
 set history=10000
-set viminfo='100,%
+set viminfo='1000,%,f1
 set backup
 set writebackup
 set backupdir=~/.vim/backups
