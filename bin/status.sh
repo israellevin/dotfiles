@@ -41,6 +41,8 @@ grep -q Discharging $battdir/status && line="$line🔋"
 # Strong visual alert on low batt or high temp.
 if [ "$battpercent" -lt 9 ] || [ "$maxtemp" -gt 90000 ]; then
     tmux set -g status-bg red
+    type notify-send 2> /dev/null && notify-send -u critical "Battery low or CPU overheating!" \
+        "Battery at ${battpercent}%, CPU temp at $(( maxtemp / 1000 ))°C"
 else
     tmux set -g status-bg '#000000'
 fi
