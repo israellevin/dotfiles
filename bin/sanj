@@ -1,6 +1,7 @@
 #!/usr/bin/bash
 
-[ "$OPENAI_API_KEY" ] || { echo "Set OPENAI_API_KEY env var"; return 1; }
+# shellcheck disable=SC2317  # This makes semantic sense if you consider sourcing vs executing.
+[ "$OPENAI_API_KEY" ] || { echo "Set OPENAI_API_KEY env var"; return 1 2> /dev/null || exit 1; }
 
 generate_command() {
     llm --system 'Provide just the one-line bash command for a debian system with no decorations' "$*"
@@ -73,20 +74,22 @@ sanj() {
     # Scan arguments.
     local argument_index=1
     while [ $argument_index -le $# ]; do
-        if [ -f "${!argument_index}" ]; then
-            fragment_arguments+=("--fragment" "${!argument_index}")
-            argument_index=$((argument_index + 1))
-            continue
-        fi
         case "${!argument_index}" in
             -) action=prompt;;
             --) system_prompt_override="${*:$((argument_index + 1))}"; break;;
             ---) action=loop;;
             -*)
-                llm_arguments+=("${!argument_index}");
+                llm_arguments+=("${!argument_index}")
                 argument_index=$((argument_index + 1))
-                llm_arguments+=("${!argument_index}");;
-            *) prompt+=" ${!argument_index}";;
+                llm_arguments+=("${!argument_index}")
+                ;;
+            *)
+                if [ -f "${!argument_index}" ]; then
+                    fragment_arguments+=("--fragment" "${!argument_index}")
+                else
+                    prompt+=" ${!argument_index}"
+                fi
+                ;;
         esac
         argument_index=$((argument_index + 1))
     done
@@ -101,7 +104,9 @@ sanj() {
         llm_arguments+=("--system" "$system_prompt_override")
     fi
 
-    if [ $action = chat ]; then
+    if [ $action = prompt ]; then
+        llm $action "$prompt" "${llm_arguments[@]}" "${fragment_arguments[@]}"
+    elif [ $action = chat ]; then
         (
             sleep 1
             ydotool type "$prompt"
@@ -131,7 +136,6 @@ sanj() {
         done
         return 0
     fi
-    llm $action "$prompt" "${llm_arguments[@]}" "${fragment_arguments[@]}"
 }
 
 sanj "$@"
