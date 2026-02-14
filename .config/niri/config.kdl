@@ -82,6 +82,7 @@ spawn-sh-at-startup "fnott"
 spawn-sh-at-startup "foot"
 spawn-sh-at-startup "clip --start"
 spawn-sh-at-startup "brows --wait-till-online"
+spawn-sh-at-startup "ned WindowClosed noempty.sh"
 
 screenshot-path "~/Screenshot.%Y-%m-%d.%H-%M-%S.png"
 
@@ -120,7 +121,7 @@ binds {
     Mod+Shift+T { spawn-sh "niriu.sh flock --mode fit"; }
     Mod+S { spawn-sh "niriu.sh flock --workspace focused --mode up"; }
     Mod+Shift+S { spawn-sh "niriu.sh flock --mode up"; }
-    Mod+Shift+L { spawn-sh "niriu.sh windo --workspace focused maximize-window-to-edges"; }
+    Mod+Shift+L { spawn-sh "niriu.sh windo --workspace focused set-window-width '100%'"; }
     Mod+Shift+H { spawn-sh "niriu.sh windo --workspace focused set-window-width '-20%'"; }
 
     Mod+D { spawn-sh "niriu.sh windo toggle-window-rule-opacity"; }

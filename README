@@ -22,18 +22,18 @@ Unlikely to be very useful to anyone else, but who knows.
 ./bin/bash-define   - bash front end to dict.org, with completion (not mine, source unknown)
 ./bin/blight.sh     - set and toggle backlight brightness
 ./bin/brows         - run my current browser of choice (vieb, sometimes nyxt)
-./bin/chroot.sh     - chroot with bind mounting of proc, sys, dev and dev/pts
 ./bin/chrootcrypt   - chroot into an encrypted partition
+./bin/chroot.sh     - chroot with bind mounting of proc, sys, dev and dev/pts
 ./bin/clip          - CLI wayland clipboard manager with wl-paste and cliphist
 ./bin/flame         - flame graph generator, requires perf (really just a helper for the wonderful https://github.com/brendangregg/FlameGraph)
 ./bin/getwin.sh     - focus a window by title on niri
-./bin/niri.sh       - launch the niri Wayland compositor from TTY
 ./bin/menu          - dmenu replacement for the terminal, using fzf-tmux under tmux or a spawned terminal with fzf
 ./bin/menu_run      - dmenu_run replacement using the above
+./bin/niri.sh       - launch the niri Wayland compositor from TTY
 ./bin/red           - automatic wlsunset (nee xsct nee redshift) configuration and launch
 ./bin/sanj          - LLM terminal access (mostly wrappers around [shell-gpt](https://github.com/TheR1D/shell_gpt))
-./bin/slp           - sleep
 ./bin/status.sh     - status line for tmux
+./bin/noempty.sh    - Switches away from niri empty workspaces (for use with ned)
 ./bin/torst         - search for magnet links and torrentstream them
 ./bin/v             - pipe and size aware vim launcher
 ./bin/vid           - menu to list videos (with history) and play them
