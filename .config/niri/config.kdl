@@ -8,6 +8,7 @@ input {
         repeat-delay 1000
         repeat-rate 1
     }
+    focus-ignores-click
     touchpad { tap; dwt; dwtp; }
 }
 
@@ -78,11 +79,14 @@ hotkey-overlay { skip-at-startup; }
 spawn-at-startup "red"
 spawn-at-startup "xwayland-satellite"
 spawn-at-startup "ydotoold"
-spawn-sh-at-startup "fnott"
-spawn-sh-at-startup "foot"
-spawn-sh-at-startup "clip --start"
-spawn-sh-at-startup "brows --wait-till-online"
-spawn-sh-at-startup "ned WindowClosed noempty.sh"
+spawn-at-startup "fnott"
+spawn-at-startup "foot"
+spawn-at-startup "clip" "--start"
+spawn-at-startup "brows" "--wait-till-online"
+spawn-at-startup "ned" \
+    "WindowClosed" "/usr/share/doc/ned/examples/noempty.sh" \
+    "KeyboardLayoutSwitched" "/usr/share/doc/ned/examples/showlayout.sh" \
+    "Workspace" "/usr/share/doc/ned/examples/magnet.sh --floating --mode float right"
 
 screenshot-path "~/Screenshot.%Y-%m-%d.%H-%M-%S.png"
 
@@ -98,18 +102,18 @@ binds {
     Mod+Q repeat=false { close-window; }
     Mod+Shift+Q { quit; }
     Mod+Shift+P { power-off-monitors; }
-    Mod+I { spawn-sh "fnottctl dismiss"; }
+    Mod+I { spawn "fnottctl" "dismiss"; }
 
     Mod+Return { focus-window-previous; }
     Mod+J { focus-window-down-or-column-right; }
     Mod+K { focus-window-up-or-column-left; }
-    Mod+Shift+J { consume-or-expel-window-right; }
-    Mod+Shift+K { consume-or-expel-window-left; }
-    Mod+Control+J { move-window-down-or-to-workspace-down; }
-    Mod+Control+K { move-window-up-or-to-workspace-up; }
+    Mod+Shift+J { move-window-to-workspace-down; }
+    Mod+Shift+K { move-window-to-workspace-up; }
+    Mod+Control+J { move-window-to-workspace-down focus=false; }
+    Mod+Control+K { move-window-to-workspace-up focus=false; }
 
-    Mod+H { focus-column-first; }
-    Mod+L { focus-column-last; }
+    Mod+H { consume-or-expel-window-left; }
+    Mod+L { consume-or-expel-window-right; }
     Mod+Control+H { move-column-to-first; }
     Mod+Control+L { move-column-to-last; }
     Mod+Shift+C { center-column; }
@@ -117,22 +121,24 @@ binds {
     Mod+W { toggle-column-tabbed-display; }
 
     Ctrl+Grave repeat=false { toggle-overview; }
-    Mod+T { spawn-sh "niriu.sh flock"; }
-    Mod+Shift+T { spawn-sh "niriu.sh flock --mode fit"; }
-    Mod+S { spawn-sh "niriu.sh flock --workspace focused --mode up"; }
-    Mod+Shift+S { spawn-sh "niriu.sh flock --mode up"; }
-    Mod+Shift+L { spawn-sh "niriu.sh windo --workspace focused set-window-width '100%'"; }
-    Mod+Shift+H { spawn-sh "niriu.sh windo --workspace focused set-window-width '-20%'"; }
+    Mod+T { spawn "niriu.sh" "flock" "--mode" "tile" "max"; }
+    Mod+Shift+T { spawn "niriu.sh" "flock" "--mode" "tile" "fit"; }
+    Mod+S { spawn "niriu.sh" "flock" "--workspace" "focused" "--unfocused" "--mode" "scatter" "up"; }
+    Mod+Shift+S { spawn "niriu.sh" "flock" "--unfocused" "--mode" "scatter" "up"; }
+    Mod+Shift+L { spawn "niriu.sh" "windo" "--workspace" "focused" "--tiled" "set-window-width" "100%"; }
+    Mod+Shift+H { spawn "niriu.sh" "windo" "--workspace" "focused" "--tiled" "set-window-width" "-20%"; }
 
-    Mod+D { spawn-sh "niriu.sh windo toggle-window-rule-opacity"; }
-    Mod+A { spawn-sh "niriu.sh conf --toggle 'animations { on; }'"; }
-    Mod+Shift+A { spawn-sh "niriu.sh conf --toggle 'output \"eDP-1\" { scale 2.0; }'"; }
-    Mod+Ctrl+A { spawn-sh "niriu.sh conf --reset"; }
+    Mod+D { spawn "niriu.sh" "windo" "toggle-window-rule-opacity"; }
+    Mod+A { spawn "niriu.sh" "conf" "--toggle" "animations { on; }"; }
+    Mod+Shift+A { spawn "niriu.sh" "conf" "--toggle" "output \"eDP-1\" { scale 2.0; }"; }
+    Mod+Ctrl+A { spawn "niriu.sh" "conf" "--reset"; }
+    Mod+N { spawn "niriu.sh" "conf" "--toggle" "input { touchpad { off; }; }"; }
 
-    Mod+M { maximize-window-to-edges; }
-    Mod+F { maximize-column; }
-    Mod+Ctrl+F { expand-column-to-available-width; }
-    Mod+Shift+F { fullscreen-window; }
+    Mod+M { set-window-width "100%"; }
+    Mod+Shift+M { spawn-sh "
+        niri msg action set-window-width '100%'
+        niri msg action set-window-height '100%'
+    "; }
     Mod+R { switch-preset-column-width; }
     Mod+Shift+R { switch-preset-window-height; }
     Mod+Ctrl+R { reset-window-height; }
@@ -140,8 +146,12 @@ binds {
     Mod+Equal { set-column-width "+10%"; }
     Mod+Shift+Minus { set-window-height "-10%"; }
     Mod+Shift+Equal { set-window-height "+10%"; }
-    Mod+V { toggle-window-floating; }
-    Mod+Shift+V { switch-focus-between-floating-and-tiling; }
+    Mod+Shift+V { toggle-window-floating; }
+    Mod+V { spawn-sh "
+        niriu.sh ids --workspace focused --floating &&
+            niri msg action switch-focus-between-floating-and-tiling ||
+            niri msg action toggle-window-floating
+    "; }
 
     Mod+Left { focus-monitor-left; }
     Mod+Down { focus-monitor-down; }
@@ -157,13 +167,13 @@ binds {
     Ctrl+Print { screenshot-screen; }
     Alt+Print { screenshot-window; }
 
-    Mod+TouchpadScrollDown { spawn-sh "wpctl set-volume @DEFAULT_AUDIO_SINK@ 0.02-"; }
-    Mod+TouchpadScrollUp { spawn-sh "wpctl set-volume @DEFAULT_AUDIO_SINK@ 0.02+"; }
+    Mod+TouchpadScrollDown { spawn "wpctl" "set-volume" "@DEFAULT_AUDIO_SINK@" "0.02-"; }
+    Mod+TouchpadScrollUp { spawn "wpctl" "set-volume" "@DEFAULT_AUDIO_SINK@" "0.02+"; }
 
-    XF86AudioRaiseVolume allow-when-locked=true { spawn-sh "wpctl set-volume @DEFAULT_AUDIO_SINK@ 0.1+ -l 1.0"; }
-    XF86AudioLowerVolume allow-when-locked=true { spawn-sh "wpctl set-volume @DEFAULT_AUDIO_SINK@ 0.1-"; }
-    XF86AudioMute        allow-when-locked=true { spawn-sh "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle"; }
-    XF86AudioMicMute     allow-when-locked=true { spawn-sh "wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle"; }
+    XF86AudioRaiseVolume allow-when-locked=true { spawn "wpctl" "set-volume" "@DEFAULT_AUDIO_SINK@ 0.1+ -l 1.0"; }
+    XF86AudioLowerVolume allow-when-locked=true { spawn "wpctl" "set-volume" "@DEFAULT_AUDIO_SINK@" "0.1-"; }
+    XF86AudioMute        allow-when-locked=true { spawn "wpctl" "set-mute" "@DEFAULT_AUDIO_SINK@" "toggle"; }
+    XF86AudioMicMute     allow-when-locked=true { spawn "wpctl" "set-mute" "@DEFAULT_AUDIO_SOURCE@" "toggle"; }
     XF86MonBrightnessUp allow-when-locked=true { spawn "blight.sh" "up"; }
     XF86MonBrightnessDown allow-when-locked=true { spawn "blight.sh" "down"; }
 
@@ -176,15 +186,27 @@ binds {
     Mod+7 { focus-workspace 7; }
     Mod+8 { focus-workspace 8; }
     Mod+9 { focus-workspace 9; }
-    Mod+Shift+1 { move-column-to-workspace 1; }
-    Mod+Shift+2 { move-column-to-workspace 2; }
-    Mod+Shift+3 { move-column-to-workspace 3; }
-    Mod+Shift+4 { move-column-to-workspace 4; }
-    Mod+Shift+5 { move-column-to-workspace 5; }
-    Mod+Shift+6 { move-column-to-workspace 6; }
-    Mod+Shift+7 { move-column-to-workspace 7; }
-    Mod+Shift+8 { move-column-to-workspace 8; }
-    Mod+Shift+9 { move-column-to-workspace 9; }
+    Mod+0 { focus-workspace 255; }
+    Mod+Shift+1 { move-window-to-workspace 1; }
+    Mod+Shift+2 { move-window-to-workspace 2; }
+    Mod+Shift+3 { move-window-to-workspace 3; }
+    Mod+Shift+4 { move-window-to-workspace 4; }
+    Mod+Shift+5 { move-window-to-workspace 5; }
+    Mod+Shift+6 { move-window-to-workspace 6; }
+    Mod+Shift+7 { move-window-to-workspace 7; }
+    Mod+Shift+8 { move-window-to-workspace 8; }
+    Mod+Shift+9 { move-window-to-workspace 9; }
+    Mod+Shift+0 { move-window-to-workspace 255; }
+    Mod+Ctrl+1 { move-window-to-workspace 1 focus=false; }
+    Mod+Ctrl+2 { move-window-to-workspace 2 focus=false; }
+    Mod+Ctrl+3 { move-window-to-workspace 3 focus=false; }
+    Mod+Ctrl+4 { move-window-to-workspace 4 focus=false; }
+    Mod+Ctrl+5 { move-window-to-workspace 5 focus=false; }
+    Mod+Ctrl+6 { move-window-to-workspace 6 focus=false; }
+    Mod+Ctrl+7 { move-window-to-workspace 7 focus=false; }
+    Mod+Ctrl+8 { move-window-to-workspace 8 focus=false; }
+    Mod+Ctrl+9 { move-window-to-workspace 9 focus=false; }
+    Mod+Ctrl+0 { move-window-to-workspace 255 focus=false; }
 
     // Applications such as remote-desktop clients and software KVM switches may
     // request that niri stops processing the keyboard shortcuts defined here
@@ -196,3 +218,6 @@ binds {
     // which ensures niri always processes them, even when an inhibitor is active.
     Mod+Escape allow-inhibiting=false { toggle-keyboard-shortcuts-inhibit; }
 }
+
+include "/home/i/.config/niri/animations.kdl"
+include "/home/i/.config/niri/niriush.kdl"
