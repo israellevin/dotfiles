@@ -33,7 +33,6 @@ Unlikely to be very useful to anyone else, but who knows.
 ./bin/red           - automatic wlsunset (nee xsct nee redshift) configuration and launch
 ./bin/sanj          - LLM terminal access (mostly wrappers around [shell-gpt](https://github.com/TheR1D/shell_gpt))
 ./bin/status.sh     - status line for tmux
-./bin/noempty.sh    - Switches away from niri empty workspaces (for use with ned)
 ./bin/torst         - search for magnet links and torrentstream them
 ./bin/v             - pipe and size aware vim launcher
 ./bin/vid           - menu to list videos (with history) and play them
