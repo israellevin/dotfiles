@@ -23,7 +23,7 @@ fi
 
 # Type command from prompt.
 if [ "$1" = 'do' ]; then
-    ydotool type "$(generate_command "$*")"
+    ydotool type -d0 "$(generate_command "$*")"
     exit 0
 fi
 
@@ -63,20 +63,21 @@ fi
 
 # Syntactic sugar for llm command.
 sanj() {
+    local BASE_SYSTEM_PROMPT='Output is redirected to terminal, format accordingly.'
     local action=chat  # Default action is chat, but if a lone dash is provided, switch to prompt mode.
     local llm_arguments=()  # Pass through arguments to llm.
     local fragment_arguments=()  # File fragments to pass to llm.
     local prompt  # Prompt to send to llm.
-    local system_prompt_override # System prompt override:
-                                 # 1) Anything after -- is passed as system prompt.
-                                 # 2) Any provided prompt is treated as system prompt if input is piped in.
+    local system_prompts=()  # The following will be prepended to the base system prompt if provided:
+                             # 1) Anything after `--`.
+                             # 2) Any provided prompt if input is piped in.
 
     # Scan arguments.
     local argument_index=1
     while [ $argument_index -le $# ]; do
         case "${!argument_index}" in
             -) action=prompt;;
-            --) system_prompt_override="${*:$((argument_index + 1))}"; break;;
+            --) system_prompts=("${@:$((argument_index + 1))}"); break;;
             ---) action=loop;;
             -*)
                 llm_arguments+=("${!argument_index}")
@@ -94,35 +95,35 @@ sanj() {
         argument_index=$((argument_index + 1))
     done
 
-    # If input is being piped in, assume it's the prompt and the provided prompt is the system prompt.
+    # If input is being piped in, assume it will be the prompt and the provided prompt is the system prompt.
     if [ ! -t 0 ]; then
-        system_prompt_override+=" $prompt"
+        system_prompts+=("$prompt")
         prompt=''
     fi
 
-    if [ "$system_prompt_override" ]; then
-        llm_arguments+=("--system" "$system_prompt_override")
-    fi
+    system_prompts+=("$BASE_SYSTEM_PROMPT")
+    llm_arguments+=("--system" "$(printf "%s\n" "${system_prompts[@]}")")
 
     if [ $action = prompt ]; then
         llm $action "$prompt" "${llm_arguments[@]}" "${fragment_arguments[@]}"
     elif [ $action = chat ]; then
-        (
-            sleep 1
-            ydotool type "$prompt"
-            ydotool key 28:1
-            ydotool key 28:0
-        ) &
+        if [ "$prompt" ]; then
+            (
+                sleep 1
+                ydotool type -d0 "$prompt"
+                ydotool key -d0 28:1
+                ydotool key -d0 28:0
+            ) &
+        fi
         llm $action "${llm_arguments[@]}" "${fragment_arguments[@]}"
     elif [ $action = loop ]; then
-        if ! [ "$system_prompt_override" ]; then
-            llm_arguments+=('--system' ' \
-                You are an AI agent. Complete complicated tasks by using the "command" keyword. \
-                Everything in your response following a line with only the word "command" in it \
-                will be executed as is (so no formatting or fencing) on a bash shell \
-                of the hosting debian system. The output along with the complete history \
-                will be passed back to you.')
-        fi
+        system_prompts+=(
+            'You are an AI agent. Complete complicated tasks by using the "command" keyword.'
+            'Everything in your response following a line with only the word "command" in it'
+            'will be executed as is (so no formatting or fencing) on a bash shell'
+            'of the hosting debian system. The output along with the complete history'
+            'will be passed back to you.'
+        )
         while true; do
             response="$(llm prompt "$prompt" "${llm_arguments[@]}" "${fragment_arguments[@]}")"
             printf "\n=== Response ===\n%s\n" "$response"
