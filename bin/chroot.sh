@@ -5,7 +5,7 @@ if [ "$(id -u)" -ne 0 ]; then
 fi
 
 target="$(readlink -f "${1:-.}")"
-mountpoints='dev dev/pts proc sys'
+mountpoints='dev dev/pts proc sys sys/firmware/efi/efivars'
 
 # Sort and reverse sort mountpoints for mounting and unmounting.
 depth() { echo "$1" | grep -o '/' | wc -l; }
