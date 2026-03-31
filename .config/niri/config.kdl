@@ -122,7 +122,8 @@ binds {
 
     Ctrl+Grave repeat=false { toggle-overview; }
     Mod+T { spawn "niriu.sh" "flock" "--mode" "tile" "max"; }
-    Mod+Shift+T { spawn "niriu.sh" "flock" "--mode" "tile" "fit"; }
+    Mod+Shift+T { spawn "niriu.sh" "flock" "--workspace" "focused" "--mode" "tile" "fit"; }
+    Mod+Ctrl+T { spawn "niriu.sh" "flock" "--mode" "tile" "fit"; }
     Mod+S { spawn "niriu.sh" "flock" "--workspace" "focused" "--unfocused" "--mode" "scatter" "up"; }
     Mod+Shift+S { spawn "niriu.sh" "flock" "--unfocused" "--mode" "scatter" "up"; }
     Mod+Shift+L { spawn "niriu.sh" "windo" "--workspace" "focused" "--tiled" "set-window-width" "100%"; }
