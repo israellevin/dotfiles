@@ -31,7 +31,7 @@ Unlikely to be very useful to anyone else, but who knows.
 ./bin/menu_run      - dmenu_run replacement using the above
 ./bin/niri.sh       - launch the niri Wayland compositor from TTY
 ./bin/red           - automatic wlsunset (nee xsct nee redshift) configuration and launch
-./bin/sanj          - LLM terminal access (mostly wrappers around [shell-gpt](https://github.com/TheR1D/shell_gpt))
+./bin/sanj          - LLM terminal access (mostly wrappers around [llm](https://github.com/simonw/llm))
 ./bin/status.sh     - status line for tmux
 ./bin/torst         - search for magnet links and torrentstream them
 ./bin/v             - pipe and size aware vim launcher
