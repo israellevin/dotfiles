@@ -4,7 +4,7 @@ if [ "$*" = --start ]; then
     wl-paste --primary --watch "$0" --delayed-store-primary &
 elif [ "$*" = --delayed-store-primary ]; then
     old="$(wl-paste --primary)"
-    sleep 0.1
+    sleep 0.5
     new="$(wl-paste --primary)"
     [ "$old" = "$new" ] && echo "$new" | cliphist store
 elif [ "$*" = - ]; then
