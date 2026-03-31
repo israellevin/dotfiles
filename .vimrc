@@ -95,11 +95,6 @@ let lspServers = [#{
 \           },
 \        },
 \    },
-\ }, #{
-\    name: 'typescriptlang',
-\    filetype: ['javascript', 'typescript'],
-\    path: $HOME . '/bin/node/node_modules/.bin/typescript-language-server',
-\    args: ['--stdio']
 \ }]
 
 if !executable(lspServers[0].path)
