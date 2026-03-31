@@ -1,8 +1,9 @@
 #!/usr/bin/sh
 if [ "$1" ]; then
-    window_id="$(niri msg --json windows | jq -r ".[] | select(.title | test(\"$1\"; \"i\")) | .id")"
-fi
-if ! [ "$window_id" ]; then
+    window_id="$(niri msg --json windows | jq -r '.[] | select(
+        (.title // "" | test("qute"; "i")) or (.app_id // "" | test("qute"; "i"))
+    ) | .id')"
+else
     window_id="$( \
         niri msg --json windows | \
         jq -r '.[] | "\(.id): \(.title) (\(.app_id))"' | \
