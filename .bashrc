@@ -36,10 +36,8 @@ user_path="$user_path:$HOME/bin/node/node_modules/.bin"
 export PATH="$user_path:$PATH:/sbin"
 export LANG=en_US.UTF-8
 export EDITOR=vim
-export BROWSER=w3m
-export XDG_CONFIG_HOME="$HOME/.config"
-export XDG_CACHE_HOME="$HOME/.cache"
-export XDG_DATA_HOME="$HOME/.local/share"
+export BROWSER=brows
+export PATH LANG EDITOR BROWSER
 
 # Shell options
 shopt -s autocd
@@ -184,24 +182,16 @@ lg() { ll "${2:-.}" | g "$1"; }
 fgg() { find "${2:-.}" | g "$1"; }
 pg() { g "$@" <<<"$(ps -eF --forest | sort)"; }
 
-# fasd
-fasd_cache=~/.fasd-init-bash
-if [ "$(command -v fasd)" -nt "$fasd_cache" ] || [ ! -s "$fasd_cache" ]; then
-    fasd --init bash-hook bash-ccomp bash-ccomp-install >| "$fasd_cache"
-fi
-. "$fasd_cache"
-fasd_cd() { [ $# -gt 1 ] && c "$(fasd -e echo "$@")" || fasd "$@"; }
-alias j='fasd_cd -d'
-alias f='fasd -f'
-alias d='fasd -d'
-_fasd_bash_hook_cmd_complete j
-
-# fzf
-export FZF_DEFAULT_OPTS='-e -m --bind=ctrl-u:page-up,ctrl-d:page-down,alt-o:print-query,ctrl-o:replace-query'
-export FZF_CTRL_T_OPTS='--preview=~/.fzf/bin/fzf-preview.sh\ {}'
-export FZF_TMUX=1
-[ -f ~/.fzf.colors ] && . ~/.fzf.colors
-[ -f ~/.fzf.bash ] && . ~/.fzf.bash
+# vim
+# shellcheck disable=SC2086  # We want word splitting here.
+vv() { [ -z "$1" ] && vim -c "normal '0" || vim -p -- ./*$**; } # Open last file or all filenames matching argument.
+# shellcheck disable=SC2046  # We want word splitting here.
+vg() { vim -p $(g -lF -- "$*"); } # Open all files containing argument.
+vd() {
+    local pairs
+    pairs="$(diff -rq "$1" "$2" | sed -n 's/^Files \(.*\) and \(.*\) differ$/"\1" "\2"/p')"
+    [ -z "$pairs" ] && return || xargs -n2 vimdiff <<< "$pairs"
+}
 
 # git
 gitformat="%s %C(dim)%C(cyan)%ah %C(green)%al %C(magenta)%h%C(auto)%d"
@@ -215,14 +205,24 @@ gremtrack() { git rev-parse --abbrev-ref --symbolic-full-name '@{u}'; }
 gresetlocal() { git reset --hard "$(gcur)"; }
 gresetremote() { git reset --hard "$(gremtrack)"; }
 
-# vim
-vv() { [ -z "$1" ] && vim -c "normal '0" || vim -p -- "*$**"; } # Open last file or all filenames matching argument.
-vg() { vim -p "$(g -l -- "$*" *)"; } # Open all files containing argument.
-vd() {
-    local pairs
-    pairs="$(diff -rq "$1" "$2" | sed -n 's/^Files \(.*\) and \(.*\) differ$/"\1" "\2"/p')"
-    [ -z "$pairs" ] && return || xargs -n2 vimdiff <<< "$pairs"
-}
+# fzf
+export FZF_DEFAULT_OPTS='-e -m --bind=ctrl-u:page-up,ctrl-d:page-down,alt-o:print-query,ctrl-o:replace-query'
+export FZF_CTRL_T_OPTS='--preview=~/.fzf/bin/fzf-preview.sh\ {}'
+export FZF_TMUX=1
+[ -f ~/.fzf.colors ] && . ~/.fzf.colors
+[ -f ~/.fzf.bash ] && . ~/.fzf.bash
+
+# fasd
+fasd_cache=~/.fasd-init-bash
+if [ "$(command -v fasd)" -nt "$fasd_cache" ] || [ ! -s "$fasd_cache" ]; then
+    fasd --init bash-hook bash-ccomp bash-ccomp-install >| "$fasd_cache"
+fi
+. "$fasd_cache"
+fasd_cd() { [ $# -gt 1 ] && c "$(fasd -e echo "$@")" || fasd "$@"; }
+alias j='fasd_cd -d'
+alias f='fasd -f'
+alias d='fasd -d'
+_fasd_bash_hook_cmd_complete j
 
 # LLM
 export OPENAI_KEY=sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
