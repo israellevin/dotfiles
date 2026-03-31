@@ -1,29 +1,47 @@
 #!/bin/bash
 
-# If output is not a terminal, run a terminal with vim and exit.
+# If output is not a terminal, run in a tmux session in foot.
 if [ ! -t 1 ]; then
-    TMUX='' foot tmux new-session vim "$@"
+    TMUX='' exec foot tmux new-session "$0" "$@"
 # If input is from terminal (no pipe).
 elif [ -t 0 ]; then
-    # With no arguments, just open a scratch file.
+    # With no arguments, open a scratch file.
+    # shellcheck disable=SC2086  # We want word splitting here.
     if [ 0 = $# ]; then
         vim -c "set buftype=nofile | set spell"
     # With readable file as first arg, open it.
     elif [ -r "$1" ]; then
         vim "$@"
-    # Otherwise open the most frecent.
+    # With partially matching file names in current directory, open them.
+    elif ls ./*$1* 1> /dev/null 2>&1; then
+        vim -p -- *$1*
+    # Go over recent `:oldfiles`, if a partially matching file name is found, open it, otherwise just open vim.
     else
-        fasd -e vim "$@"
+        vim -u NONE -N -c 'call writefile(v:oldfiles, "/tmp/vimoldfiles")' -c q
+        for file in $(head -n50 /tmp/vimoldfiles | grep -aF "$1"); do
+            if grep -q '^~' <<< "$file"; then
+                file="${file/#\~/$HOME}"
+            fi
+            if [ -e "$file" ]; then
+                file_found="$file"
+                break
+            fi
+        done
+        if [ "$file_found" ]; then
+            vim "$file_found"
+        else
+            vim "$@"
+        fi
     fi
 # If input isn't a terminal, but output is, use as a pager.
 else
     # Less than 1000 go to vim.
-    while IFS='' read line && [ ${#lines[@]} -lt 1001 ]; do
+    while IFS='' read -r line && [ ${#lines[@]} -lt 1001 ]; do
         lines+=("$line")
     done
     [ ${#lines[@]} -lt 1000 ] && printf '%s\n' "${lines[@]}" | vim \
         -c "set buftype=nofile" -c "map q <Esc>:qa!<CR>" - && exit 0
 
     # Bigger stuff go to less.
-    (printf '%s\n' "${lines[@]}" && while read line; do echo "$line"; done) | less
+    (printf '%s\n' "${lines[@]}" && while read -r line; do echo "$line"; done) | less
 fi
