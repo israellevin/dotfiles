@@ -7,13 +7,13 @@ APT::Install-Recommends "0";
 APT::Install-Suggests "0";
 EOF
     DEBIAN_FRONTEND=noninteractive apt -y install \
-        bc bsdextrautils bsdutils jq linux-perf mawk moreutils pciutils psmisc pv sed ripgrep usbutils \
-        bash-completion chafa console-setup git git-delta less locales man mc tmux vim \
-        cpio gzip tar unrar unzip zstd \
+        keyd kmod irqbalance numad \
+        linux-perf pciutils psmisc sudo usbutils \
+        bash-completion bc bsdextrautils git jq less locales man moreutils pv ripgrep socat vim zoxide \
+        chafa console-setup git-delta tmux \
+        cpio gpg openssl unrar unzip zstd \
         ca-certificates dhcpcd5 iproute2 netbase \
-        aria2 curl iputils-ping iwd openssh-server rfkill rsync sshfs w3m wget \
-        debootstrap make python3-pip python3-venv shellcheck \
-        cliphist fonts-noto fonts-noto-color-emoji grim slurp wl-clipboard wlsunset wlrctl wmenu
+        aria2 curl iputils-ping iwd openssh-server rfkill rsync sshfs w3m wget
     echo en_US.UTF-8 UTF-8 > /etc/locale.gen
     locale-gen
 fi
@@ -27,16 +27,25 @@ fi
 find . -maxdepth 1 -type f -name '.*' -exec cp -at ~ {} +
 cp -a ./bin ./.config ~/.
 
+if ! type uv >/dev/null 2>&1; then
+    uv_version="$(curl -fsSL https://astral.sh/uv/install.sh | grep APP_VERSION= | cut -d'"' -f2)"
+    uv_base_url=https://releases.astral.sh/github/uv/releases/download
+    curl -fsSL "$uv_base_url/$uv_version/uv-x86_64-unknown-linux-gnu.tar.gz" | \
+        tar xz -C ~/bin --strip-components=1
+    export PATH="$PATH:$HOME/bin"
+fi
+
 if ! [ -e ~/bin/python ]; then
-    python3 -m venv ~/bin/python
+    uv venv ~/bin/python
     . ~/bin/python/bin/activate
-    pip install --upgrade pip setuptools
-    pip install llm pygments python-lsp-server python-lsp-ruff shell-gpt uv
+    #uv pip install --upgrade pip setuptools
+    uv pip install llm pygments python-lsp-server python-lsp-ruff
 fi
 
 if ! [ -e ~/bin/node ]; then
     export N_PREFIX=~/bin/node
-    curl https://raw.githubusercontent.com/mklement0/n-install/stable/bin/n-install | bash -s -- -y
+    curl -fsSL https://raw.githubusercontent.com/mklement0/n-install/stable/bin/n-install | \
+        bash -s -- -y
     export PATH="$PATH:$N_PREFIX/bin"
 fi
 
@@ -44,22 +53,18 @@ if ! [ -e ~/bin/node/node_modules ]; then
     npm --prefix ~/bin/node install \
         bash-language-server \
         npm@latest \
-        https://github.com/Jelmerro/Vieb \
-        webtorrent-cli \
-        typescript-language-server
+        webtorrent-cli
 fi
-
-# Fix Vieb app's index.js to work with our directory structure.
-sed --in-place -e 's|"\.\./node_modules/|"../../../node_modules/|' ~/bin/node/node_modules/vieb/app/index.js
 
 if ! [ -e ~/bin/cargo ]; then
     export CARGO_HOME=~/bin/cargo
-    curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain stable --profile minimal --no-modify-path
+    curl -fsSL https://sh.rustup.rs | \
+        sh -s -- -y --default-toolchain stable --profile minimal --no-modify-path
 fi
 
-git clone https://github.com/clvv/fasd
-mv fasd/fasd ~/bin/.
-rm -rf fasd
+wget https://github.com/sxyazi/yazi/releases/download/nightly/yazi-x86_64-unknown-linux-gnu.zip
+unzip yazi-x86_64-unknown-linux-gnu.zip
+mv yazi-x86_64-unknown-linux-gnu/ya* ~/bin/.
 
 git clone https://github.com/laktak/extrakto
 mv extrakto ~/bin/.
@@ -71,10 +76,6 @@ mv FlameGraph ~/bin/flamegraph
 curl -sL https://archlinux.org/packages/extra/x86_64/wiremix/download/ | \
     tar x --zstd --strip-components=2 usr/bin/wiremix
 mv ./wiremix ~/bin/.
-
-wget git.io/trans
-chmod +x ./trans
-mv ./trans ~/bin/.
 
 mkdir -p ~/.local/share/fonts
 wget https://github.com/ryanoasis/nerd-fonts/releases/download/v3.4.0/0xProto.zip
