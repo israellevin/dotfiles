@@ -219,6 +219,3 @@ binds {
     // which ensures niri always processes them, even when an inhibitor is active.
     Mod+Escape allow-inhibiting=false { toggle-keyboard-shortcuts-inhibit; }
 }
-
-include "/home/i/.config/niri/animations.kdl"
-include "/home/i/.config/niri/niriush.kdl"
