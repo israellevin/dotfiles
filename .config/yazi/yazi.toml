@@ -1,0 +1,7 @@
+[[opener.add-sub]]
+run  = ''' printf "sub-add '%%s'\n" %s1 | socat - /tmp/mpv.sock '''
+desc = "Add sub to MPV"
+
+[[open.prepend_rules]]
+url = "*.{ass,srt,ssa,sty,sup,vtt}"
+use = [ "add-sub", "edit" ]
