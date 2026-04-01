@@ -1,6 +1,11 @@
 #!/usr/bin/sh
-[ "$1" = --wait-till-online ] && while ! timeout 2 curl -s google.com >/dev/null; do
+[ "$1" = --wait-till-online ] && shift && while ! timeout 2 curl -s google.com >/dev/null; do
     echo Waiting for network...
     sleep 1
 done
-electron ~/bin/node/node_modules/vieb/app --enable-features=UseOzonePlatform --ozone-platform=wayland "$@"
+if [ "$1" ]; then
+    qutebrowser --untrusted-args "$@"
+    getwin.sh qutebrowser
+else
+    getwin.sh qutebrowser || qutebrowser
+fi
