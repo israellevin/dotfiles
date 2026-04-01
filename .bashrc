@@ -212,17 +212,8 @@ export FZF_TMUX=1
 [ -f ~/.fzf.colors ] && . ~/.fzf.colors
 [ -f ~/.fzf.bash ] && . ~/.fzf.bash
 
-# fasd
-fasd_cache=~/.fasd-init-bash
-if [ "$(command -v fasd)" -nt "$fasd_cache" ] || [ ! -s "$fasd_cache" ]; then
-    fasd --init bash-hook bash-ccomp bash-ccomp-install >| "$fasd_cache"
-fi
-. "$fasd_cache"
-fasd_cd() { [ $# -gt 1 ] && c "$(fasd -e echo "$@")" || fasd "$@"; }
-alias j='fasd_cd -d'
-alias f='fasd -f'
-alias d='fasd -d'
-_fasd_bash_hook_cmd_complete j
+# zoxide
+eval "$(zoxide init bash --cmd j)"
 
 # LLM
 export OPENAI_KEY=sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
