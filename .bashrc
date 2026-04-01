@@ -146,6 +146,14 @@ xs() {
             ;;
     esac
 }
+y() {
+    local tmp
+    tmp="$(mktemp -t "yazi-cwd.XXXXXX")"
+    command yazi "$@" --cwd-file="$tmp"
+    IFS= read -r -d '' cwd < "$tmp"
+    [ "$cwd" != "$PWD" ] && [ -d "$cwd" ] && builtin cd -- "$cwd" || return 1
+    rm -f -- "$tmp"
+}
 
 # Completion
 . /etc/bash_completion
