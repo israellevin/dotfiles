@@ -73,10 +73,6 @@ git clone https://github.com/brendangregg/FlameGraph
 ( cd FlameGraph && rm -rf .git demos docs test example-* )
 mv FlameGraph ~/bin/flamegraph
 
-curl -sL https://archlinux.org/packages/extra/x86_64/wiremix/download/ | \
-    tar x --zstd --strip-components=2 usr/bin/wiremix
-mv ./wiremix ~/bin/.
-
 mkdir -p ~/.local/share/fonts
 wget https://github.com/ryanoasis/nerd-fonts/releases/download/v3.4.0/0xProto.zip
 unzip -ud ~/.local/share/fonts 0xProto.zip
