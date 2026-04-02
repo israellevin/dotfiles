@@ -38,7 +38,6 @@ fi
 if ! [ -e ~/bin/python ]; then
     uv venv ~/bin/python
     . ~/bin/python/bin/activate
-    #uv pip install --upgrade pip setuptools
     uv pip install llm pygments python-lsp-server python-lsp-ruff
 fi
 

@@ -78,7 +78,6 @@ venv() {
     if ! . ./"$venv_dir"/bin/activate 2>/dev/null; then
         uv venv "$venv_dir"
         . ./"$venv_dir"/bin/activate
-        uv pip install --upgrade pip setuptools
     fi
     alias pip='uv pip'
     if [ -f requirements.txt ]; then
