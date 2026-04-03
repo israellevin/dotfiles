@@ -31,7 +31,7 @@ if ! type uv >/dev/null 2>&1; then
     uv_version="$(curl -fsSL https://astral.sh/uv/install.sh | grep APP_VERSION= | cut -d'"' -f2)"
     uv_base_url=https://releases.astral.sh/github/uv/releases/download
     curl -fsSL "$uv_base_url/$uv_version/uv-x86_64-unknown-linux-gnu.tar.gz" | \
-        tar xz -C ~/bin --strip-components=1
+        tar xz --strip-components=1 -C ~/bin
     export PATH="$PATH:$HOME/bin"
 fi
 
@@ -64,6 +64,7 @@ fi
 wget https://github.com/sxyazi/yazi/releases/download/nightly/yazi-x86_64-unknown-linux-gnu.zip
 unzip yazi-x86_64-unknown-linux-gnu.zip
 mv yazi-x86_64-unknown-linux-gnu/ya* ~/bin/.
+rm yazi-x86_64-unknown-linux-gnu.zip
 
 git clone https://github.com/laktak/extrakto
 mv extrakto ~/bin/.
