@@ -1,6 +1,7 @@
 #!/usr/bin/sh
 if [ "$*" = --start ]; then
     wl-paste --watch cliphist store &
+elif [ "$*" = --start-primary ]; then
     wl-paste --primary --watch "$0" --delayed-store-primary &
 elif [ "$*" = --delayed-store-primary ]; then
     old="$(wl-paste --primary)"
