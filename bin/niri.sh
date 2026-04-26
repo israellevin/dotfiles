@@ -11,7 +11,8 @@ PATH="$user_path:$PATH:/sbin"
 LANG=en_US.UTF-8
 EDITOR=vim
 BROWSER=brows
-export PATH LANG EDITOR BROWSER
+QT_QPA_PLATFORM=wayland
+export PATH LANG EDITOR BROWSER QT_QPA_PLATFORM
 
 log_dir="$HOME/.local/share/niri/logs"
 mkdir -p "$log_dir"
