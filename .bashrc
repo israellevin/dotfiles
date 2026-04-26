@@ -235,7 +235,7 @@ gresetlocal() { git reset --hard "$(gcur)"; }
 gresetremote() { git reset --hard "$(gremtrack)"; }
 
 # fzf
-export FZF_DEFAULT_OPTS='-e -m --bind=ctrl-u:page-up,ctrl-d:page-down,alt-o:print-query,ctrl-o:replace-query'
+export FZF_DEFAULT_OPTS='--exact --no-sort --bind=ctrl-u:page-up,ctrl-d:page-down,alt-o:print-query,ctrl-o:replace-query'
 export FZF_CTRL_T_OPTS='--preview=~/.fzf/bin/fzf-preview.sh\ {}'
 export FZF_TMUX=1
 [ -f ~/.fzf.colors ] && . ~/.fzf.colors
