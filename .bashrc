@@ -195,9 +195,31 @@ vv() { [ -z "$1" ] && vim -c "normal '0" || vim -p -- ./*$**; } # Open last file
 # shellcheck disable=SC2046  # We want word splitting here.
 vg() { vim -p $(g -lF -- "$*"); } # Open all files containing argument.
 vd() {
-    local pairs
-    pairs="$(diff -rq "$1" "$2" | sed -n 's/^Files \(.*\) and \(.*\) differ$/"\1" "\2"/p')"
-    [ -z "$pairs" ] && return || xargs -n2 vimdiff <<< "$pairs"
+    local lines
+    mapfile -t lines < <(diff -rq "$1" "$2")
+    for line in "${lines[@]}"; do
+        echo "$line"
+        if [[ $line =~ ^Only\ in\ (.*):\ (.*)$ ]]; then
+            local directory_containing_file="${BASH_REMATCH[1]}"
+            local missing_file="${BASH_REMATCH[2]}"
+            local directory_missing_file
+            [ "$directory_containing_file" = "$2" ] && \
+                directory_missing_file="$1" || \
+                directory_missing_file="$2"
+            read -rn1 -p "Copy missing file (y/N)? "
+            [[ $REPLY =~ ^[Yy]$ ]] && \
+                cp -a "$directory_containing_file/$missing_file" "$directory_missing_file/"
+        elif [[ $line =~ ^Files\ (.*)\ and\ (.*)\ differ$ ]]; then
+            local file1="${BASH_REMATCH[1]}"
+            local file2="${BASH_REMATCH[2]}"
+            read -rn1 -p "Open in vimdiff (y/N)? "
+            [[ $REPLY =~ ^[Yy]$ ]] && \
+                vimdiff "$file1" "$file2"
+        else
+            echo "Unknown diff output: $line"
+            return 1
+        fi
+    done
 }
 
 # git
