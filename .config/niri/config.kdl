@@ -77,7 +77,6 @@ gestures { hot-corners { top-right; }; }
 hotkey-overlay { skip-at-startup; }
 
 spawn-at-startup "red"
-spawn-at-startup "xwayland-satellite"
 spawn-at-startup "ydotoold"
 spawn-at-startup "fnott"
 spawn-at-startup "foot"
