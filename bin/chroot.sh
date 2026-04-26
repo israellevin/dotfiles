@@ -4,13 +4,20 @@ if [ "$(id -u)" -ne 0 ]; then
     exit $?
 fi
 
-target="$(readlink -f "${1:-.}")"
-mountpoints='dev dev/pts proc sys sys/firmware/efi/efivars'
+MOUNTS='dev dev/pts proc sys sys/firmware/efi/efivars'
+
+if [ -d "$1" ]; then
+    target="$1"
+    shift
+else
+    target=.
+fi
+target="$(readlink -f "$target")"
 
 # Sort and reverse sort mountpoints for mounting and unmounting.
 depth() { echo "$1" | grep -o '/' | wc -l; }
 depthsort() {
-    for mountpoint in $mountpoints; do
+    for mountpoint in $MOUNTS; do
         echo "$(depth "$mountpoint") $mountpoint"
     done | sort -n | cut -d' ' -f2-
 }
@@ -23,7 +30,7 @@ for mountpoint in $mountpoints; do
 done
 
 ## Actual chroot.
-chroot "$target"
+chroot "$target" "$@"
 
 # Try to unmount mountpoints in reverse order.
 for mountpoint in $reversedmountpoints; do
@@ -31,6 +38,7 @@ for mountpoint in $reversedmountpoints; do
 done
 
 # Warn if any mountpoints is still mounted.
+dirty=0
 for mountpoint in $reversedmountpoints; do
     mount | grep -Fq "$target/$mountpoint" && echo "$target/$mountpoint" still mounted && dirty=1
 done
