@@ -83,13 +83,13 @@ venv() {
     if [ -f requirements.txt ]; then
         missing_packages="$(comm -23 <(sort requirements.txt) <(uv pip freeze | grep -v '0.0.0' | sort))"
         if [ "$missing_packages" ]; then
-            read -p "$missing_packages - install (y/N)? " -n 1 -r
+            read -rn1 -p "$missing_packages - install (y/N)? "
             echo
             [[ $REPLY =~ ^[Yy]$ ]] && uv pip install -r requirements.txt
         fi
     fi
     if [ -f pyproject.toml ]; then
-        read -p "found pyproject.toml - install (y/N)? " -n 1 -r
+        read -rn1 -p "found pyproject.toml - install (y/N)? "
         echo
         [[ $REPLY =~ ^[Yy]$ ]] && uv pip install --upgrade -e .
     fi
@@ -149,7 +149,7 @@ y() {
     local tmp
     tmp="$(mktemp -t "yazi-cwd.XXXXXX")"
     command yazi "$@" --cwd-file="$tmp"
-    IFS= read -r -d '' cwd < "$tmp"
+    IFS= read -rd '' cwd < "$tmp"
     [ "$cwd" != "$PWD" ] && [ -d "$cwd" ] && builtin cd -- "$cwd" || return 1
     rm -f -- "$tmp"
 }
