@@ -1,18 +1,25 @@
 #!/bin/bash
 paths="$HOME/torrents"
 vidtypes='3g\|asf\|asx\|avi\|bin\|divx\|dvx\|f4v\|flc\|flv\|gvi\|m4v\|mkv\|mov\|mp4\|mpeg\|mpg\|ogm\|qt\|rm\|swf\|vid\|wmv\|xvid'
-vidhist="$HOME/torrents/recent_videos"
+vidhist_file="$HOME/torrents/recent_videos"
+
+vidhist="$(cat "$vidhist_file" | while read -r line; do
+    file=$(echo "$line" | cut -d' ' -f2-)
+    if [ -f "$file" ]; then
+        echo "$line"
+    fi
+done | tee "$vidhist_file")"
 
 FZF_DEFAULT_OPTS="$FZF_DEFAULT_OPTS --delimiter=/ --with-nth=-1 --query '$*'"
-export FZF_DEFAULT_OPTS
+export "FZF_DEFAULT_OPTS"
 
 vid="$({
-    cat "$vidhist"
-    find $paths -type f -iregex ".*\($vidtypes\)" -printf "%T@ %p\n"
+    echo "$vidhist"
+    find "$paths" -type f -iregex ".*\($vidtypes\)" -printf "%T@ %p\n"
 } | sort -rn | cut -d' ' -f2- | awk '!filenames[$0]++' | menu)"
 
 if [ -f "$vid" ]; then
-    echo "$(date +%s.%N) $vid" >> "$vidhist"
+    echo "$(date +%s.%N) $vid" >> "$vidhist_file"
     echo "Playing '$vid'"
     mpv "$vid"
 fi
