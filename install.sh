@@ -38,7 +38,7 @@ fi
 if ! [ -e ~/bin/python ]; then
     uv venv ~/bin/python
     . ~/bin/python/bin/activate
-    uv pip install llm pygments python-lsp-server python-lsp-ruff
+    uv pip install basedpyright llm pygments python-lsp-server ruff-lsp
 fi
 
 if ! [ -e ~/bin/node ]; then

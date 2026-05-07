@@ -269,6 +269,16 @@ let lspServers = [#{
 \        },
 \    },
 \ }, #{
+\    name: 'basedpyright',
+\    filetype: 'python',
+\    path: $HOME . '/bin/python/bin/basedpyright-langserver',
+\    args: ['--stdio'],
+\ }, #{
+\    name: 'ruff-lsp',
+\    filetype: 'python',
+\    path: $HOME . '/bin/python/bin/ruff',
+\    args: ['server'],
+\ }, #{
 \    name: 'rust',
 \    filetype: 'rust',
 \    path: $HOME . '/bin/cargo/bin/rust-analyzer',
