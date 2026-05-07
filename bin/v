@@ -19,9 +19,7 @@ elif [ -t 0 ]; then
     else
         vim -u NONE -N -c 'call writefile(v:oldfiles, "/tmp/vimoldfiles")' -c q
         for file in $(head -n50 /tmp/vimoldfiles | grep -aF "$1"); do
-            if grep -q '^~' <<< "$file"; then
-                file="${file/#\~/$HOME}"
-            fi
+            file="$(printf '%s\n' "${file/#\~/$HOME}")"
             if [ -e "$file" ]; then
                 file_found="$file"
                 break
