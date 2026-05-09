@@ -57,6 +57,7 @@ set cursorcolumn
 set cursorline
 set hlsearch
 set laststatus=1
+set linebreak
 set list listchars=tab:»\ ,trail:•,extends:↜,precedes:↜,nbsp:°
 set number
 set ruler
