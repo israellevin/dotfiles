@@ -6,6 +6,129 @@ if !filereadable(expand("~/.vim/autoload/plug.vim"))
     silent !curl https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim > ~/.vim/autoload/plug.vim
 endif
 
+"Plugins
+call plug#begin('~/.vim/plugged')
+Plug 'dense-analysis/ale'
+Plug 'tpope/vim-apathy'
+Plug 'PeterRincker/vim-argumentative'
+Plug 'github/copilot.vim'
+Plug 'will133/vim-dirdiff'
+Plug 'mattn/emmet-vim', { 'for': 'html' }
+Plug 'tommcdo/vim-exchange'
+Plug 'tpope/vim-fugitive'
+Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': 'yes \| ./install' }
+Plug 'junegunn/fzf.vim'
+Plug 'yegappan/lsp'
+Plug 'vim-utils/vim-husk'
+Plug 'michaeljsmith/vim-indent-object'
+Plug 'lfv89/vim-interestingwords'
+Plug 'andymass/vim-matchup'
+Plug 'junegunn/vim-peekaboo'
+Plug 'zweifisch/pipe2eval'
+Plug 'junegunn/rainbow_parentheses.vim'
+Plug 'tpope/vim-surround'
+Plug 'wellle/targets.vim'
+Plug 'florentc/vim-tla'
+Plug 'puremourning/vimspector'
+Plug 'jasonccox/vim-wayland-clipboard'
+Plug 'mbbill/undotree'
+Plug 'maxbrunsfeld/vim-yankstack'
+
+" Colorschemes
+Plug 'w0ng/vim-hybrid'
+Plug 'sudorook/colorific.vim'
+
+call plug#end()
+
+" Auto install plugins on first run
+if 1 == firstrun
+    :PlugInstall
+endif
+
+" Plugin configurations
+filetype plugin indent on
+
+let g:matchparen_disable_cursor_hl = 0
+
+let g:ale_linters = {'python': ['ruff']}
+let g:ale_linters_ignore = {'html': ['eslint']}
+let g:ale_python_pycodestyle_options = '--max-line-length=120'
+let g:ale_python_pylint_options = '--max-line-length=120'
+nnoremap <expr> <C-j> pumvisible() ? "\<C-e>" : (&diff ? ']c' : '<Cmd>ALENext<CR>')
+nnoremap <expr> <C-k> pumvisible() ? "\<C-y>" : (&diff ? '[c' : '<Cmd>ALEPrevious<CR>')
+
+let lspOpts = #{
+\    aleSupport: v:true,
+\    autoComplete: v:true,
+\    autoHighlightDiags: v:true,
+\    autoPopulateDiags: v:true,
+\    completionMatcher: 'fuzzy',
+\    filterCompletionDuplicates: v:true,
+\    hoverFallback: v:true,
+\    noNewlineInCompletion: v:true,
+\    usePopupInCodeAction: v:true,
+\    useBufferCompletion: v:true,
+\}
+
+autocmd User LspSetup call LspOptionsSet(lspOpts)
+let lspServers = [#{
+\    name: 'bashls',
+\    filetype: 'sh',
+\    path: $HOME . '/bin/node/node_modules/.bin/bash-language-server',
+\    args: ['start'],
+\ }, #{
+\    name: 'pylsp',
+\    filetype: 'python',
+\    path: $HOME . '/bin/python/bin/pylsp',
+\    args: [],
+\    initializationOptions: {
+\        'pylsp': {
+\           'plugins': {
+\               'ruff': {
+\                   'lineLength': 120,
+\               },
+\           },
+\        },
+\    },
+\ }, #{
+\    name: 'rust',
+\    filetype: 'rust',
+\    path: $HOME . '/bin/cargo/bin/rust-analyzer',
+\    args: [],
+\    syncInit: v:true,
+\ }]
+
+if !executable(lspServers[0].path)
+    let lspServers = []
+endif
+
+autocmd User LspSetup call LspAddServer(lspServers)
+setlocal tagfunc=lsp#lsp#TagFunc
+
+nnoremap gd <Cmd>LspGotoDefinition<CR>
+nnoremap gD <Cmd>LspGotoImpl<CR>
+nnoremap K <Cmd>silent LspHover<CR>
+
+nmap <leader>db <Plug>VimspectorToggleBreakpoint
+nmap <leader>dB <Plug>VimspectorToggleConditionalBreakpoint
+nmap <leader>dc <Plug>VimspectorContinue
+nmap <leader>de <Plug>VimspectorBalloonEval
+nmap <leader>dF <Plug>VimspectorAddFunctionBreakpoint
+nmap <leader>di <Plug>VimspectorStepInto
+nmap <leader>dl <Plug>VimspectorLaunch
+nmap <leader>dO <Plug>VimspectorStepOut
+nmap <leader>do <Plug>VimspectorStepOver
+nmap <leader>dp <Plug>VimspectorPause
+nmap <leader>dr <Plug>VimspectorRestart
+nmap <leader>ds <Plug>VimspectorStop
+nmap <leader>dw <Plug>VimspectorWatch
+nmap <leader>dx <Plug>VimspectorRunToCursor
+
+let g:yankstack_map_keys = 0
+call yankstack#setup()
+nmap <C-p> <Plug>yankstack_substitute_older_paste
+nmap <C-n> <Plug>yankstack_substitute_newer_paste
+
 " Buffers
 set autoread
 set autochdir
@@ -52,7 +175,6 @@ set wildoptions=pum
 " Display
 set breakindent
 set colorcolumn=81
-set conceallevel=1
 set cursorcolumn
 set cursorline
 set hlsearch
@@ -67,46 +189,6 @@ set showbreak=↳
 set showcmd
 set showmode
 set wrap
-
-" Pretty
-" Accepts an argument so it can be called from a timer (in some autocommands)
-function! Pretty(_)
-    if has("gui_running") || $DISPLAY != 'no'
-        set t_Co=256
-        set termguicolors
-        set background=dark
-        colorscheme hybrid
-    else
-        colorscheme colorific
-        set notermguicolors
-    endif
-
-    if &diff
-        windo set virtualedit=all
-        windo set wrap<
-        if !exists('g:colors_name') || g:colors_name == 'hybrid'
-            colorscheme colorific
-        endif
-    else
-        set virtualedit=
-    endif
-
-    syntax enable
-    set encoding=utf-8
-    hi Comment guifg=orange
-    hi Conceal guibg=#1d1f21
-    hi ExtraWhitespace ctermbg=1
-    hi NonAnsii ctermbg=1
-    hi LspPopup ctermfg=red
-    hi LspSigActiveParameter ctermfg=green
-
-    call matchadd('ExtraWhitespace', '\s\+$\| \+\ze\t')
-    call matchadd('NonAnsii', '[^\d0-\d127]')
-    if &keymap == 'hebrew'
-        hi NonAnsii ctermbg=0
-        setlocal nospell
-    endif
-endfunction
 
 " Commands
 command! Q q
@@ -148,7 +230,49 @@ cnoremap <C-p> <Up>
 cnoremap <C-n> <Down>
 cnoremap %% <C-r>=expand("%:p:h") . '/' <CR>
 
-" autocommands
+" Pretty
+" Accepts an argument so it can be called from a timer (in some autocommands)
+function! Pretty(_)
+
+    if has("gui_running") || $DISPLAY != 'no'
+        set t_Co=256
+        set termguicolors
+        set background=dark
+        colorscheme hybrid
+    else
+        colorscheme colorific
+        set notermguicolors
+    endif
+
+    if &diff
+        windo set virtualedit=all
+        windo set wrap<
+        if !exists('g:colors_name') || g:colors_name == 'hybrid'
+            colorscheme colorific
+        endif
+    else
+        set virtualedit=
+    endif
+
+    syntax enable
+    set encoding=utf-8
+    hi Comment guifg=orange
+    hi Conceal guibg=#1d1f21
+    hi ExtraWhitespace ctermbg=1
+    hi NonAnsii ctermbg=1
+    hi LspPopup ctermfg=red
+    hi LspSigActiveParameter ctermfg=green
+
+    call matchadd('ExtraWhitespace', '\s\+$\| \+\ze\t')
+    call matchadd('NonAnsii', '[^\d0-\d127]')
+    if &keymap == 'hebrew'
+        hi NonAnsii ctermbg=0
+        setlocal nospell
+    endif
+
+endfunction
+
+" Autocommands
 augroup mine
     au!
     au VimEnter * call Pretty(0)
@@ -161,6 +285,10 @@ augroup mine
     au BufReadPost * normal zR
     au InsertEnter * if !exists('w:last_fdm') | let w:last_fdm=&foldmethod | setlocal foldmethod=manual | endif
     au InsertLeave,WinLeave * if exists('w:last_fdm') | let &l:foldmethod=w:last_fdm | unlet w:last_fdm | endif
+
+
+    " Disable auto comment leader insert.
+    autocmd FileType * setlocal formatoptions-=r formatoptions-=o
 
     " Convert certain filetypes and open in read only
     au BufReadPre *.doc silent set ro
@@ -187,133 +315,3 @@ augroup mine
     " Source vimrc when written
     au BufWritePost ~/.vimrc nested source % | redraw! | echomsg "sourced"
 augroup END
-
-"Plugins
-call plug#begin('~/.vim/plugged')
-Plug 'dense-analysis/ale'
-Plug 'tpope/vim-apathy'
-Plug 'PeterRincker/vim-argumentative'
-Plug 'github/copilot.vim'
-Plug 'will133/vim-dirdiff'
-Plug 'mattn/emmet-vim', { 'for': 'html' }
-Plug 'tommcdo/vim-exchange'
-Plug 'tpope/vim-fugitive'
-Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': 'yes \| ./install' }
-Plug 'junegunn/fzf.vim'
-Plug 'yegappan/lsp'
-Plug 'vim-utils/vim-husk'
-Plug 'michaeljsmith/vim-indent-object'
-Plug 'lfv89/vim-interestingwords'
-Plug 'andymass/vim-matchup'
-Plug 'junegunn/vim-peekaboo'
-Plug 'zweifisch/pipe2eval'
-Plug 'junegunn/rainbow_parentheses.vim'
-Plug 'tpope/vim-surround'
-Plug 'florentc/vim-tla'
-Plug 'puremourning/vimspector'
-Plug 'jasonccox/vim-wayland-clipboard'
-Plug 'mbbill/undotree'
-Plug 'maxbrunsfeld/vim-yankstack'
-
-" Colorschemes
-Plug 'w0ng/vim-hybrid'
-Plug 'sudorook/colorific.vim'
-
-" Auto install plugins on first run
-call plug#end()
-if 1 == firstrun
-    :PlugInstall
-endif
-filetype plugin indent on
-
-" Plugin configurations
-let g:matchparen_disable_cursor_hl = 0
-
-let g:ale_linters = {'python': ['ruff']}
-let g:ale_linters_ignore = {'html': ['eslint']}
-let g:ale_python_pycodestyle_options = '--max-line-length=120'
-let g:ale_python_pylint_options = '--max-line-length=120'
-nnoremap <expr> <C-j> pumvisible() ? "\<C-e>" : (&diff ? ']c' : '<Cmd>ALENext<CR>')
-nnoremap <expr> <C-k> pumvisible() ? "\<C-y>" : (&diff ? '[c' : '<Cmd>ALEPrevious<CR>')
-
-let lspOpts = #{
-\    aleSupport: v:true,
-\    autoComplete: v:true,
-\    autoHighlightDiags: v:true,
-\    autoPopulateDiags: v:true,
-\    completionMatcher: 'fuzzy',
-\    filterCompletionDuplicates: v:true,
-\    hoverFallback: v:true,
-\    noNewlineInCompletion: v:true,
-\    usePopupInCodeAction: v:true,
-\    useBufferCompletion: v:true,
-\}
-
-autocmd User LspSetup call LspOptionsSet(lspOpts)
-let lspServers = [#{
-\    name: 'bashls',
-\    filetype: 'sh',
-\    path: $HOME . '/bin/node/node_modules/.bin/bash-language-server',
-\    args: ['start'],
-\ }, #{
-\    name: 'pylsp',
-\    filetype: 'python',
-\    path: $HOME . '/bin/python/bin/pylsp',
-\    args: [],
-\    initializationOptions: {
-\        'pylsp': {
-\           'plugins': {
-\               'ruff': {
-\                   'lineLength': 120,
-\               },
-\           },
-\        },
-\    },
-\ }, #{
-\    name: 'basedpyright',
-\    filetype: 'python',
-\    path: $HOME . '/bin/python/bin/basedpyright-langserver',
-\    args: ['--stdio'],
-\ }, #{
-\    name: 'ruff-lsp',
-\    filetype: 'python',
-\    path: $HOME . '/bin/python/bin/ruff',
-\    args: ['server'],
-\ }, #{
-\    name: 'rust',
-\    filetype: 'rust',
-\    path: $HOME . '/bin/cargo/bin/rust-analyzer',
-\    args: [],
-\    syncInit: v:true,
-\ }]
-
-if !executable(lspServers[0].path)
-    let lspServers = []
-endif
-
-autocmd User LspSetup call LspAddServer(lspServers)
-setlocal tagfunc=lsp#lsp#TagFunc
-
-nnoremap gd <Cmd>LspGotoDefinition<CR>
-nnoremap gD <Cmd>LspGotoImpl<CR>
-nnoremap K <Cmd>silent LspHover<CR>
-
-nmap <leader>db <Plug>VimspectorToggleBreakpoint
-nmap <leader>dB <Plug>VimspectorToggleConditionalBreakpoint
-nmap <leader>dc <Plug>VimspectorContinue
-nmap <leader>de <Plug>VimspectorBalloonEval
-nmap <leader>dF <Plug>VimspectorAddFunctionBreakpoint
-nmap <leader>di <Plug>VimspectorStepInto
-nmap <leader>dl <Plug>VimspectorLaunch
-nmap <leader>dO <Plug>VimspectorStepOut
-nmap <leader>do <Plug>VimspectorStepOver
-nmap <leader>dp <Plug>VimspectorPause
-nmap <leader>dr <Plug>VimspectorRestart
-nmap <leader>ds <Plug>VimspectorStop
-nmap <leader>dw <Plug>VimspectorWatch
-nmap <leader>dx <Plug>VimspectorRunToCursor
-
-let g:yankstack_map_keys = 0
-call yankstack#setup()
-nmap <C-p> <Plug>yankstack_substitute_older_paste
-nmap <C-n> <Plug>yankstack_substitute_newer_paste
