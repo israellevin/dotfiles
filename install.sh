@@ -8,7 +8,7 @@ APT::Install-Suggests "0";
 EOF
     DEBIAN_FRONTEND=noninteractive apt -y install \
         keyd kmod irqbalance numad \
-        linux-perf pciutils psmisc sudo usbutils \
+        linux-perf pciutils psmisc strace sudo usbutils \
         bash-completion bc bsdextrautils git jq less locales man moreutils pv ripgrep socat vim zoxide \
         chafa console-setup git-delta tmux \
         cpio gpg openssl unrar unzip zstd \

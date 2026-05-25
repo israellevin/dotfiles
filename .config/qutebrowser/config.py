@@ -8,6 +8,17 @@ config.load_autoconfig(False)
 c.content.blocking.method = 'both'
 c.session.lazy_restore = True
 c.tabs.last_close = 'blank'
+c.fonts.default_size = '16px'
+c.statusbar.widgets = [
+    "progress",
+    "keypress",
+    "search_match",
+    "history",
+    "url",
+    "scroll",
+    "tabs",
+    "clock:%H:%M %F %a",
+]
 
 c.editor.command = ['foot', 'vim', '-f', "{file}", '-c', 'set spell']
 c.fileselect.single_file.command = ['foot', 'yazi', '--chooser-file', '{}']
