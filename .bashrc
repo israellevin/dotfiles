@@ -270,6 +270,7 @@ blu() {
     bluetoothctl power off
     rfkill block "$bluetooth_id"
 }
+tit() { echo "sub-add '$1'" | socat - /tmp/mpv.sock; }
 
 # Some escape sequences for colors.
 # Note the surrounding $'\001' and $'\002'  which tell readline the escape sequence has zero length.
