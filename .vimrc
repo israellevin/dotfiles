@@ -34,9 +34,8 @@ Plug 'jasonccox/vim-wayland-clipboard'
 Plug 'mbbill/undotree'
 Plug 'maxbrunsfeld/vim-yankstack'
 
-" Colorschemes
+" Colorscheme de jour
 Plug 'w0ng/vim-hybrid'
-Plug 'sudorook/colorific.vim'
 
 call plug#end()
 
@@ -190,11 +189,10 @@ set showcmd
 set showmode
 set wrap
 
-" Commands
-command! Q q
-command! Heb setlocal rightleft | setlocal rightleftcmd | setlocal keymap=hebrew | call Pretty(0)
-command! Noheb setlocal norightleft | setlocal rightleftcmd= | setlocal keymap= | call Pretty(0)
-command! UnwrittenDiff vert new | set bt=nofile | r ++edit
+" Terminal cursor
+let &t_EI = "\<Esc>]12;green\x7"
+let &t_SI .= "\<Esc>[6 q"
+let &t_EI .= "\<Esc>[2 q"
 
 " Mappings
 nnoremap Y y$
@@ -234,13 +232,13 @@ cnoremap %% <C-r>=expand("%:p:h") . '/' <CR>
 " Accepts an argument so it can be called from a timer (in some autocommands)
 function! Pretty(_)
 
-    if has("gui_running") || $DISPLAY != 'no'
+    if $DISPLAY != ''
         set t_Co=256
         set termguicolors
         set background=dark
         colorscheme hybrid
     else
-        colorscheme colorific
+        colorscheme desert
         set notermguicolors
     endif
 
@@ -248,7 +246,7 @@ function! Pretty(_)
         windo set virtualedit=all
         windo set wrap<
         if !exists('g:colors_name') || g:colors_name == 'hybrid'
-            colorscheme colorific
+            colorscheme desert
         endif
     else
         set virtualedit=
@@ -271,6 +269,12 @@ function! Pretty(_)
     endif
 
 endfunction
+
+" Commands
+command! Q q
+command! Heb setlocal rightleft | setlocal rightleftcmd | setlocal keymap=hebrew | call Pretty(0)
+command! Noheb setlocal norightleft | setlocal rightleftcmd= | setlocal keymap= | call Pretty(0)
+command! UnwrittenDiff vert new | set bt=nofile | r ++edit
 
 " Autocommands
 augroup mine
@@ -314,4 +318,8 @@ augroup mine
 
     " Source vimrc when written
     au BufWritePost ~/.vimrc nested source % | redraw! | echomsg "sourced"
+
+    " Reset cursor color on exit
+    au VimLeave * silent !echo -ne "\033]112\007"
+
 augroup END
