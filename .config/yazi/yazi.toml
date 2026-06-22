@@ -5,3 +5,10 @@ desc = "Add sub to MPV"
 [[open.prepend_rules]]
 url = "*.{ass,srt,ssa,sty,sup,vtt}"
 use = [ "add-sub", "edit" ]
+
+[opener]
+enter = [ { run = 'ya emit cd "$1"', desc="enter selected directory" } ]
+
+[[open.prepend_rules]]
+url = "*/"
+use = [ "enter" ]
