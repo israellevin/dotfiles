@@ -8,7 +8,8 @@ vidhist="$(cat "$vidhist_file" | while read -r line; do
     if [ -f "$file" ]; then
         echo "$line"
     fi
-done | tee "$vidhist_file")"
+done | tee "$vidhist_file.tmp")"
+mv "$vidhist_file.tmp" "$vidhist_file"
 
 FZF_DEFAULT_OPTS="$FZF_DEFAULT_OPTS --delimiter=/ --with-nth=-1 --query '$*'"
 export "FZF_DEFAULT_OPTS"
