@@ -4,18 +4,14 @@ Unlikely to be very useful to anyone else, but who knows.
 
 ## Configuration Files
 
-.bashrc
-.gitconfig
-.inputrc
-.profile
-.tmux.conf
-.viebrc
-.vimrc
-
-.config/user-dirs.dirs
-.config/foot/foot.ini
-.config/niri/config.kdl
-.config/xdg-desktop-portal/portals.conf
+- .bashrc
+- .gitconfig
+- .inputrc
+- .profile
+- .tmux.conf
+- .viebrc
+- .vimrc
+- .config/{foot,mpv,qutebrowser,niri,xdg-desktop-portal,yazi,user-dirs.dirs}/*
 
 ## Scripts
 

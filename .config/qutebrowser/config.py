@@ -21,8 +21,8 @@ c.statusbar.widgets = [
 ]
 
 c.editor.command = ['foot', 'vim', '-f', "{file}", '-c', 'set spell']
-c.fileselect.single_file.command = ['foot', 'yazi', '--chooser-file', '{}']
 c.fileselect.folder.command = ['foot', 'yazi', '--cwd-file', '{}']
+c.fileselect.single_file.command = ['foot', 'yazi', '--chooser-file', '{}']
 c.fileselect.multiple_files.command = ['foot', 'yazi', '--chooser-file', '{}']
 c.fileselect.handler = 'external'
 
