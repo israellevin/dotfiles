@@ -8,6 +8,9 @@ infifo="$tmpdir/in"
 outfifo="$tmpdir/out"
 mkfifo "$infifo" "$outfifo"
 
+# Use a copy of stdin because background jobs change fd 0.
+exec 3<&0
+cat <&3 >"$infifo" &
 cat "$outfifo" &
-foot -a menu_run sh -c "fzf $* < '$infifo' > '$outfifo'" &
-cat - > "$infifo"
+
+foot -a menu sh -c "fzf $* < '$infifo' > '$outfifo'"

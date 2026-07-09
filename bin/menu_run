@@ -5,18 +5,28 @@ history_file="$cache_dir/menu_run_history"
 
 FZF_DEFAULT_OPTS='-e --bind=ctrl-u:page-up,ctrl-d:page-down,alt-o:print-query,ctrl-o:replace-query'
 FZF_DEFAULT_OPTS="$FZF_DEFAULT_OPTS --history='$history_file' --scheme history"
-export FZF_DEFAULT_OPTS
+export "FZF_DEFAULT_OPTS"
 
-command_to_run="$({
-    cat "$cache_file" 2>/dev/null || true
+temp_dir="$(mktemp -dt menu_run.XXX)"
+trap 'rm -rf "$temp_dir"' EXIT
+next_cache_file="$temp_dir/menu_run_cache.new"
+menu_in="$temp_dir/menu_in.fifo"
+
+mkfifo "$menu_in" 2> /dev/null
+(
     {
+        cat "$cache_file" 2>/dev/null
         IFS=:
         for directory in ${PATH:-""}; do
             if [ -d "$directory" ]; then
-                find "$directory" -maxdepth 1 -type f,l -executable -exec basename {} \;
+                find "$directory" -maxdepth 1 -type f,l -executable -printf '%f\n'
             fi
-        done | tee "$cache_file" &
-    }
-} | awk -W interactive '!commands[$0]++' | menu)"
+        done
+    } | awk -W interactive '!seen[$0]++' | tee "$menu_in" > "$next_cache_file"
+    mv "$next_cache_file" "$cache_file"
+) &
+writer_pid=$!
 
-$command_to_run
+command="$(menu < "$menu_in")"
+"$command"
+wait $writer_pid

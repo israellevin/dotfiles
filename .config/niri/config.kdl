@@ -56,7 +56,7 @@ window-rule {
 }
 
 window-rule {
-    match app-id="menu_run"
+    match app-id="menu"
     open-floating true
     opacity 0.7
     default-column-width { proportion 0.9; }
@@ -73,7 +73,7 @@ window-rule {
 animations { off; }
 prefer-no-csd
 overview { zoom 0.25; }
-gestures { hot-corners { top-right; }; }
+gestures { hot-corners { off; }; }
 hotkey-overlay { skip-at-startup; }
 
 spawn-at-startup "red"
