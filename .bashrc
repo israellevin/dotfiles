@@ -302,17 +302,42 @@ pygl() { pyg "$@" | less; }
 # Prompt
 gitstat() {
     local orig_retcode=$?
-    local branch
-    local dirty
-    local ahead
-    branch=$(git symbolic-ref HEAD 2>/dev/null) || return $orig_retcode
-    branch=${branch:11}
-    dirty=$(git status --porcelain 2>/dev/null | grep -vc '^??')
-    ahead=$(git log origin/"$branch"..HEAD 2>/dev/null | grep -c '^commit')
-    echo -n "($branch"
-    [ 0 = "$dirty" ] || echo -n " $RED$dirty$RESET"
-    [ 0 = "$ahead" ] || echo -n " $GREEN$ahead$RESET"
-    echo -n ')'
+    local git_dir
+    git_dir=$(git rev-parse --git-dir 2>/dev/null) || return $orig_retcode
+    local stats
+    mapfile -t stats < <(git status --porcelain=v2 --branch --show-stash 2>/dev/null)
+    local line branch aheadbehind ahead behind stash dirty conflict untracked
+    for line in "${stats[@]}"; do
+        case "$line" in
+            "# branch.head "*)
+                branch=${line#*head }
+                if [ "$branch" = "(detached)" ]; then
+                    branch=$(git rev-parse --short HEAD 2>/dev/null)
+                    if [ -d "$git_dir/rebase-merge" ] || [ -d "$git_dir/rebase-apply" ]; then
+                        branch="rebase on $branch"
+                    elif [ -f "$git_dir/BISECT_LOG" ]; then
+                        branch="bisect on $branch"
+                    fi
+                fi
+                ;;
+            "# branch.ab "*)
+                # shellcheck disable=SC2086  # We want word splitting here.
+                mapfile -d' ' -ts2 aheadbehind <<<$line
+                ahead=${aheadbehind[0]%+0}
+                behind=${aheadbehind[1]%$'\n'}
+                behind=${behind%-0}
+                ;;
+            "# stash "*) stash="[${line#'# stash '}]";;
+            "1 "*|"2 "*) ((dirty++));;
+            "u "*) ((conflict++));;
+            "? "*) ((untracked++));;
+        esac
+    done
+    echo -n "($MAGENTA$stash$YELLOW$branch$GREEN$behind$ahead"
+    [ "$dirty" ] && echo -n " $MAGENTA$dirty"
+    [ "$conflict" ] && echo -n " ${RED}$conflict"
+    [ "$untracked" ] && echo -n " ${BLUE}$untracked"
+    echo -n "$RESET)"
     return $orig_retcode
 }
 hasjobs() {
@@ -321,8 +346,7 @@ hasjobs() {
     local num_pids
     mapfile -t pids < <(jobs -p)
     num_pids=${#pids[@]}
-    ((num_pids--))
-    [ $num_pids -gt 0 ] && echo $num_pids
+    [ "$num_pids" -gt 0 ] && echo "$num_pids"
     return $orig_retcode
 }
 retcode() {
@@ -338,12 +362,12 @@ hostorchrootname() {
 
 # Single line version
 PS1="$MAGENTA$REVERSE\$(retcode)$RESET$RED\u@\$(hostorchrootname):$RESET"
-PS1+="$GREEN\W$RESET$YELLOW\$(gitstat)$RESET$CYAN$REVERSE\$(hasjobs)$RESET\$ "
+PS1+="$GREEN\W$RESET\$(gitstat)$CYAN$REVERSE\$(hasjobs)$RESET\$ "
 
 # Multiline version
 PS0="$BLUE/ \D{%d-%b-%y %H:%M:%S} \\$RESET\n"
 PS1="$BLUE\\\\ \D{%d-%b-%y %H:%M:%S} /$RESET\n"
-PS1+="$RED\u@\$(hostorchrootname)(\!):$RESET$GREEN\w$RESET$YELLOW\$(gitstat)$RESET\n"
+PS1+="$RED\u@\$(hostorchrootname)(\!):$RESET$GREEN\w$RESET\$(gitstat)\n"
 PS1+="$MAGENTA$REVERSE\$(retcode)$RESET$CYAN$REVERSE\$(hasjobs)$RESET\$ "
 
 lt
