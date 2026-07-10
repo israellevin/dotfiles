@@ -95,6 +95,11 @@ let lspServers = [#{
 \    path: $HOME . '/bin/cargo/bin/rust-analyzer',
 \    args: [],
 \    syncInit: v:true,
+\ }, #{
+\    name: 'typescriptlang',
+\    filetype: ['javascript', 'typescript'],
+\    path: $HOME . '/bin/node/node_modules/.bin/typescript-language-server',
+\    args: ['--stdio']
 \ }]
 
 if !executable(lspServers[0].path)
