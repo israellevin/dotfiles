@@ -156,8 +156,6 @@ y() {
 
 # Completion
 . /etc/bash_completion
-. <(niri completions bash)
-complete -W "$(grep -aPo '(?<=^ssh ).*$' ~/.bash_history_safe 2>/dev/null | sort -u | sed 's/\(.*\)/"\1"/')" ssh
 
 _w() {
     mapfile -t COMPREPLY < <(grep -h "^${COMP_WORDS[COMP_CWORD]}" /usr/share/dict/[ab]*)
@@ -236,7 +234,6 @@ gresetremote() { git reset --hard "$(gremtrack)"; }
 export FZF_DEFAULT_OPTS='--exact --no-sort --bind=ctrl-u:page-up,ctrl-d:page-down,alt-o:print-query,ctrl-o:replace-query'
 export FZF_CTRL_T_OPTS='--preview=~/.fzf/bin/fzf-preview.sh\ {}'
 export FZF_TMUX=1
-[ -f ~/.fzf.colors ] && . ~/.fzf.colors
 [ -f ~/.fzf.bash ] && . ~/.fzf.bash
 
 # zoxide

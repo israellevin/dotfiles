@@ -1,6 +1,16 @@
 #!/usr/bin/sh
 until [ -w /dev/dri/renderD128 ]; do :; done
 
+# Update niri's completion in the background and only if required.
+{
+    niri_completion_file="${XDG_DATA_HOME:-$HOME/.local/share}/bash-completion/completions/niri"
+    if [ ! -e "$niri_completion_file" ] || [ "$(command -v niri)" -nt "$niri_completion_file" ]; then
+        mkdir -p "${niri_completion_file%/*}"
+        niri completions bash > "$niri_completion_file.new" 2>/dev/null &&
+            mv -f "$niri_completion_file.new" "$niri_completion_file"
+    fi
+} &
+
 user_path="$HOME/bin"
 user_path="$user_path:$HOME/bin/python/bin"
 user_path="$user_path:$HOME/bin/cargo/bin"
