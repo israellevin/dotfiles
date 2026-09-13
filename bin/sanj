@@ -1,83 +1,49 @@
 #!/usr/bin/bash
-
-# shellcheck disable=SC2317  # This makes semantic sense if you consider sourcing vs executing.
-[ "$OPENAI_API_KEY" ] || { echo "Set OPENAI_API_KEY env var"; return 1 2> /dev/null || exit 1; }
-
-generate_command() {
-    llm --system 'Provide just the one-line bash command for a debian system with no decorations' "$*"
-}
-
-# If we are being sourced, set up the keybinding and return, we are done.
-if [ "${BASH_SOURCE[0]}" != "$0" ]; then
-    rewrite_command() {
-        [ "$READLINE_LINE" ] || return 0
-        READLINE_LINE="$(generate_command "$READLINE_LINE")"
-        READLINE_POINT=${#READLINE_LINE}
-    }
-    bind -x '"\C-g": rewrite_command'
-    echo Bound Ctrl-G to sanj command rewriting
-    return 0
-fi
-
-# Manual invocations.
-
-# Type command from prompt.
-if [ "$1" = 'do' ]; then
-    ydotool type -d0 "$(generate_command "$*")"
-    exit 0
-fi
-
-# Continue previous chat.
-if [ "$1" = 'cont' ]; then
-    llm chat --continue
-    exit 0
-fi
-
-# Generate image from prompt.
-if [ "$1" = 'img' ]; then
-    generate_image() {
-        local size=256x256
-        if [ "$1" = '-l' ]; then
-            shift
-            size=512x512
-        elif [ "$1" = '-x' ]; then
-            shift
-            size=1024x1024
-        fi
-        local prompt="$*"
-        img_url=$(curl https://api.openai.com/v1/images/generations -sS \
-            -H 'Content-Type: application/json' \
-            -H "Authorization: Bearer $OPENAI_API_KEY" \
-            -d '{
-                "prompt": "'"$prompt"'",
-                "n": 1,
-                "size": "'"$size"'"
-            }' | node -pe 'JSON.parse(require("fs").readFileSync(0, "utf-8")).data[0].url')
-        file_name="${prompt// /_}.png"
-        curl -sS "$img_url" -o "$file_name"
-        chafa "$file_name"
-    }
-    generate_image "$@"
-    exit 0
-fi
-
 # Syntactic sugar for llm command.
-sanj() {
-    local BASE_SYSTEM_PROMPT='Output is redirected to terminal, format accordingly.'
-    local action=chat  # Default action is chat, but if a lone dash is provided, switch to prompt mode.
-    local llm_arguments=()  # Pass through arguments to llm.
-    local fragment_arguments=()  # File fragments to pass to llm.
-    local prompt  # Prompt to send to llm.
-    local system_prompts=()  # The following will be prepended to the base system prompt if provided:
-                             # 1) Anything after `--`.
-                             # 2) Any provided prompt if input is piped in.
 
-    # Scan arguments.
+BASE_SYSTEM='Output is redirected to terminal, format accordingly.'
+GENERATE_COMMAND_SYSTEM=(
+    'Provide only bash commands for debian without any description.'
+    'If there is a lack of details, provide most logical solution.'
+    'Ensure the output is a valid shell command.'
+    'If multiple steps required try to combine them together using &&.'
+    'Provide only plain text without Markdown formatting.'
+    'Do not provide markdown formatting such as backticks.'
+)
+LOOP_SYSTEM=(
+    'You are an AI agent. Complete complicated tasks by using the "command" keyword.'
+    'Everything in your response following a line with only the word "command" in it'
+    'will be executed as is (so no formatting or fencing) on a bash shell'
+    'of the hosting debian system. The output along with the complete history'
+    'will be passed back to you.'
+)
+
+sanj() {
+    # Default action is chat.
+    # `do` keyword changes to "do".
+    # A lone dash changes to "dump".
+    # Triple dashes change to "loop".
+    local action=chat
+    # The following will be appended to `BASE_SYSTEM` if provided:
+    # 1) `GENERATE_COMMAND_SYSTEM` for `do` commands.
+    # 2) Anything after `--`.
+    # 3) Any provided prompt if input is piped in.
+    # 4) `LOOP_SYSTEM` for `loop` commands.
+    local system_prompts=("${BASE_SYSTEM[@]}")
+    local prompt  # Prompt to send to llm.
+    local llm_arguments=()  # Pass through arguments to llm.
+
+    # Scan arguments, giving `do` special treatment.
+    if [ "$1" = 'do' ]; then
+        shift
+        action='do'
+        system_prompts+=("${GENERATE_COMMAND_SYSTEM[@]}")
+    fi
     local argument_index=1
     while [ $argument_index -le $# ]; do
         case "${!argument_index}" in
-            -) action=prompt;;
-            --) system_prompts=("${@:$((argument_index + 1))}"); break;;
+            -) action=dump;;
+            --) system_prompts+=("${@:$((argument_index + 1))}"); break;;
             ---) action=loop;;
             -*)
                 llm_arguments+=("${!argument_index}")
@@ -86,7 +52,7 @@ sanj() {
                 ;;
             *)
                 if [ -f "${!argument_index}" ]; then
-                    fragment_arguments+=("--fragment" "${!argument_index}")
+                    llm_arguments+=("--fragment" "${!argument_index}")
                 else
                     prompt+=" ${!argument_index}"
                 fi
@@ -101,11 +67,12 @@ sanj() {
         prompt=''
     fi
 
-    system_prompts+=("$BASE_SYSTEM_PROMPT")
-    llm_arguments+=("--system" "$(printf "%s\n" "${system_prompts[@]}")")
+    llm_arguments+=("--system" "${system_prompts[*]}")
 
-    if [ $action = prompt ]; then
-        llm $action "$prompt" "${llm_arguments[@]}" "${fragment_arguments[@]}"
+    if [ $action = dump ]; then
+        llm "${llm_arguments[@]}" "$prompt"
+    elif [ $action = 'do' ]; then
+        ydotool type -d0 "$(llm "${llm_arguments[@]}" "$prompt")"
     elif [ $action = chat ]; then
         if [ "$prompt" ]; then
             (
@@ -115,17 +82,11 @@ sanj() {
                 ydotool key -d0 28:0
             ) &
         fi
-        llm $action "${llm_arguments[@]}" "${fragment_arguments[@]}"
+        llm chat "${llm_arguments[@]}"
     elif [ $action = loop ]; then
-        system_prompts+=(
-            'You are an AI agent. Complete complicated tasks by using the "command" keyword.'
-            'Everything in your response following a line with only the word "command" in it'
-            'will be executed as is (so no formatting or fencing) on a bash shell'
-            'of the hosting debian system. The output along with the complete history'
-            'will be passed back to you.'
-        )
+        system_prompts+=("${LOOP_SYSTEM[@]}")
         while true; do
-            response="$(llm prompt "$prompt" "${llm_arguments[@]}" "${fragment_arguments[@]}")"
+            response="$(llm "${llm_arguments[@]}" "$prompt")"
             printf "\n=== Response ===\n%s\n" "$response"
             command="$(sed -n '/^command$/,$p' <<<"$response" | tail -n +2)"
             [ -z "$command" ] && break
@@ -133,10 +94,12 @@ sanj() {
             [ "$yn" != y ] && break
             output="$(eval "$command" 2>&1)"
             prompt="$prompt\nresponse:\n$response\noutput:\n$output\n\n"
-
         done
         return 0
     fi
 }
+
+# Don't do anything if sourced.
+[ "${BASH_SOURCE[0]}" != "$0" ] && return 0
 
 sanj "$@"

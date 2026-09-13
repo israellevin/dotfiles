@@ -156,9 +156,7 @@ y() {
 
 # Completion
 . /etc/bash_completion
-. <(pip completion --bash)
 . <(niri completions bash)
-
 complete -W "$(grep -aPo '(?<=^ssh ).*$' ~/.bash_history_safe 2>/dev/null | sort -u | sed 's/\(.*\)/"\1"/')" ssh
 
 _w() {
@@ -245,8 +243,13 @@ export FZF_TMUX=1
 eval "$(zoxide init bash --cmd j)"
 
 # LLM
-export OPENAI_KEY=sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 . ~/bin/sanj
+rewrite_command() {
+    [ "$READLINE_LINE" ] || return 0
+    READLINE_LINE="$(sanj 'do' - "$READLINE_LINE")"
+    READLINE_POINT=${#READLINE_LINE}
+}
+bind -x '"\C-g": rewrite_command'
 
 # Media
 cap() { slurp | grim -g - "${1:-tmp}.png"; }

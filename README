@@ -11,7 +11,7 @@ Unlikely to be very useful to anyone else, but who knows.
 - .tmux.conf
 - .viebrc
 - .vimrc
-- .config/{foot,mpv,qutebrowser,niri,xdg-desktop-portal,yazi,user-dirs.dirs}/*
+- .config/{foot,io.datasette.llm,mpv,niri,nvim,qutebrowser,user-dirs.dirs,xdg-desktop-portal,yazi}
 
 ## Scripts
 
