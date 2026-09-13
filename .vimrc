@@ -111,6 +111,7 @@ setlocal tagfunc=lsp#lsp#TagFunc
 
 nnoremap gd <Cmd>LspGotoDefinition<CR>
 nnoremap gD <Cmd>LspGotoImpl<CR>
+nnoremap gr <Cmd>LspShowReferences<CR>
 nnoremap K <Cmd>silent LspHover<CR>
 
 nmap <leader>db <Plug>VimspectorToggleBreakpoint
@@ -250,11 +251,13 @@ function! Pretty(_)
     if &diff
         windo set virtualedit=all
         windo set wrap<
+        windo set colorcolumn=0
         if !exists('g:colors_name') || g:colors_name == 'hybrid'
             colorscheme desert
         endif
     else
         set virtualedit=
+        set colorcolumn=81
     endif
 
     syntax enable
