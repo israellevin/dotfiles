@@ -1,6 +1,6 @@
 #!/bin/bash
 paths="$HOME/torrents"
-vidtypes='3g\|asf\|asx\|avi\|bin\|divx\|dvx\|f4v\|flc\|flv\|gvi\|m4v\|mkv\|mov\|mp4\|mpeg\|mpg\|ogm\|qt\|rm\|swf\|vid\|wmv\|xvid'
+vidtypes='3g\|asf\|asx\|avi\|bin\|divx\|dvx\|f4v\|flc\|flv\|gvi\|m4v\|mkv\|mov\|mp4\|mpeg\|mpg\|ogm\|qt\|rm\|swf\|vid\|webm\|wmv\|xvid'
 vidhist_file="$HOME/torrents/recent_videos"
 
 vidhist="$(cat "$vidhist_file" | while read -r line; do
