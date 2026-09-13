@@ -273,19 +273,19 @@ blu() {
 tit() { echo "sub-add '$1'" | socat - /tmp/mpv.sock; }
 
 # Some escape sequences for colors.
-# Note the surrounding $'\001' and $'\002'  which tell readline the escape sequence has zero length.
-# Bash documentation recommends using escaped square brackets, but these fail on command substitution.
-rgb_color() {
-    printf "\001\033[38;2;%d;%d;%dm\002" "$1" "$2" "$3"
-}
-RED="$(rgb_color 178 148 187)"
-GREEN="$(rgb_color 71 180 19)"
-YELLOW="$(rgb_color 255 175 0)"
-BLUE="$(rgb_color 39 59 150)"
-MAGENTA="$(rgb_color 204 102 153)"
-CYAN="$(rgb_color 102 204 204)"
-REVERSE=$'\001'"$(tput rev)"$'\002'
-RESET=$'\001'"$(tput sgr0)"$'\002'
+# Note the surrounding $'\001' and $'\002'  which tell readline the escape
+# sequence has zero length.  Bash documentation recommends using escaped square
+# brackets, but these fail on command substitution.
+rgb_escape_code() { printf "\001\033[38;2;%d;%d;%dm\002" "$1" "$2" "$3"; }
+tput_escape_code() { printf "\001%s\002" "$(tput "$1")"; }
+RED="$(rgb_escape_code 178 148 187)"
+GREEN="$(rgb_escape_code 71 180 19)"
+YELLOW="$(rgb_escape_code 255 175 0)"
+BLUE="$(rgb_escape_code 39 59 150)"
+MAGENTA="$(rgb_escape_code 204 102 153)"
+CYAN="$(rgb_escape_code 102 204 204)"
+REVERSE="$(tput_escape_code rev)"
+RESET="$(tput_escape_code sgr0)"
 
 # Easy view
 type dircolors >/dev/null 2>&1 && eval "$(dircolors)"
@@ -302,10 +302,9 @@ pygl() { pyg "$@" | less; }
 # Prompt
 gitstat() {
     local orig_retcode=$?
-    local git_dir
-    git_dir=$(git rev-parse --git-dir 2>/dev/null) || return $orig_retcode
     local stats
     mapfile -t stats < <(git status --porcelain=v2 --branch --show-stash 2>/dev/null)
+    [ "${stats[0]}" ] || return $orig_retcode
     local line branch aheadbehind ahead behind stash dirty conflict untracked
     for line in "${stats[@]}"; do
         case "$line" in
@@ -313,6 +312,8 @@ gitstat() {
                 branch=${line#*head }
                 if [ "$branch" = "(detached)" ]; then
                     branch=$(git rev-parse --short HEAD 2>/dev/null)
+                    local git_dir
+                    git_dir=$(git rev-parse --git-dir 2>/dev/null)
                     if [ -d "$git_dir/rebase-merge" ] || [ -d "$git_dir/rebase-apply" ]; then
                         branch="rebase on $branch"
                     elif [ -f "$git_dir/BISECT_LOG" ]; then
@@ -360,14 +361,14 @@ hostorchrootname() {
     return $orig_retcode
 }
 
-# Single line version
-PS1="$MAGENTA$REVERSE\$(retcode)$RESET$RED\u@\$(hostorchrootname):$RESET"
-PS1+="$GREEN\W$RESET\$(gitstat)$CYAN$REVERSE\$(hasjobs)$RESET\$ "
-
-# Multiline version
-PS0="$BLUE/ \D{%d-%b-%y %H:%M:%S} \\$RESET\n"
-PS1="$BLUE\\\\ \D{%d-%b-%y %H:%M:%S} /$RESET\n"
-PS1+="$RED\u@\$(hostorchrootname)(\!):$RESET$GREEN\w$RESET\$(gitstat)\n"
-PS1+="$MAGENTA$REVERSE\$(retcode)$RESET$CYAN$REVERSE\$(hasjobs)$RESET\$ "
+if [ "$PROMPT_MODE" = single-line ]; then
+    PS1="$MAGENTA$REVERSE\$(retcode)$RESET$RED\u@\$(hostorchrootname):$RESET"
+    PS1+="$GREEN\W$RESET\$(gitstat)$CYAN$REVERSE\$(hasjobs)$RESET\$ "
+else
+    PS0="$BLUE/ \D{%d-%b-%y %H:%M:%S} \\$RESET\n"
+    PS1="$BLUE\\\\ \D{%d-%b-%y %H:%M:%S} /$RESET\n"
+    PS1+="$RED\u@\$(hostorchrootname)(\!):$RESET$GREEN\w$RESET\$(gitstat)\n"
+    PS1+="$MAGENTA$REVERSE\$(retcode)$RESET$CYAN$REVERSE\$(hasjobs)$RESET\$ "
+fi
 
 lt
