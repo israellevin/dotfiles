@@ -8,6 +8,7 @@ config.load_autoconfig(False)
 c.content.blocking.method = 'both'
 c.session.lazy_restore = True
 c.tabs.last_close = 'blank'
+c.colors.webpage.bg = 'black'
 c.fonts.default_size = '16px'
 c.statusbar.widgets = [
     "progress",
