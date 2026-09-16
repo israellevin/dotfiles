@@ -72,7 +72,10 @@ sanj() {
     if [ $action = dump ]; then
         llm "${llm_arguments[@]}" "$prompt"
     elif [ $action = 'do' ]; then
-        ydotool type -d0 "$(llm "${llm_arguments[@]}" "$prompt")"
+        response="$(llm "${llm_arguments[@]}" "$prompt")"
+        echo "$response"
+        read -r
+        ydotool type -d0 "$response"
     elif [ $action = chat ]; then
         if [ "$prompt" ]; then
             (
