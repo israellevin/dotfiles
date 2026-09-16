@@ -7,7 +7,7 @@
 
 # Multiplex
 if type tmux >/dev/null 2>&1 && [ ! "$TMUX" ]; then
-    unattached_sessions=("$(tmux list-sessions | grep -v '(attached)')")
+    unattached_sessions=("$(tmux list-sessions 2>/dev/null | grep -v '(attached)')")
     if [ ${#unattached_sessions[0]} -eq 0 ]; then
         tmux -TRGB new-session
     else
@@ -69,6 +69,7 @@ exp() { curl -Gs "https://www.mankier.com/api/explain/?cols=$(tput cols)" --data
 from_json() { node -pe "JSON.parse(require('fs').readFileSync(0, 'utf-8'))$1"; }
 genpas() { shuf -zern"${1:-8}" ':' ';' '<' '=' '>' '?' '@' '[' ']' '^' '_' '`' '{' '|' '}' '~' {0..9} {A..Z} {a..z} {a..z} {a..z}; echo; }
 log() { "$@" 2>&1 | tee log.txt; }
+long() { "$@"; notify-send -- "$1 is done"; }
 slp() { echo mem > /sys/power/state; }
 noslp() { systemd-inhibit --what=handle-lid-switch:sleep:shutdown --why='manual inhibition' sleep infinity; }
 sume() { [ "$EUID" -ne 0 ] && sudo -E su -p; }
@@ -240,17 +241,16 @@ export FZF_TMUX=1
 eval "$(zoxide init bash --cmd j)"
 
 # LLM
-. ~/bin/sanj
 rewrite_command() {
     [ "$READLINE_LINE" ] || return 0
-    READLINE_LINE="$(sanj 'do' - "$READLINE_LINE")"
+    READLINE_LINE="$(~/bin/sanj 'do' - "$READLINE_LINE")"
     READLINE_POINT=${#READLINE_LINE}
 }
 bind -x '"\C-g": rewrite_command'
 
 # Media
 cap() { slurp | grim -g - "${1:-tmp}.png"; }
-feh() { foot sh -c "chafa --duration inf '$*'" 2> /dev/null; }
+feh() { foot sh -c "chafa --duration inf '$*'" 2>/dev/null; }
 vol() {
     local sink=@DEFAULT_AUDIO_SINK@;
     if [ "$1" ]; then
