@@ -63,6 +63,38 @@ HISTTIMEFORMAT='%F %T '
 HISTIGNORE='&:exit'
 PROMPT_COMMAND='history -a; history -n'
 
+# Enable bash Completions.
+. /etc/bash_completion
+complete -C '/home/i/bin/aws_completer' aws
+
+# Generic completion copier.
+declare -A COMPLETE_AS=()
+_complete_as() {
+    local as=${COMPLETE_AS[${COMP_WORDS[0]}]-}
+    local IFS=$' \t\n'
+    local -a replacement original_words=("${COMP_WORDS[@]}")
+    read -ra replacement <<< "$as"
+    local joined=${replacement[*]}
+    local original=${original_words[0]}
+    local COMP_LINE=$joined${COMP_LINE#"$original"}
+    local COMP_POINT=$((COMP_POINT + ${#joined} - ${#original}))
+    local COMP_CWORD=$((COMP_CWORD + ${#replacement[@]} - 1))
+    local -a COMP_WORDS=("${replacement[@]}" "${original_words[@]:1}")
+    local dispatch=_comp_command_offset
+    declare -F "$dispatch" >/dev/null 2>&1 || dispatch=__command_offset
+    "$dispatch" 0
+}
+copy_completion() {
+    COMPLETE_AS["$1"]="${*:2}"
+    complete -F _complete_as "$1"
+}
+alias_with_completion() {
+    local command
+    printf -v command '%q ' "${@:2}"
+    # shellcheck disable=SC2139  # Expand on definition
+    alias "$1=$command"
+    copy_completion "$@"
+}
 # General functions.
 dud() { du -hxd1 "${1:-.}" | sort -h; }
 exp() { curl -Gs "https://www.mankier.com/api/explain/?cols=$(tput cols)" --data-urlencode "q=$*"; }
@@ -146,6 +178,7 @@ c() {
     [ "$(pwd)" == "$(readlink -f "$target")" ] && return 0
     pushd "$target" || return 1
 }
+copy_completion c cd
 mkcd() { mkdir -p "$*"; c "$*" || return 1; }
 xs() {
     [ -d "$*" ] 2>/dev/null && pushd "$*" && return
@@ -181,13 +214,13 @@ y() {
 . /etc/bash_completion
 
 # ls.
-LS_OPTIONS='-lh --color=auto --quoting-style=shell'
-alias l='ls $LS_OPTIONS'
-alias ll='ls $LS_OPTIONS -A'
-alias lt='ls $LS_OPTIONS -tr'
-alias llt='ls $LS_OPTIONS -Atr'
-alias lld='ls $LS_OPTIONS -Ad */'
-alias lls='ls $LS_OPTIONS -ASr'
+LS_OPTIONS=(-lh --color=auto --quoting-style=shell)
+alias_with_completion l ls "${LS_OPTIONS[@]}"
+alias_with_completion ll l -A
+alias_with_completion lt l -tr
+alias_with_completion llt lt -A
+alias_with_completion lld ll -d -- */
+alias_with_completion lls ll -Sr
 
 # grep.
 type rg >/dev/null 2>&1 && alias g='rg --smart-case' || alias g='grep --color=auto -i'
@@ -229,10 +262,10 @@ vd() {
 
 # git.
 gitformat="%s %C(dim)%C(cyan)%ah %C(green)%al %C(magenta)%h%C(auto)%d"
-alias gl='git log --graph --abbrev-commit --pretty=format:"$gitformat"'
-alias glg="gl --all"
-alias gll="glg --exclude=refs/remotes/** --all --decorate-refs=refs/heads/"
-alias gs="git status"
+alias_with_completion gl git log --graph --abbrev-commit --pretty=format:"$gitformat"
+alias_with_completion glg gl --all
+alias_with_completion gll glg --exclude=refs/remotes/** --all --decorate-refs=refs/heads/
+alias_with_completion gs git status
 gmb() { git merge-base "$(git branch --show-current)" "${1:-master}"; }
 gcur() { git branch --show-current; }
 gremtrack() { git rev-parse --abbrev-ref --symbolic-full-name '@{u}'; }
