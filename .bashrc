@@ -95,6 +95,40 @@ alias_with_completion() {
     alias "$1=$command"
     copy_completion "$@"
 }
+
+# Optional power tools.
+if type rg >/dev/null 2>&1; then
+    alias_with_completion g rg --smart-case
+else
+    echo "rg not found, using grep" >&2
+    alias_with_completion g grep --ignore-case --color=auto
+fi
+if type fdfind >/dev/null 2>&1; then
+    # Debian already completes `fd`, although the command is named `fdfind`.
+    alias fd='fdfind'
+    alias_with_completion findir fd -0td
+else
+    echo "fd-find not found, using find" >&2
+    alias_with_completion fd find
+    findir() { find "${2:-.}" -type d -iname "*$1*" -print0 2>/dev/null; }
+    copy_completion findir find
+fi
+if [ -x ~/.fzf/bin/fzf ]; then
+    export FZF_DEFAULT_OPTS='--exact --no-sort --bind=ctrl-u:page-up,ctrl-d:page-down,alt-o:print-query,ctrl-o:replace-query'
+    export FZF_CTRL_T_OPTS='--preview=~/.fzf/bin/fzf-preview.sh\ {}'
+    export FZF_TMUX=1
+    [ ! -f ~/.fzf.bash ] || [ ~/.fzf/bin/fzf -nt ~/.fzf.bash ] && ~/.fzf/bin/fzf --bash > ~/.fzf.bash
+    . ~/.fzf.bash
+else
+    echo "fzf not found, menus will fail" >&2
+fi
+if type zoxide > /dev/null; then
+    [ ! -f ~/.zoxide.bash ] || [ "$(type -P zoxide)" -nt ~/.zoxide.bash ] && zoxide init bash --cmd j > ~/.zoxide.bash
+    . ~/.zoxide.bash
+else
+    j() { type zoxide; }
+fi
+
 # General functions.
 dud() { du -hxd1 "${1:-.}" | sort -h; }
 exp() { curl -Gs "https://www.mankier.com/api/explain/?cols=$(tput cols)" --data-urlencode "q=$*"; }
@@ -124,7 +158,7 @@ venv() {
     fi
     alias pip='uv pip'
     if [ -f requirements.txt ]; then
-        missing_packages="$(comm -23 <(sort requirements.txt) <(uv pip freeze | grep -v '0.0.0' | sort))"
+        missing_packages="$(comm -23 <(sort requirements.txt) <(uv pip freeze | g -v '0.0.0' | sort))"
         if [ "$missing_packages" ]; then
             read -rn1 -p "$missing_packages - install (y/N)? "
             echo
@@ -137,11 +171,9 @@ venv() {
         [[ $REPLY =~ ^[Yy]$ ]] && uv pip install --upgrade -e .
     fi
 }
-w() {
-    fzf --query="^$*" < /usr/share/dict/words
-}
 _w() {
-    mapfile -t COMPREPLY < <(g -h "^${COMP_WORDS[COMP_CWORD]}" /usr/share/dict/words)
+    mapfile -t COMPREPLY < <(g --no-filename "^${COMP_WORDS[COMP_CWORD]}" /usr/share/dict/[ab]*)
+
 }
 complete -F _w w
 webshare() {
@@ -182,10 +214,8 @@ copy_completion c cd
 mkcd() { mkdir -p "$*"; c "$*" || return 1; }
 xs() {
     [ -d "$*" ] 2>/dev/null && pushd "$*" && return
-    dirs=()
-    while read -r dir ;do
-        dirs+=("$dir")
-    done < <(find . -type d -iname "*${*%% }*" 2>/dev/null)
+    local search="${*%"${*##*[! ]}"}"
+    readarray -d '' dirs < <(findir "$search" 2>/dev/null)
     case ${#dirs[@]} in
         0)
             return 1
@@ -210,9 +240,6 @@ y() {
     rm -f -- "$tmp"
 }
 
-# Completion.
-. /etc/bash_completion
-
 # ls.
 LS_OPTIONS=(-lh --color=auto --quoting-style=shell)
 alias_with_completion l ls "${LS_OPTIONS[@]}"
@@ -221,11 +248,8 @@ alias_with_completion lt l -tr
 alias_with_completion llt lt -A
 alias_with_completion lld ll -d -- */
 alias_with_completion lls ll -Sr
-
-# grep.
-type rg >/dev/null 2>&1 && alias g='rg --smart-case' || alias g='grep --color=auto -i'
+fgg() { fd "${2:-.}" | g "$1"; }
 lg() { ll "${2:-.}" | g "$1"; }
-fgg() { find "${2:-.}" | g "$1"; }
 
 # vim.
 # shellcheck disable=SC2086  # We want word splitting here.
@@ -272,15 +296,6 @@ gremtrack() { git rev-parse --abbrev-ref --symbolic-full-name '@{u}'; }
 gresetlocal() { git reset --hard "$(gcur)"; }
 gresetremote() { git reset --hard "$(gremtrack)"; }
 
-# fzf.
-export FZF_DEFAULT_OPTS='--exact --no-sort --bind=ctrl-u:page-up,ctrl-d:page-down,alt-o:print-query,ctrl-o:replace-query'
-export FZF_CTRL_T_OPTS='--preview=~/.fzf/bin/fzf-preview.sh\ {}'
-export FZF_TMUX=1
-[ -f ~/.fzf.bash ] && . ~/.fzf.bash
-
-# zoxide.
-eval "$(zoxide init bash --cmd j)"
-
 # LLM.
 rewrite_command() {
     [ "$READLINE_LINE" ] || return 0
@@ -304,7 +319,7 @@ vol() {
 }
 blu() {
     local bluetooth_id
-    bluetooth_id=$(rfkill list | grep -Po '^\d(?=: hci\d: Bluetooth)')
+    bluetooth_id=$(rfkill list | g -Po '^\d(?=: hci\d: Bluetooth)')
     rfkill unblock "$bluetooth_id"
     bluetoothctl power on
     bluetoothctl
