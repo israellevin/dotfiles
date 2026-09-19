@@ -1,11 +1,12 @@
-# shellcheck disable=SC1090,SC2015
-# Don't do shit if not connected to a terminal
+# shellcheck disable=SC1090  # Do not follow sources.
+# shellcheck disable=SC2015  # Allow non-if-else trinary form.
+# Don't do shit if not connected to a terminal.
 [ -t 0 ] || return
 
-# Launch graphical environment if attached to tty1
+# Only launch graphical environment if attached to tty1.
 [ "$(tty)" = /dev/tty1 ] && [ -z "$TMUX" ] && exec ~/bin/niri.sh
 
-# Multiplex
+# Multiplex.
 if type tmux >/dev/null 2>&1 && [ ! "$TMUX" ]; then
     unattached_sessions=("$(tmux list-sessions 2>/dev/null | grep -v '(attached)')")
     if [ ${#unattached_sessions[0]} -eq 0 ]; then
@@ -19,7 +20,7 @@ if type tmux >/dev/null 2>&1 && [ ! "$TMUX" ]; then
     [ -e ~/dontquit ] || exit 0
 fi
 
-# Steal all tmux windows into current session
+# Steal all tmux windows into current session.
 muxjoin() {
     for win in $(tmux list-windows -aF "#{session_name}:#{window_index}"); do
         [ "$win" = "$(tmux display-message -p '#{session_name}:#{window_index}')" ] && continue
@@ -27,7 +28,7 @@ muxjoin() {
     done
 }
 
-# Truisms
+# Truisms.
 user_path="$HOME/bin"
 user_path="$user_path:$HOME/bin/python/bin"
 user_path="$user_path:$HOME/bin/cargo/bin"
@@ -39,7 +40,7 @@ export EDITOR=vim
 export BROWSER=brows
 export PATH LANG EDITOR BROWSER
 
-# Shell options
+# Shell options.
 shopt -s autocd
 shopt -s cdspell
 shopt -s dotglob
@@ -53,7 +54,7 @@ shopt -u force_fignore
 shopt -s no_empty_cmd_completion
 stty -ixon
 
-# History
+# History.
 HISTFILE=~/.bash_history_safe
 HISTFILESIZE=
 HISTSIZE=
@@ -62,18 +63,27 @@ HISTTIMEFORMAT='%F %T '
 HISTIGNORE='&:exit'
 PROMPT_COMMAND='history -a; history -n'
 
-# General aliases and functions
-alias webshare='python3 -m http.server'
+# General functions.
 dud() { du -hxd1 "${1:-.}" | sort -h; }
 exp() { curl -Gs "https://www.mankier.com/api/explain/?cols=$(tput cols)" --data-urlencode "q=$*"; }
 from_json() { node -pe "JSON.parse(require('fs').readFileSync(0, 'utf-8'))$1"; }
 genpas() { shuf -zern"${1:-8}" ':' ';' '<' '=' '>' '?' '@' '[' ']' '^' '_' '`' '{' '|' '}' '~' {0..9} {A..Z} {a..z} {a..z} {a..z}; echo; }
 log() { "$@" 2>&1 | tee log.txt; }
 long() { "$@"; notify-send -- "$1 is done"; }
-slp() { echo mem > /sys/power/state; }
 noslp() { systemd-inhibit --what=handle-lid-switch:sleep:shutdown --why='manual inhibition' sleep infinity; }
+pg() { g "$@" <<<"$(ps -eF --forest | sort)"; }
+slp() { echo mem > /sys/power/state; }
 sume() { [ "$EUID" -ne 0 ] && sudo -E su -p; }
 til() { sleep $(( $(date -d "$*" +%s) - $(date +%s) )); }
+timediff() {
+    diff="$(date -d @$(( $(date -d "$3 $4" +%s) - $(date -d "$1 $2" +%s) )) -u +%Y-%j-%T)"
+    orig_ifs=$IFS
+    IFS=-
+    while read -r y d t; do
+        echo $((y - 1970)) $((d - 1)) "$t"
+    done <<< "$diff"
+    IFS=$orig_ifs
+}
 venv() {
     local venv_dir="${1:-./venv}"
     if ! . ./"$venv_dir"/bin/activate 2>/dev/null; then
@@ -95,24 +105,24 @@ venv() {
         [[ $REPLY =~ ^[Yy]$ ]] && uv pip install --upgrade -e .
     fi
 }
-
-timediff() {
-    diff="$(date -d @$(( $(date -d "$3 $4" +%s) - $(date -d "$1 $2" +%s) )) -u +%Y-%j-%T)"
-    orig_ifs=$IFS
-    IFS=-
-    while read -r y d t; do
-        echo $((y - 1970)) $((d - 1)) "$t"
-    done <<< "$diff"
-    IFS=$orig_ifs
+w() {
+    fzf --query="^$*" < /usr/share/dict/words
+}
+_w() {
+    mapfile -t COMPREPLY < <(g -h "^${COMP_WORDS[COMP_CWORD]}" /usr/share/dict/words)
+}
+complete -F _w w
+webshare() {
+    local command=(python3 -m http.server)
+    [ "$1" ] && command+=(-d "$1")
+    "${command[@]}" &
+    sleep 0.1
+    w3m -dump http://localhost:8000 | head
+    wait
 }
 
-# Filesystem traversal
+# Filesystem traversal.
 alias b='popd'
-c() {
-    local target="${1:-$HOME}"
-    [ "$(pwd)" == "$(readlink -f "$target")" ] && return 0
-    pushd "$target" || return 1
-}
 ..() {
     local target="${1:-1}"
     if [ "$target" -eq "$target" ] 2>/dev/null; then
@@ -120,9 +130,21 @@ c() {
         return 0
     else
         target="${PWD%%"$target"*}$target*"
-        c "$target" && return 0
+        pushd "$target" && return 0
     fi
     return 1
+}
+_..() {
+    compopt -o filenames
+    IFS=/ read -ra parts <<< "$PWD"
+    unset 'parts[-1]'
+    mapfile -t COMPREPLY < <(printf '%s\n' "${parts[@]}" | g "${COMP_WORDS[COMP_CWORD]}")
+}
+complete -F _.. ..
+c() {
+    local target="${1:-$HOME}"
+    [ "$(pwd)" == "$(readlink -f "$target")" ] && return 0
+    pushd "$target" || return 1
 }
 mkcd() { mkdir -p "$*"; c "$*" || return 1; }
 xs() {
@@ -151,27 +173,14 @@ y() {
     tmp="$(mktemp -t "yazi-cwd.XXXXXX")"
     command yazi "$@" --cwd-file="$tmp"
     IFS= read -rd '' cwd < "$tmp"
-    [ "$cwd" != "$PWD" ] && [ -d "$cwd" ] && builtin cd -- "$cwd" || return 1
+    [ "$cwd" != "$PWD" ] && [ -d "$cwd" ] && pushd -- "$cwd" || return 1
     rm -f -- "$tmp"
 }
 
-# Completion
+# Completion.
 . /etc/bash_completion
 
-_w() {
-    mapfile -t COMPREPLY < <(grep -h "^${COMP_WORDS[COMP_CWORD]}" /usr/share/dict/[ab]*)
-}
-complete -F _w w
-
-_..() {
-    compopt -o filenames
-    IFS=/ read -ra parts <<< "$PWD"
-    unset 'parts[-1]'
-    mapfile -t COMPREPLY < <(printf '%s\n' "${parts[@]}" | grep "${COMP_WORDS[COMP_CWORD]}")
-}
-complete -F _.. ..
-
-# ls
+# ls.
 LS_OPTIONS='-lh --color=auto --quoting-style=shell'
 alias l='ls $LS_OPTIONS'
 alias ll='ls $LS_OPTIONS -A'
@@ -180,13 +189,12 @@ alias llt='ls $LS_OPTIONS -Atr'
 alias lld='ls $LS_OPTIONS -Ad */'
 alias lls='ls $LS_OPTIONS -ASr'
 
-# grep
+# grep.
 type rg >/dev/null 2>&1 && alias g='rg --smart-case' || alias g='grep --color=auto -i'
 lg() { ll "${2:-.}" | g "$1"; }
 fgg() { find "${2:-.}" | g "$1"; }
-pg() { g "$@" <<<"$(ps -eF --forest | sort)"; }
 
-# vim
+# vim.
 # shellcheck disable=SC2086  # We want word splitting here.
 vv() { [ -z "$1" ] && vim -c "normal '0" || vim -p -- ./*$**; } # Open last file or all filenames matching argument.
 # shellcheck disable=SC2046  # We want word splitting here.
@@ -219,7 +227,7 @@ vd() {
     done
 }
 
-# git
+# git.
 gitformat="%s %C(dim)%C(cyan)%ah %C(green)%al %C(magenta)%h%C(auto)%d"
 alias gl='git log --graph --abbrev-commit --pretty=format:"$gitformat"'
 alias glg="gl --all"
@@ -231,16 +239,16 @@ gremtrack() { git rev-parse --abbrev-ref --symbolic-full-name '@{u}'; }
 gresetlocal() { git reset --hard "$(gcur)"; }
 gresetremote() { git reset --hard "$(gremtrack)"; }
 
-# fzf
+# fzf.
 export FZF_DEFAULT_OPTS='--exact --no-sort --bind=ctrl-u:page-up,ctrl-d:page-down,alt-o:print-query,ctrl-o:replace-query'
 export FZF_CTRL_T_OPTS='--preview=~/.fzf/bin/fzf-preview.sh\ {}'
 export FZF_TMUX=1
 [ -f ~/.fzf.bash ] && . ~/.fzf.bash
 
-# zoxide
+# zoxide.
 eval "$(zoxide init bash --cmd j)"
 
-# LLM
+# LLM.
 rewrite_command() {
     [ "$READLINE_LINE" ] || return 0
     READLINE_LINE="$(~/bin/sanj 'do' - "$READLINE_LINE")"
@@ -248,7 +256,7 @@ rewrite_command() {
 }
 bind -x '"\C-g": rewrite_command'
 
-# Media
+# Media.
 cap() { slurp | grim -g - "${1:-tmp}.png"; }
 feh() { foot sh -c "chafa --duration inf '$*'" 2>/dev/null; }
 vol() {
@@ -273,8 +281,8 @@ blu() {
 tit() { echo "sub-add '$1'" | socat - /tmp/mpv.sock; }
 
 # Some escape sequences for colors.
-# Note the surrounding $'\001' and $'\002'  which tell readline the escape
-# sequence has zero length.  Bash documentation recommends using escaped square
+# Note the surrounding $'\001' and $'\002'  which tell readline the escape.
+# sequence has zero length.  Bash documentation recommends using escaped square.
 # brackets, but these fail on command substitution.
 rgb_escape_code() { printf "\001\033[38;2;%d;%d;%dm\002" "$1" "$2" "$3"; }
 tput_escape_code() { printf "\001%s\002" "$(tput "$1")"; }
@@ -287,7 +295,7 @@ CYAN="$(rgb_escape_code 102 204 204)"
 REVERSE="$(tput_escape_code rev)"
 RESET="$(tput_escape_code sgr0)"
 
-# Easy view
+# Easy view.
 type dircolors >/dev/null 2>&1 && eval "$(dircolors)"
 type lesspipe >/dev/null 2>&1 && eval "$(lesspipe)"
 export LESS=' -MRSXF '
@@ -299,7 +307,7 @@ export MANPAGER='vim +MANPAGER --not-a-term -c "nmap <buffer><nowait> q :q<CR>" 
 alias pyg='pygmentize -gf terminal256 -O style=monokai'
 pygl() { pyg "$@" | less; }
 
-# Prompt
+# Prompt.
 gitstat() {
     local orig_retcode=$?
     local stats
