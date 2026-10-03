@@ -45,6 +45,7 @@ sanj() {
             -) action=dump;;
             --) system_prompts+=("${@:$((argument_index + 1))}"); break;;
             ---) action=loop;;
+            --system) system_prompts+=("${@:$((argument_index + 1)):1}"); argument_index=$((argument_index + 1));;
             -*)
                 llm_arguments+=("${!argument_index}")
                 argument_index=$((argument_index + 1))
