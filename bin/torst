@@ -6,9 +6,9 @@ BASE_URL=https://tpb.party
 # Note the surrounding $'\001' and $'\002'  which tell readline the escape sequence has zero length.
 ALTERNATE=$'\001'"$(tput rev)"$'\002'
 RESET=$'\001'"$(tput sgr0)"$'\002'
-type zebra.sh 2>&1 > /dev/null || zebra.sh() { while read line; do
+type zebra.sh > /dev/null 2>&1 || zebra.sh() { while read -r line; do
     echo "$ALTERNATE$line$RESET"
-    read line
+    read -r line
     echo "$line"
 done; }
 
@@ -24,14 +24,14 @@ else
     fi
     magnets="$(curl -s "$search_url" | grep -Pom10 '(?<= href=")magnet:[^"]*(?=")')"
     echo "$magnets" | grep -Po '(?<=&dn=)[^&]*' | nl -v0 -s'   ' | zebra.sh
-    read -p '> ' q
+    read -rp '> ' q
     [ q = "$q" ] && exit 1
-    magnet="$(echo "$magnets" | head -n $(($q + 1)) | tail -n 1)"
+    magnet="$(echo "$magnets" | head -n $((q + 1)) | tail -n 1)"
 fi
 echo "$magnet"
 
 webtorrent "$magnet" --out "$OUT_DIR" -s | grep '^[[:digit:]]' | zebra.sh
-read -p '> ' q
+read -rp '> ' q
 [ q = "$q" ] && exit 1
 tmux split "read; vid $*"
 webtorrent "$magnet" --select "${q:-0}" --out "$OUT_DIR" --keep-seeding
