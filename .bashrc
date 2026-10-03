@@ -248,7 +248,6 @@ alias_with_completion lt l -tr
 alias_with_completion llt lt -A
 alias_with_completion lld ll -d -- */
 alias_with_completion lls ll -Sr
-fgg() { fd "${2:-.}" | g "$1"; }
 lg() { ll "${2:-.}" | g "$1"; }
 
 # vim.
