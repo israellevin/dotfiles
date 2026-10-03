@@ -428,3 +428,24 @@ else
 fi
 
 lt
+
+fly() {
+    enable -f /home/i/.local/lib/libflyline.so flyline
+    alias nofly='enable -d flyline'
+    flyline key bind Ctrl+p always=prevHistoryEntry
+    flyline key bind Ctrl+n always=nextHistoryEntry
+    flyline set-cursor --backend terminal
+    flyline editor --auto-close-chars false
+    flyline create-prompt-widget mouse-mode --name MOUSE_MODE 🐁 ''
+    flyline create-prompt-widget copy-buffer --name COPY_COMMAND 📋
+    flyline create-prompt-widget last-command-duration --name COMMAND_DURATION
+    local prompt_line_1="${BLUE}--Ran for COMMAND_DURATION--"
+    local prompt_line_2="$RED\u@\$(hostorchrootname)(\!):$GREEN\w\$(gitstat) $BLUE\D{%d-%b-%y %H:%M:%S}"
+    local prompt_line_3="$MAGENTA$REVERSE\$(retcode)$RESET$CYAN$REVERSE\$(hasjobs)$RESET\$ "
+    PS1="$prompt_line_1\n$prompt_line_2\n$prompt_line_3"
+    # shellcheck disable=SC2034  # flyline system variable.
+    RPS1="MOUSE_MODE\n\nCOPY_COMMAND"
+    # shellcheck disable=SC2034  # flyline system variable.
+    RPS1_FINAL=''
+    flyline set-agent-mode --command 'sanj - --system "Answer with a JSON array of at most 3 items with command and description for a bash/debian system"'
+}
