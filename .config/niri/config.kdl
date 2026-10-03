@@ -148,9 +148,9 @@ binds {
     Mod+Shift+Equal { set-window-height "+10%"; }
     Mod+Shift+V { toggle-window-floating; }
     Mod+V { spawn-sh "
-        niriu.sh ids --workspace focused --floating &&
-            niri msg action switch-focus-between-floating-and-tiling ||
+        niriu.sh ids --workspace focused --floating ||
             niri msg action toggle-window-floating
+        niri msg action switch-focus-between-floating-and-tiling
     "; }
 
     Mod+Left { focus-monitor-left; }
