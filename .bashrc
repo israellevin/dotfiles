@@ -302,11 +302,11 @@ rewrite_command() {
     READLINE_LINE="$(~/bin/sanj 'do' - "$READLINE_LINE")"
     READLINE_POINT=${#READLINE_LINE}
 }
-bind -x '"\C-g": rewrite_command'
+bind -x '"\e\C-m": rewrite_command'
 
 # Media.
 cap() { slurp | grim -g - "${1:-tmp}.png"; }
-feh() { foot sh -c "chafa --duration inf '$*'" 2>/dev/null; }
+feh() { foot sh -c "yazi '$*'" 2>/dev/null; }
 vol() {
     local sink=@DEFAULT_AUDIO_SINK@;
     if [ "$1" ]; then
