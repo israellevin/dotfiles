@@ -1,10 +1,6 @@
-[[opener.add-sub]]
-run  = ''' printf "sub-add '%%s'\n" %s1 | socat - /tmp/mpv.sock '''
-desc = "Add sub to MPV"
-
-[[open.prepend_rules]]
-url = "*.{ass,srt,ssa,sty,sup,vtt}"
-use = [ "add-sub", "edit" ]
+[mgr]
+sort_by = "mtime"
+sort_reverse = true
 
 [opener]
 enter = [ { run = 'ya emit cd "$1"', desc="enter selected directory" } ]
@@ -12,3 +8,11 @@ enter = [ { run = 'ya emit cd "$1"', desc="enter selected directory" } ]
 [[open.prepend_rules]]
 url = "*/"
 use = [ "enter" ]
+
+[[opener.add-sub]]
+run  = ''' printf "sub-add '%%s'\n" %s1 | socat - /tmp/mpv.sock '''
+desc = "Add sub to MPV"
+
+[[open.prepend_rules]]
+url = "*.{ass,srt,ssa,sty,sup,vtt}"
+use = [ "add-sub", "edit" ]
