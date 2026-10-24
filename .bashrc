@@ -299,9 +299,25 @@ alias_with_completion gll git goodloglocal
 alias_with_completion gmb git mb
 alias_with_completion gresetlocal git hardresetlocal
 alias_with_completion gresetremote git hardresetremote
-gb() { { echo -; git branch; } | menu | xargs git switch; }
-gc() { git log --oneline --color=always | menu --ansi --reverse --preview 'git show --color=always {1}' | cut -d' ' -f1; }
-gd() { local commit; commit="$(gc)"; [ "$commit" ] && git showtool "$commit"; }
+glc() {
+    git log --oneline --color=always "$@" | \
+        menu --ansi --reverse --preview 'git show --color=always {1}' | \
+        cut -d' ' -f1
+}
+copy_completion glc git log
+gshow() {
+    local reference=HEAD
+    git branch -a --format='%(refname:short)' | g -Fxq "$1" && reference="$1" && shift
+    reference="${1:-$(glc "$reference")}"
+    [ "$reference" ] && echo "Showing $reference" && git showtool "$reference"
+}
+copy_completion gshow git show
+gswitch() {
+    local branch
+    branch="${1:-$({ echo -; git branch --format='%(refname:short)'; } | menu)}"
+    [ "$branch" ] && git switch "$branch"
+}
+copy_completion gswitch git switch
 
 # LLM.
 rewrite_command() {
