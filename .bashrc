@@ -298,6 +298,7 @@ alias_with_completion glg gl --all
 alias_with_completion gll glg --exclude=refs/remotes/** --all --decorate-refs=refs/heads/
 alias_with_completion gs git status
 gb() { { echo -; git branch; } | menu | xargs git switch; }
+gc() { git log --oneline --color=always | fzf --ansi --reverse --preview 'git show --color=always {1}'; }
 gmb() { git merge-base "$(git branch --show-current)" "${1:-master}"; }
 gcur() { git branch --show-current; }
 gremtrack() { git rev-parse --abbrev-ref --symbolic-full-name '@{u}'; }
