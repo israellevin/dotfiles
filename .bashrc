@@ -114,7 +114,10 @@ else
     copy_completion findir find
 fi
 if [ -x ~/.fzf/bin/fzf ]; then
-    export FZF_DEFAULT_OPTS='--exact --no-sort --bind=ctrl-u:page-up,ctrl-d:page-down,alt-o:print-query,ctrl-o:replace-query'
+    fzf_binds='ctrl-u:page-up,ctrl-d:page-down'
+    fzf_binds+=',alt-o:print-query,ctrl-o:replace-query'
+    fzf_binds+=',alt-j:preview-page-down,alt-k:preview-page-up'
+    export FZF_DEFAULT_OPTS="--exact --no-sort --bind=$fzf_binds"
     export FZF_CTRL_T_OPTS='--preview=~/.fzf/bin/fzf-preview.sh\ {}'
     export FZF_TMUX=1
     [ ! -f ~/.fzf.bash ] || [ ~/.fzf/bin/fzf -nt ~/.fzf.bash ] && ~/.fzf/bin/fzf --bash > ~/.fzf.bash
