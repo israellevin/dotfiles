@@ -1,5 +1,6 @@
 #!/bin/sh
 [ "$TMUX" ] && exec fzf-tmux "$@"
+[ -t 2 ] && exec fzf "$@"
 
 tmpdir=$(mktemp -dt menu.XXXXXX)
 trap 'rm -rf "$tmpdir"' EXIT
@@ -13,4 +14,5 @@ exec 3<&0
 cat <&3 >"$infifo" &
 cat "$outfifo" &
 
-foot -a menu sh -c "fzf $* < '$infifo' > '$outfifo'"
+# shellcheck disable=SC2016  # No need to expand yet.
+foot -a menu sh -c 'in=$1 out=$2; shift 2; exec fzf "$@" <"$in" >"$out"' menu "$infifo" "$outfifo" "$@"
