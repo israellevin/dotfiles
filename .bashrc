@@ -135,7 +135,12 @@ exp() { curl -Gs "https://www.mankier.com/api/explain/?cols=$(tput cols)" --data
 from_json() { node -pe "JSON.parse(require('fs').readFileSync(0, 'utf-8'))$1"; }
 genpas() { shuf -zern"${1:-8}" ':' ';' '<' '=' '>' '?' '@' '[' ']' '^' '_' '`' '{' '|' '}' '~' {0..9} {A..Z} {a..z} {a..z} {a..z}; echo; }
 log() { "$@" 2>&1 | tee log.txt; }
-long() { "$@"; notify-send -- "$1 is done"; }
+long() {
+    stderr_file="$(mktemp -t long.stderr.XXXX)"
+    { time "$@"; } > /dev/tty 2> >(tee "$stderr_file" >&2)
+    notify-send -- "$1 is done" "$(tail -3 "$stderr_file")"
+    rm "$stderr_file"
+}
 noslp() { systemd-inhibit --what=handle-lid-switch:sleep:shutdown --why='manual inhibition' sleep infinity; }
 pg() { g "$@" <<<"$(ps -eF --forest | sort)"; }
 slp() { echo mem > /sys/power/state; }
