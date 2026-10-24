@@ -291,19 +291,17 @@ vd() {
     done
 }
 
-# git.
-gitformat="%s %C(dim)%C(cyan)%ah %C(green)%al %C(magenta)%h%C(auto)%d"
-alias_with_completion gl git log --graph --abbrev-commit --pretty=format:"$gitformat"
-alias_with_completion glg gl --all
-alias_with_completion gll glg --exclude=refs/remotes/** --all --decorate-refs=refs/heads/
+# git, see aliases in ./.gitconfig.
 alias_with_completion gs git status
+alias_with_completion gl git goodlog
+alias_with_completion glg git goodlogall
+alias_with_completion gll git goodloglocal
+alias_with_completion gmb git mb
+alias_with_completion gresetlocal git hardresetlocal
+alias_with_completion gresetremote git hardresetremote
 gb() { { echo -; git branch; } | menu | xargs git switch; }
-gc() { git log --oneline --color=always | fzf --ansi --reverse --preview 'git show --color=always {1}'; }
-gmb() { git merge-base "$(git branch --show-current)" "${1:-master}"; }
-gcur() { git branch --show-current; }
-gremtrack() { git rev-parse --abbrev-ref --symbolic-full-name '@{u}'; }
-gresetlocal() { git reset --hard "$(gcur)"; }
-gresetremote() { git reset --hard "$(gremtrack)"; }
+gc() { git log --oneline --color=always | menu --ansi --reverse --preview 'git show --color=always {1}' | cut -d' ' -f1; }
+gd() { local commit; commit="$(gc)"; [ "$commit" ] && git showtool "$commit"; }
 
 # LLM.
 rewrite_command() {

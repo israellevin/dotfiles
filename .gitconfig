@@ -1,5 +1,4 @@
-[core]
-    pager = delta
+# Basic configuration.
 [init]
     defaultBranch = master
 [diff]
@@ -9,6 +8,40 @@
     tool = vimdiff
 [rerere]
     enabled = true
+[pretty]
+    myformat = "%C(dim)%C(magenta)%h %C(auto)%d %s %C(dim)%C(cyan)%ah %C(green)%al"
+
+# Command composition.
+[alias]
+    showtool = "!git difftool \"${1:-HEAD}~1\""
+
+    goodlog = log --graph --abbrev-commit --pretty=myformat
+    goodlogall = goodlog --all
+    goodloglocal = goodlogall --exclude=refs/remotes/** --decorate-refs=refs/heads/
+
+    currentbranch = branch --show-current
+    currentbranchremote = rev-parse --abbrev-ref --symbolic-full-name @{u}
+    hardresetlocal = "!f() { git reset --hard \"$(git currentbranch)\"; }; f"
+    hardresetremote = "!f() { git reset --hard \"$(git currentbranchremote)\"; }; f"
+
+    remotedefault = rev-parse --abbrev-ref origin/HEAD
+    mb = "!f() { git merge-base \"${1:-$(git remotedefault)}\" \"${2:-HEAD}\"; }; f"
+
+# User.
+[user]
+    name = 
+    email = 
+    signingkey = ~/.ssh/id_ed25519
+[gpg]
+    format = ssh
+[commit]
+    gpgsign = true
+[tag]
+    gpgSign = true
+
+# Delta diff.
+[core]
+    pager = delta
 [interactive]
     diffFilter = delta --color-only --features=interactive
 [delta]
@@ -24,13 +57,3 @@
     hunk-header-line-number-style = "#067a00"
     hunk-header-style = file line-number syntax
     side-by-side = true
-[user]
-    name = 
-    email = 
-    signingkey = 
-[gpg]
-    format = ssh
-[commit]
-    gpgsign = true
-[tag]
-    gpgSign = true
